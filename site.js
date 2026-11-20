@@ -361,3 +361,12 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   document.addEventListener('submit',function(e){var f=e.target.closest&&e.target.closest('[data-buscar-form]');if(f){e.preventDefault();abrirB(q('input',f).value)}});
   paint();
 })();
+
+/* submenús */
+(function(){
+  document.querySelectorAll('.has-sub').forEach(function(li){
+    var b=li.querySelector('.sub-t');
+    b.addEventListener('click',function(e){e.stopPropagation();var o=li.classList.toggle('open');b.setAttribute('aria-expanded',o)});
+  });
+  document.addEventListener('click',function(e){if(!e.target.closest('.has-sub'))document.querySelectorAll('.has-sub.open').forEach(function(l){l.classList.remove('open');l.querySelector('.sub-t').setAttribute('aria-expanded','false')})});
+})();
