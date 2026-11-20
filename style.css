@@ -872,3 +872,10 @@ a.card{text-decoration:none;display:block}
 .faq[open] summary::after{content:"–"}
 .faq p{margin:0 0 14px}
 @media(min-width:1000px){.pasos-c{grid-template-columns:repeat(5,1fr)}}
+
+/* selector de idioma */
+.topstrip .wrap{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.ts-r{display:flex;align-items:center;gap:16px}
+.lang-sw{font-weight:700;letter-spacing:.04em;text-decoration:none;border:1px solid rgba(255,255,255,.55);border-radius:999px;padding:1px 10px;color:#fff}
+.lang-sw:hover{background:rgba(255,255,255,.18)}
+@media(max-width:520px){.topstrip .wrap>span:first-child{display:none}.topstrip .wrap{justify-content:flex-end}}
