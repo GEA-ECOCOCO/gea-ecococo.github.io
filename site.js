@@ -309,7 +309,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   /* ---- DOM ---- */
   var wrap=document.createElement('div');
   wrap.innerHTML=
-   '<div id="buscar" class="ovl" role="dialog" aria-modal="true" aria-label="Buscar" hidden><div class="ovl-in"><form data-buscar-form2 role="search"><input type="search" placeholder="Buscar en el sitio…" aria-label="Buscar"><button type="button" class="ovl-x" aria-label="Cerrar">✕</button></form><ul class="res"></ul></div></div>'+
+   '<div id="buscar" class="ovl" role="dialog" aria-modal="true" aria-label="Buscar" hidden><div class="ovl-in"><div class="ovl-top"><h2>¿Qué estás buscando?</h2><button type="button" class="ovl-x" aria-label="Cerrar">✕</button></div><form data-buscar-form2 role="search" class="bx"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" placeholder="Busca precios, proceso, distribuidores…" aria-label="Buscar"><button type="submit" class="go" aria-label="Buscar">→</button></form><ul class="res"></ul></div></div>'+
    '<div id="cart-bg" class="cart-bg" hidden></div>'+
    '<aside id="carrito" class="cart" role="dialog" aria-modal="true" aria-label="Tu carrito" aria-hidden="true"><div class="cart-h"><h2>Tu carrito</h2><button type="button" class="ovl-x" aria-label="Cerrar carrito">✕</button></div><div class="cart-b"></div><div class="cart-f"></div></aside>';
   while(wrap.firstChild)body.appendChild(wrap.firstChild);
