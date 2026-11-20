@@ -854,3 +854,9 @@ a.card{text-decoration:none;display:block}
 .mv-link i{font-style:normal;font-weight:800;color:var(--brasa);white-space:nowrap}
 .mv-link:hover{background:#000}
 @media(max-width:520px){.mv-link{flex-direction:column;align-items:flex-start}}
+
+/* emblema institucional GEA Carbón */
+.logo-nav{padding:3px 12px}
+.logo-nav img{height:58px;width:auto}
+.pie-logo{height:84px;width:auto;padding:8px 14px;background:var(--crema)}
+@media(max-width:420px){.logo-nav img{height:48px}}
