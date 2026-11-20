@@ -276,3 +276,20 @@ nav .wrap{max-width:1440px}
   .ciclo .fila.e{margin-top:14px}
   .tira{margin-right:0;padding-right:0;max-width:100%}
 }
+
+/* Ilustración aceite */
+.oilviz{border:1px solid rgba(255,107,61,.35);border-radius:16px;padding:18px;background:rgba(255,107,61,.05)}
+.oilviz .escala{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.oilviz .gota,.oilviz .mar{display:flex;flex-direction:column;gap:2px}
+.oilviz .gota{align-items:center;min-width:110px}
+.oilviz .gota b{color:var(--alerta);font-size:1.15rem}
+.oilviz .mar{flex:1;min-width:200px;padding:16px;border-radius:12px;background:linear-gradient(180deg,rgba(31,162,58,.18),rgba(11,77,31,.55));border:1px solid var(--panel-b)}
+.oilviz .mar b{color:var(--lime2);font-size:1.3rem}
+.oilviz small{color:var(--muted);font-size:.82rem}
+.oilviz .flecha{color:var(--alerta);font-size:1.6rem}
+.oilviz .tres{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:16px}
+.oilviz .tres div{padding:12px;border-radius:12px;background:rgba(4,16,10,.55);border-left:3px solid var(--alerta)}
+.oilviz .tres b{display:block;color:var(--ink);margin-bottom:4px}
+.oilviz .tres span{color:#CFE6D5;font-size:.88rem}
+.oilviz .fte{margin-top:12px;color:var(--muted);font-size:.78rem}
+@media(max-width:700px){.oilviz .escala{flex-direction:column;align-items:stretch}.oilviz .flecha{text-align:center;transform:rotate(90deg);height:28px}.oilviz .mar{min-width:0}}
