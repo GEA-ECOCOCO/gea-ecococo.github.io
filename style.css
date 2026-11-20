@@ -938,3 +938,18 @@ a.card{text-decoration:none;display:block}
 .wf-go{display:block;width:100%;text-align:center;margin:4px 0 0;border:0;cursor:pointer}
 .wf-n{font-size:.8rem;color:#6B5436;text-align:center;margin:0}
 .wch-in{box-sizing:border-box}
+
+/* datos de entrega en el carrito */
+.cart-f .cdat{max-height:none;gap:10px}
+.cdat-h{font-family:Anton,sans-serif;letter-spacing:.04em;text-transform:uppercase;font-size:1.05rem;color:#1A1A1A;margin:0}
+.cdat-p{font-size:.76rem;color:#6B5436;margin:2px 0 0}
+.cf label{display:block;font-size:.8rem;font-weight:700;color:#4A4036;margin-bottom:3px}
+.cf input,.cf select{font:inherit;font-size:16px;padding:9px 12px;border:1px solid rgba(26,26,26,.25);border-radius:10px;background:#fff;color:#1A1A1A;width:100%;box-sizing:border-box}
+.cf .inv{border-color:#C0392B;background:#FFF4F2}
+.ce{display:block;color:#C0392B;font-size:.78rem;margin-top:2px}.ce:empty{display:none}
+
+/* carrito con datos de entrega: todo el panel se desplaza */
+.cart{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.cart-h{position:sticky;top:0;z-index:2;background:var(--paper)}
+.cart-b{flex:0 0 auto;overflow:visible}
+.cart-f{flex:0 0 auto}

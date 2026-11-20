@@ -360,7 +360,8 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   /* ---- carrito ---- */
   function count(){return Object.keys(cart).reduce(function(a,k){return a+cart[k]},0)}
   function total(){return Object.keys(cart).reduce(function(a,k){return a+cart[k]*PROD[k].p},0)}
-  var cNom='',cUbi='';
+  var cD={},DEPS=['Alta Verapaz','Baja Verapaz','Chimaltenango','Chiquimula','El Progreso','Escuintla','Guatemala','Huehuetenango','Izabal','Jalapa','Jutiapa','Petén','Quetzaltenango','Quiché','Retalhuleu','Sacatepéquez','San Marcos','Santa Rosa','Sololá','Suchitepéquez','Totonicapán','Zacapa'];
+  function cfield(k,lab,type,ac,max,ph){return '<div class="cf"><label for="c-'+k+'">'+lab+'</label><input id="c-'+k+'" data-c="'+k+'" type="'+type+'"'+(type==='tel'?' inputmode="tel"':'')+' maxlength="'+max+'" autocomplete="'+ac+'"'+(ph?' placeholder="'+ph+'"':'')+'><span class="ce"></span></div>'}
   function paint(){
     var n=count();
     document.querySelectorAll('.cart-n').forEach(function(b){b.textContent=n;b.hidden=!n});
@@ -369,20 +370,44 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     cb.innerHTML=ks.map(function(k){var p=PROD[k];return '<div class="li"><div class="li-t"><b>'+pn(k)+'</b><span>'+Q(p.p)+' '+gL('c/u','each')+'</span></div><div class="li-q"><button type="button" data-q="-1" data-k="'+k+'" aria-label="'+gL('Quitar uno','Remove one')+'">−</button><span>'+cart[k]+'</span><button type="button" data-q="1" data-k="'+k+'" aria-label="'+gL('Agregar uno','Add one')+'">+</button></div><div class="li-s">'+Q(cart[k]*p.p)+'</div><button type="button" class="li-x" data-del="'+k+'" aria-label="'+gL('Eliminar','Remove')+'">✕</button></div>'}).join('');
     function msgWA(){
       var L=[gL('Hola, quiero hacer este pedido de ECOCOCO:','Hi, I\'d like to place this ECOCOCO order:')];
-      if(cNom)L.push(gL('Nombre: ','Name: ')+cNom);
-      if(cUbi)L.push(gL('Ubicación / departamento: ','Location / department: ')+cUbi);
-      L.push('');
+      L.push('');L.push(gL('DATOS DE ENTREGA','DELIVERY DETAILS'));
+      if(cD.nom)L.push(gL('Nombre: ','Name: ')+cD.nom);
+      if(cD.tel)L.push(gL('Teléfono: ','Phone: ')+cD.tel);
+      if(cD.dep)L.push(gL('Departamento: ','Department: ')+cD.dep);
+      if(cD.mun)L.push(gL('Municipio: ','Town: ')+cD.mun);
+      if(cD.zon)L.push(gL('Colonia / lotificación / sección / zona: ','Neighborhood / subdivision / section / zone: ')+cD.zon);
+      if(cD.dir)L.push(gL('Calle o avenida y N.º de casa o lote: ','Street or avenue and house or lot no.: ')+cD.dir);
+      if(cD.ref)L.push(gL('Referencia: ','Landmark: ')+cD.ref);
+      if(cD.nota)L.push(gL('Notas: ','Notes: ')+cD.nota);
+      L.push('');L.push(gL('PEDIDO','ORDER'));
       ks.forEach(function(k){var p=PROD[k];L.push('• '+pn(k)+': '+cart[k]+' × '+Q(p.p)+' = '+Q(cart[k]*p.p))});
       L.push('');L.push(gL('Total del pedido: ','Order total: ')+Q(total()));
       L.push(gL('Entrega y forma de pago: por coordinar.','Delivery and payment: to be arranged.'));
       return 'https://wa.me/'+WA+'?text='+encodeURIComponent(L.join('\n'));
     }
     var bulto=cart.k25>0;
-    cf.innerHTML='<div class="tot"><span>'+gL('Total estimado','Estimated total')+'</span><b>'+Q(total())+'</b></div><p class="nota">'+gL('Precio a consumidor final. ','End-consumer price. ')+(bulto?gL('En bultos de 25 kg hay precio especial según volumen, lo confirmamos por WhatsApp. ','For 25 kg sacks there is a special volume price, which we confirm on WhatsApp. '):'')+gL('Entrega y forma de pago se acuerdan por WhatsApp. Aún no cobramos en línea.','Delivery and payment are arranged on WhatsApp. We do not charge online yet.')+'</p><div class="cdat"><label>'+gL('Tu nombre (opcional)','Your name (optional)')+'<input type="text" id="c-nom" maxlength="60" autocomplete="name"></label><label>'+gL('Ubicación o departamento (opcional)','Location or department (optional)')+'<input type="text" id="c-ubi" maxlength="60" autocomplete="address-level1"></label></div><a class="btn wa" id="c-wa" href="'+msgWA()+'" target="_blank" rel="noopener">'+gL('Enviar pedido por WhatsApp','Send order on WhatsApp')+'</a><button type="button" class="vaciar" data-vaciar>'+gL('Vaciar carrito','Empty cart')+'</button>';
-    var iN=q('#c-nom',cf),iU=q('#c-ubi',cf),aW=q('#c-wa',cf);
-    iN.value=cNom;iU.value=cUbi;
-    function sync(){cNom=iN.value.replace(/\s+/g,' ').trim();cUbi=iU.value.replace(/\s+/g,' ').trim();aW.href=msgWA()}
-    iN.addEventListener('input',sync);iU.addEventListener('input',sync);
+    cf.innerHTML='<div class="tot"><span>'+gL('Total estimado','Estimated total')+'</span><b>'+Q(total())+'</b></div><p class="nota">'+gL('Precio a consumidor final. ','End-consumer price. ')+(bulto?gL('En bultos de 25 kg hay precio especial según volumen, lo confirmamos por WhatsApp. ','For 25 kg sacks there is a special volume price, which we confirm on WhatsApp. '):'')+gL('Entrega y forma de pago se acuerdan por WhatsApp. Aún no cobramos en línea.','Delivery and payment are arranged on WhatsApp. We do not charge online yet.')+'</p><div class="cdat"><p class="cdat-h">'+gL('Datos para la entrega','Delivery details')+'</p>'+
+      cfield('nom',gL('Nombre completo *','Full name *'),'text','name',80)+cfield('tel',gL('Teléfono (WhatsApp) *','Phone (WhatsApp) *'),'tel','tel',20)+
+      '<div class="cf"><label for="c-dep">'+gL('Departamento *','Department *')+'</label><select id="c-dep" data-c="dep"><option value="">'+gL('Selecciona','Select')+'</option>'+DEPS.map(function(x){return '<option>'+x+'</option>'}).join('')+'</select><span class="ce"></span></div>'+
+      cfield('mun',gL('Municipio *','Town *'),'text','address-level2',60)+cfield('zon',gL('Colonia, lotificación, sección o zona *','Neighborhood, subdivision, section or zone *'),'text','off',80)+
+      cfield('dir',gL('Calle o avenida y número de casa o lote *','Street or avenue and house or lot number *'),'text','street-address',100)+cfield('ref',gL('Referencia para llegar *','Landmark to find you *'),'text','off',120,gL('Ej. frente a la iglesia, portón negro','E.g. in front of the church, black gate'))+cfield('nota',gL('Notas o especificaciones (opcional)','Notes or specifications (optional)'),'text','off',150)+
+      '<p class="cdat-p">'+gL('Estos datos solo se usan para coordinar tu entrega y viajan en el mensaje de WhatsApp. No los guardamos en el sitio.','These details are only used to arrange your delivery and travel in the WhatsApp message. We do not store them on the site.')+'</p></div><a class="btn wa" id="c-wa" href="'+msgWA()+'" target="_blank" rel="noopener">'+gL('Enviar pedido por WhatsApp','Send order on WhatsApp')+'</a><button type="button" class="vaciar" data-vaciar>'+gL('Vaciar carrito','Empty cart')+'</button>';
+    var aW=q('#c-wa',cf),REQ=['nom','tel','dep','mun','zon','dir','ref'];
+    cf.querySelectorAll('[data-c]').forEach(function(el){el.value=cD[el.getAttribute('data-c')]||'';
+      var h=function(){cD[el.getAttribute('data-c')]=el.value.replace(/\s+/g,' ').trim();aW.href=msgWA()};el.addEventListener('input',h);el.addEventListener('change',h)});
+    function valida(){
+      var bad=null;
+      cf.querySelectorAll('.ce').forEach(function(e){e.textContent=''});cf.querySelectorAll('.inv').forEach(function(e){e.classList.remove('inv');e.removeAttribute('aria-invalid')});
+      REQ.forEach(function(k){
+        var el=cf.querySelector('[data-c="'+k+'"]'),v=(cD[k]||''),m='';
+        if(!v)m=gL('Completa este dato.','Please fill in this field.');
+        else if(k==='tel'){var t=v.replace(/[\s()-]/g,'').replace(/^\+?502/,'');if(!/^[2-7]\d{7}$/.test(t))m=gL('Escribe un teléfono de 8 dígitos (Guatemala).','Enter an 8-digit phone number (Guatemala).')}
+        else if(k!=='dep'&&v.length<2)m=gL('Escribe al menos 2 letras.','Enter at least 2 characters.');
+        if(m){el.classList.add('inv');el.setAttribute('aria-invalid','true');el.parentNode.querySelector('.ce').textContent=m;bad=bad||el}
+      });
+      return bad;
+    }
+    aW.addEventListener('click',function(e){var bad=valida();if(bad){e.preventDefault();e.stopPropagation();bad.focus();return}aW.href=msgWA();if(window.geaTrack)geaTrack('click_whatsapp',{pagina:location.pathname,destino:'carrito'})});
   }
   var last=null;
   function abrirC(){sb.hidden=true;last=document.activeElement;cd.setAttribute('aria-hidden','false');cbg.hidden=false;body.classList.add('noscroll');cd.classList.add('on');paint();q('.ovl-x',cd).focus()}
