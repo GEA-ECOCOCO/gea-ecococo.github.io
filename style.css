@@ -860,3 +860,15 @@ a.card{text-decoration:none;display:block}
 .logo-nav img{height:58px;width:auto}
 .pie-logo{height:84px;width:auto;padding:8px 14px;background:var(--crema)}
 @media(max-width:420px){.logo-nav img{height:48px}}
+
+/* cómo comprar y preguntas frecuentes */
+.pasos-c{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.pasos-c .card b{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--brasa);color:#fff;margin-bottom:8px}
+.faq-w{margin-top:16px;display:grid;gap:10px}
+.faq{background:#FFFBF2;border:1px solid #DDD3BE;border-radius:12px;padding:0 18px}
+.faq summary{cursor:pointer;font-weight:700;padding:14px 0;list-style:none;display:flex;justify-content:space-between;gap:12px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";color:var(--brasa);font-size:1.3rem;line-height:1}
+.faq[open] summary::after{content:"–"}
+.faq p{margin:0 0 14px}
+@media(min-width:1000px){.pasos-c{grid-template-columns:repeat(5,1fr)}}
