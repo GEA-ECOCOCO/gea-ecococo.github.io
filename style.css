@@ -697,3 +697,18 @@ main{padding-bottom:40px}
 .brand h3,.brand.e h3{color:#fff}.brand p{color:#E6F0EA}
 .tabla{min-width:0}
 @media(max-width:560px){.tabla td,.tabla th{font-size:.84rem;padding:10px 8px}.tabla th{font-size:.9rem}.tabla td:first-child{width:30%}}
+/* tablas con líneas */
+.tabla-w{border:2px solid #1A1A1A;border-radius:14px;overflow:hidden;box-shadow:none}
+.grid-t{border-collapse:collapse;width:100%;table-layout:fixed;min-width:0}
+.grid-t th,.grid-t td{border:1px solid #6B4226;padding:11px 12px;font-size:.95rem;text-align:left;vertical-align:middle;word-wrap:break-word}
+.grid-t th{background:#1A1A1A;color:#F5F0E6;border-color:#1A1A1A;text-align:center}
+.grid-t td:first-child{width:30%;background:#EFE6D2;font-weight:700;color:#1A1A1A}
+.grid-t tbody tr:nth-child(even) td{background:#FFFBF2}
+.grid-t tbody tr:nth-child(even) td:first-child{background:#EFE6D2}
+.grid-t td:not(:first-child){text-align:center}
+.grid-t tr.grp td{background:#6B4226!important;color:#fff;font-family:var(--cond);text-transform:uppercase;letter-spacing:.06em;text-align:left!important;font-weight:400;font-size:1rem;padding:9px 12px}
+.grid-t td.pend{color:#B84500;font-style:italic;font-weight:600}
+/* tabla de distribuidores: dos columnas */
+.grid-t:not(:has(th)) td:not(:first-child){text-align:left}
+@media(max-width:560px){.grid-t th,.grid-t td{padding:9px 7px;font-size:.82rem}.grid-t tr.grp td{font-size:.9rem}}
+.grid-t.dist td:first-child{width:40%;hyphens:auto}@media(max-width:560px){.grid-t.dist td:first-child{width:42%;font-size:.8rem}}
