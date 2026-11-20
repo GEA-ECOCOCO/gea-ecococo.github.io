@@ -3,7 +3,7 @@ document.addEventListener('click', function (e) {
   var a = e.target.closest('a[href]');
   if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || a.target === '_blank') return;
   var href = a.getAttribute('href');
-  if (!href || href.charAt(0) === '#' || /^(mailto:|tel:|https?:)/.test(href)) return;
+  if (!href || href.charAt(0) === '#' || /^[a-z][a-z0-9+.-]*:/i.test(href)) return;
   e.preventDefault();
   document.body.classList.add('saliendo');
   setTimeout(function () { window.location.href = href; }, 400);
@@ -137,4 +137,74 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     b.addEventListener('click', function () { kg.value = b.getAttribute('data-k'); actualizar(); });
   });
   actual = 5 * PRECIO; actualizar();
+})();
+
+// Menú de compartir
+(function () {
+  var sheet = document.getElementById('compartir');
+  if (!sheet) return;
+  var TEXTO = 'ECOCOCO: briquetas de carbón de cáscara de coco hechas en Retalhuleu, Guatemala.';
+  var IMG = 'https://gea-ecococo.github.io/img/og.jpg';
+  function url() { return location.href.split('#')[0]; }
+  function e(x) { return encodeURIComponent(x); }
+  function redes() {
+    var u = url(), t = TEXTO, ut = t + ' ' + u;
+    var movil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    var l = [
+      ['WhatsApp', 'W', '#25D366', 'https://wa.me/?text=' + e(ut)],
+      ['Facebook', 'f', '#1877F2', 'https://www.facebook.com/sharer/sharer.php?u=' + e(u)],
+      ['X', 'X', '#000', 'https://twitter.com/intent/tweet?url=' + e(u) + '&text=' + e(t)],
+      ['Telegram', 'T', '#26A5E4', 'https://t.me/share/url?url=' + e(u) + '&text=' + e(t)],
+      ['LinkedIn', 'in', '#0A66C2', 'https://www.linkedin.com/sharing/share-offsite/?url=' + e(u)],
+      ['Pinterest', 'P', '#E60023', 'https://pinterest.com/pin/create/button/?url=' + e(u) + '&media=' + e(IMG) + '&description=' + e(t)],
+      ['Reddit', 'R', '#FF4500', 'https://www.reddit.com/submit?url=' + e(u) + '&title=' + e(t)],
+      ['Threads', '@', '#111', 'https://www.threads.net/intent/post?text=' + e(ut)],
+      ['Bluesky', 'B', '#1185FE', 'https://bsky.app/intent/compose?text=' + e(ut)],
+      ['Correo', '✉', '#5A6A7A', 'mailto:?subject=' + e('ECOCOCO | Briquetas de carbón de cáscara de coco') + '&body=' + e(ut)]
+    ];
+    if (movil) {
+      l.splice(2, 0, ['Messenger', 'm', '#0084FF', 'fb-messenger://share?link=' + e(u)]);
+      l.push(['SMS', 'SMS', '#34A853', 'sms:?&body=' + e(ut)]);
+    }
+    return l;
+  }
+  function aviso(msg) {
+    var d = document.createElement('div'); d.className = 'toast'; d.textContent = msg;
+    document.body.appendChild(d); setTimeout(function () { d.remove(); }, 2000);
+  }
+  function copiar() {
+    var u = url();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(u).then(function () { aviso('¡Enlace copiado!'); }, fallback);
+    } else fallback();
+    function fallback() {
+      var ta = document.createElement('textarea'); ta.value = u; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); aviso('¡Enlace copiado!'); } catch (x) { aviso('Copia el enlace de la barra'); }
+      ta.remove();
+    }
+  }
+  function abrir() {
+    var h = '<div class="panel"><button type="button" class="cerrar" aria-label="Cerrar">✕</button>' +
+      '<h3>Compartir ECOCOCO</h3><p class="sub">Elige dónde quieres compartir esta página.</p><div class="redes">';
+    if (navigator.share) h += '<button type="button" data-nativo><i style="background:linear-gradient(135deg,#8BE000,#1FA23A);color:#04100A">↗</i>Más opciones</button>';
+    redes().forEach(function (r) {
+      h += '<a href="' + r[3] + '" target="_blank" rel="noopener"><i style="background:' + r[2] + '">' + r[1] + '</i>' + r[0] + '</a>';
+    });
+    h += '<button type="button" data-copiar><i style="background:#2f4a3a">🔗</i>Copiar enlace</button></div>' +
+      '<p class="nota">Para Instagram y TikTok no existe un botón directo: usa «Más opciones» en tu teléfono o copia el enlace y pégalo en tu publicación o historia.</p></div>';
+    sheet.innerHTML = h; sheet.hidden = false; document.body.style.overflow = 'hidden';
+    sheet.querySelector('.cerrar').focus();
+  }
+  function cerrar() { sheet.hidden = true; document.body.style.overflow = ''; }
+  document.addEventListener('click', function (ev) {
+    if (ev.target.closest('[data-compartir]')) { abrir(); return; }
+    if (sheet.hidden) return;
+    if (ev.target === sheet || ev.target.closest('.cerrar')) { cerrar(); return; }
+    if (ev.target.closest('[data-copiar]')) { copiar(); return; }
+    if (ev.target.closest('[data-nativo]')) {
+      navigator.share({ title: 'ECOCOCO', text: TEXTO, url: url() }).catch(function () {}); return;
+    }
+    if (ev.target.closest('.redes a')) setTimeout(cerrar, 150);
+  });
+  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !sheet.hidden) cerrar(); });
 })();

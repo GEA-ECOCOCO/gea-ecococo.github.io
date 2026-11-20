@@ -29,6 +29,7 @@
     <input type="checkbox" id="chk">
     <label class="burger" for="chk" aria-label="Abrir menú">☰</label>
     <ul class="menu"><li><a href="index.html" class=on>Inicio</a></li><li><a href="quienes-somos.html">Quiénes somos</a></li><li><a href="producto.html">Producto</a></li><li><a href="en-accion.html">Míralo encender</a></li><li><a href="proceso.html">Proceso</a></li><li><a href="bitacora.html">Bitácora</a></li><li><a href="precios.html">Precios</a></li><li><a href="contacto.html">Contacto</a></li></ul>
+    <button type="button" class="share-btn" data-compartir aria-label="Compartir esta página" title="Compartir"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-4M8.6 13.5l6.8 4"/></svg></button>
   </div>
 </nav>
 <main>
@@ -62,6 +63,13 @@
     <a class="card rev" href="contacto.html"><h3>Contacto</h3><p>Pedidos por WhatsApp o por correo electrónico.</p><span class="ir">Entrar →</span></a>
   </div>
 </div></section>
+
+<section style="padding-top:10px"><div class="wrap"><div class="card hov" style="text-align:center;padding:30px 22px">
+  <div class="eyebrow" style="justify-content:center">Comparte</div>
+  <h2>Ayúdanos a que ECOCOCO llegue a más hogares</h2>
+  <p class="lead" style="margin:0 auto 18px">Comparte la página con quien usa carbón para su parrilla, su negocio o su restaurante.</p>
+  <button type="button" class="btn sec" data-compartir style="cursor:pointer;background:transparent">Compartir ECOCOCO</button>
+</div></div></section>
 </main>
 <footer>
   <span class="sep"></span>
@@ -69,6 +77,7 @@
   Tel. 4279-4894 · <a href="mailto:geaecococo.ventas@gmail.com" style="color:var(--lime2)">geaecococo.ventas@gmail.com</a><br>
   ECOCOCO / BLACK DIAMOND · GEA Carbón
 </footer>
+<div id="compartir" class="sheet" role="dialog" aria-modal="true" aria-label="Compartir" hidden></div>
 <script src="site.js"></script>
 </body>
 </html>

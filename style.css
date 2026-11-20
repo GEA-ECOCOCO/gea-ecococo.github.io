@@ -194,3 +194,21 @@ footer .sep{display:block;height:2px;width:90px;margin:0 auto 16px;background:li
 .tag.curso{background:rgba(255,200,60,.14);color:#FFD35C;border:1px solid #FFD35C}
 .tag.prox{background:rgba(157,187,166,.12);color:var(--muted);border:1px solid var(--muted)}
 .linea .card.paso{display:block}
+
+/* Compartir */
+.menu{margin-left:auto}
+.share-btn{cursor:pointer;margin-left:10px;width:42px;height:42px;border-radius:50%;color:var(--lime2);background:rgba(139,224,0,.1);border:1px solid var(--panel-b);display:inline-flex;align-items:center;justify-content:center;transition:.25s;flex:none}
+.share-btn:hover{background:var(--lime);color:#04100A;box-shadow:0 0 18px rgba(139,224,0,.5)}
+@media(max-width:1100px){.burger{margin-left:auto}.menu{margin-left:0}}
+.sheet{position:fixed;inset:0;z-index:1000;background:rgba(2,8,5,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px}
+.sheet[hidden]{display:none}
+.sheet .panel{width:min(520px,100%);max-height:90vh;overflow:auto;background:linear-gradient(160deg,#0B2415,#071A10);border:1px solid var(--panel-b);border-radius:22px;padding:24px;box-shadow:0 0 60px rgba(139,224,0,.2);animation:entra .35s both}
+.sheet h3{font-size:1.25rem;margin-bottom:4px}
+.sheet .sub{color:var(--muted);font-size:.92rem;margin-bottom:16px}
+.redes{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px}
+.redes a,.redes button{display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 6px;border-radius:14px;border:1px solid var(--panel-b);background:rgba(16,48,28,.55);color:var(--ink);text-decoration:none;font-size:.78rem;cursor:pointer;font-family:inherit;transition:.2s}
+.redes a:hover,.redes button:hover{border-color:var(--lime);transform:translateY(-2px);box-shadow:0 0 18px rgba(139,224,0,.25)}
+.redes i{font-style:normal;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.95rem}
+.sheet .nota{color:var(--muted);font-size:.8rem;margin-top:14px}
+.sheet .cerrar{float:right;cursor:pointer;background:none;border:1px solid var(--panel-b);color:var(--lime2);width:36px;height:36px;border-radius:50%;font-size:1.1rem}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:1100;background:var(--lime);color:#04100A;font-weight:700;padding:10px 20px;border-radius:999px;box-shadow:0 0 24px rgba(139,224,0,.6)}
