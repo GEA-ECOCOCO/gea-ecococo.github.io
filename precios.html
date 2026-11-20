@@ -6,6 +6,17 @@
 <title>Precios | ECOCOCO</title>
 <meta name="description" content="Precios de las briquetas ECOCOCO: Q20 por kg al consumidor final y precios por volumen para tiendas y restaurantes.">
 <meta name="theme-color" content="#04100A">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_GT">
+<meta property="og:site_name" content="GEA EcoCoco">
+<meta property="og:title" content="Precios | ECOCOCO">
+<meta property="og:description" content="Precios de las briquetas ECOCOCO: Q20 por kg al consumidor final y precios por volumen para tiendas y restaurantes.">
+<meta property="og:url" content="https://gea-ecococo.github.io/precios.html">
+<meta property="og:image" content="https://gea-ecococo.github.io/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://gea-ecococo.github.io/img/og.jpg">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2304100A'/%3E%3Cpath d='M14 50C14 26 28 12 52 12c0 24-14 38-38 38z' fill='%238BE000'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 
@@ -17,7 +28,7 @@
     <a class="logo-nav" href="index.html" aria-label="GEA EcoCoco, inicio"><img src="img/logo-ecococo.png" alt="GEA ECOCOCO"></a>
     <input type="checkbox" id="chk">
     <label class="burger" for="chk" aria-label="Abrir menú">☰</label>
-    <ul class="menu"><li><a href="index.html">Inicio</a></li><li><a href="quienes-somos.html">Quiénes somos</a></li><li><a href="producto.html">Producto</a></li><li><a href="en-accion.html">Míralo encender</a></li><li><a href="proceso.html">Cómo lo hacemos</a></li><li><a href="precios.html" class=on>Precios</a></li><li><a href="contacto.html">Contacto</a></li></ul>
+    <ul class="menu"><li><a href="index.html">Inicio</a></li><li><a href="quienes-somos.html">Quiénes somos</a></li><li><a href="producto.html">Producto</a></li><li><a href="en-accion.html">Míralo encender</a></li><li><a href="proceso.html">Proceso</a></li><li><a href="bitacora.html">Bitácora</a></li><li><a href="precios.html" class=on>Precios</a></li><li><a href="contacto.html">Contacto</a></li></ul>
   </div>
 </nav>
 <main>
@@ -31,7 +42,16 @@
     <div class="card hov"><h3>Tiendas y distribuidores</h3><p>Precio especial por volumen. Escríbenos por WhatsApp con la cantidad que necesitas.</p></div>
     <div class="card hov"><h3>Restaurantes</h3><p>Pedidos recurrentes con entrega coordinada. Consulta disponibilidad.</p></div>
   </div>
-  <p style="margin-top:28px"><a class="btn wa" href="https://wa.me/50242794894?text=Hola%2C%20quiero%20pedir%20carb%C3%B3n%20ECOCOCO">Cotizar por WhatsApp</a></p>
+  <div class="card calc" style="margin-top:28px;max-width:560px">
+    <h3>Calcula tu pedido</h3>
+    <label for="kg" style="color:var(--muted);display:block;margin-bottom:8px">¿Cuántos kg necesitas?</label>
+    <div class="kgrow"><button type="button" id="menos" aria-label="Menos">−</button><input id="kg" type="number" min="1" max="999" value="5" inputmode="numeric"><button type="button" id="mas" aria-label="Más">+</button></div>
+    <div class="chips"><button type="button" data-k="1">1 kg</button><button type="button" data-k="5">5 kg</button><button type="button" data-k="10">10 kg</button><button type="button" data-k="25">25 kg</button><button type="button" data-k="50">50 kg</button></div>
+    <div class="total"><span>Total estimado</span><strong id="tot">Q100</strong></div>
+    <p id="nota" style="color:var(--muted);font-size:.92rem;margin-bottom:14px"></p>
+    <a id="calc-wa" class="btn wa" style="margin:0" href="https://wa.me/50242794894?text=Hola%2C%20quiero%20pedir%20carb%C3%B3n%20ECOCOCO">Pedir por WhatsApp</a>
+  </div>
+  <p style="margin-top:22px;color:var(--muted)">¿Compras para tu tienda o restaurante? <a href="https://wa.me/50242794894?text=Hola%2C%20quiero%20pedir%20carb%C3%B3n%20ECOCOCO" style="color:var(--lime2)">Pide precio por volumen</a>.</p>
 </div></section>
 </main>
 <footer>

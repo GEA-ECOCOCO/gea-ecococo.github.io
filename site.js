@@ -102,3 +102,39 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     }
   }, 2100);
 })();
+
+// Calculadora de pedido
+(function () {
+  var kg = document.getElementById('kg');
+  if (!kg) return;
+  var tot = document.getElementById('tot'), nota = document.getElementById('nota'), wa = document.getElementById('calc-wa');
+  var PRECIO = 20, GRANDE = 50, actual = 0, anim = 0;
+  function pintar(n) { tot.textContent = 'Q' + Math.round(n).toLocaleString('es-GT'); }
+  function actualizar() {
+    var v = Math.max(1, Math.min(999, parseInt(kg.value, 10) || 1));
+    var meta = v * PRECIO;
+    cancelAnimationFrame(anim);
+    var ini = actual, t0 = null;
+    (function paso(t) {
+      if (t0 === null) t0 = t;
+      var k = Math.min(1, (t - t0) / 300);
+      actual = ini + (meta - ini) * k; pintar(actual);
+      if (k < 1) anim = requestAnimationFrame(paso);
+    })(performance.now());
+    nota.textContent = v >= GRANDE
+      ? 'Para pedidos grandes te cotizamos precio por volumen por WhatsApp.'
+      : 'Precio al consumidor final: Q20 por kg. Venta de contado.';
+    var msg = 'Hola, quiero ' + v + ' kg de briquetas ECOCOCO. ¿Disponibilidad y entrega?';
+    wa.href = 'https://wa.me/50242794894?text=' + encodeURIComponent(msg);
+    document.querySelectorAll('.chips button').forEach(function (b) {
+      b.classList.toggle('on', parseInt(b.getAttribute('data-k'), 10) === v);
+    });
+  }
+  kg.addEventListener('input', actualizar);
+  document.getElementById('menos').addEventListener('click', function () { kg.value = Math.max(1, (parseInt(kg.value, 10) || 1) - 1); actualizar(); });
+  document.getElementById('mas').addEventListener('click', function () { kg.value = Math.min(999, (parseInt(kg.value, 10) || 0) + 1); actualizar(); });
+  document.querySelectorAll('.chips button').forEach(function (b) {
+    b.addEventListener('click', function () { kg.value = b.getAttribute('data-k'); actualizar(); });
+  });
+  actual = 5 * PRECIO; actualizar();
+})();

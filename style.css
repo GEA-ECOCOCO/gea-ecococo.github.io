@@ -176,3 +176,21 @@ footer .sep{display:block;height:2px;width:90px;margin:0 auto 16px;background:li
   .rayos,.ondas path,.reveal,.logo-wrap::after,.logo-card,.in1,.in2,.in3{animation:none!important}
   .reveal{clip-path:none}.rayos{opacity:.7}.ondas path{stroke-dashoffset:0;opacity:.35}.logo-wrap::after{display:none}
 }
+
+/* Calculadora y bitácora */
+.kgrow{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+.kgrow input{width:110px;text-align:center;font-size:1.6rem;font-weight:700;color:var(--ink);background:rgba(4,16,10,.7);border:1px solid var(--panel-b);border-radius:12px;padding:10px;-moz-appearance:textfield}
+.kgrow input::-webkit-outer-spin-button,.kgrow input::-webkit-inner-spin-button{-webkit-appearance:none}
+.kgrow input:focus{outline:2px solid var(--lime)}
+.kgrow button,.chips button{cursor:pointer;color:var(--lime2);background:rgba(139,224,0,.08);border:1px solid var(--panel-b);border-radius:12px;font-weight:700;transition:.2s}
+.kgrow button{width:48px;height:48px;font-size:1.5rem}
+.kgrow button:hover,.chips button:hover,.chips button.on{background:var(--lime);color:#04100A}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chips button{padding:8px 14px;font-size:.9rem}
+.total{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--panel-b);border-bottom:1px solid var(--panel-b);padding:14px 0;margin-bottom:12px;color:var(--muted)}
+.total strong{font-size:2.2rem;color:var(--lime2);text-shadow:0 0 20px rgba(139,224,0,.4)}
+.tag{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:3px 10px;border-radius:999px;margin-bottom:6px}
+.tag.hecho{background:rgba(139,224,0,.18);color:var(--lime2);border:1px solid var(--lime)}
+.tag.curso{background:rgba(255,200,60,.14);color:#FFD35C;border:1px solid #FFD35C}
+.tag.prox{background:rgba(157,187,166,.12);color:var(--muted);border:1px solid var(--muted)}
+.linea .card.paso{display:block}
