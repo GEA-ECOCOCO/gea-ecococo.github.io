@@ -343,3 +343,7 @@ nav .wrap{max-width:1440px}
   .pd{padding:12px 4px}.pd svg{width:84px;height:84px}.pd .pv{top:38px;font-size:1.05rem}
   .pd b{font-size:.78rem}.pd small{font-size:.66rem}
 }
+
+.vimp{margin:18px auto 0;max-width:560px;border-radius:16px;overflow:hidden;border:1px solid var(--panel-b);background:#000}
+.vimp video{display:block;width:100%;height:auto}
+.vimp figcaption{padding:8px 12px;color:var(--muted);font-size:.82rem;background:rgba(4,16,10,.85)}
