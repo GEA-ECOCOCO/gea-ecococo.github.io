@@ -846,3 +846,11 @@ a.card{text-decoration:none;display:block}
 @media(min-width:1000px){.pil5{grid-template-columns:repeat(5,1fr)}}
 .mv .tabla td{text-align:left}
 .mv .tabla th{text-align:left}
+
+/* enlace corto a misión y visión (inicio) */
+.mv-link{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:20px;padding:16px 20px;background:var(--carbon);color:#fff;border-radius:14px;border-left:6px solid var(--brasa);text-decoration:none}
+.mv-link b{display:block;color:var(--brasa);text-transform:uppercase;letter-spacing:.12em;font-size:.8rem;margin-bottom:2px}
+.mv-link span{font-weight:600}
+.mv-link i{font-style:normal;font-weight:800;color:var(--brasa);white-space:nowrap}
+.mv-link:hover{background:#000}
+@media(max-width:520px){.mv-link{flex-direction:column;align-items:flex-start}}
