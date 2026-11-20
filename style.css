@@ -953,3 +953,13 @@ a.card{text-decoration:none;display:block}
 .cart-h{position:sticky;top:0;z-index:2;background:var(--paper)}
 .cart-b{flex:0 0 auto;overflow:visible}
 .cart-f{flex:0 0 auto}
+
+/* separación uniforme entre botones contiguos */
+.ccard.prod .btn{margin:0 0 16px}
+.ccard.prod .btn:last-child{margin-bottom:0}
+p:has(>.btn+.btn){display:flex;flex-wrap:wrap;gap:14px}
+p:has(>.btn+.btn)>.btn{margin:0!important}
+.ccard.prod .btn,.ccard.prod .btn.pill.add{margin:16px 14px 0}
+.ccard.prod .pr+.btn,.ccard.prod .pr+.btn.pill.add{margin-top:14px}
+.card .btn.pill.add+.btn.wa{margin-top:14px}
+.ccard.prod .btn.wa{margin:16px 14px 0}
