@@ -906,3 +906,7 @@ a.card{text-decoration:none;display:block}
 .cart-f .cdat{margin:16px 0 22px;gap:12px}
 .cart-f .btn.wa{margin:0 0 18px}
 .cart-f .vaciar{padding:10px 6px;margin-top:2px}
+
+/* catálogo PDF */
+.cat-pdf{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin:0 0 34px;border-left:6px solid #E85D04}
+.cat-pdf>div{flex:1 1 320px}.cat-pdf h3{margin:4px 0 6px}.cat-pdf .btn{flex:0 0 auto}

@@ -13,6 +13,7 @@
     window.geaTrack=function(n,p){try{gtag('event',n,p||{})}catch(e){}};
     document.addEventListener('click',function(e){
       var a=e.target.closest('a[href*="wa.me"]');if(a)geaTrack('click_whatsapp',{pagina:location.pathname,destino:(a.getAttribute('aria-label')||a.textContent||'').trim().slice(0,60)});
+      var pdf=e.target.closest('a[href$=".pdf"]');if(pdf)geaTrack('download_catalog',{archivo:pdf.getAttribute('href')});
       var d=e.target.closest('[data-add]');if(d)geaTrack('add_to_cart',{producto:d.getAttribute('data-add')});
     });
   }
