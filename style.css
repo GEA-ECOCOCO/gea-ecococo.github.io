@@ -879,3 +879,8 @@ a.card{text-decoration:none;display:block}
 .lang-sw{font-weight:700;letter-spacing:.04em;text-decoration:none;border:1px solid rgba(255,255,255,.55);border-radius:999px;padding:1px 10px;color:#fff}
 .lang-sw:hover{background:rgba(255,255,255,.18)}
 @media(max-width:520px){.topstrip .wrap>span:first-child{display:none}.topstrip .wrap{justify-content:flex-end}}
+/* el selector de idioma debe verse también en el celular */
+.topstrip .ts-r{display:flex}
+.topstrip .lang-sw{text-decoration:none}
+.pie-lang{margin:14px 0 0}
+.pie-lang .lang-sw{display:inline-block;padding:4px 14px}
