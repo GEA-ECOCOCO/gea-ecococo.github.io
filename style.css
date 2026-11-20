@@ -822,3 +822,27 @@ a.card{text-decoration:none;display:block}
 .ficha dt{font-weight:700;color:#6B4226}.ficha dd{margin:0;color:#1A1A1A}
 .ficha{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:.88rem;margin-top:10px;padding-top:10px;border-top:1px dashed rgba(107,66,38,.35)}
 .ficha dt{font-weight:700;color:#6B4226}.ficha dd{margin:0;color:#1A1A1A}
+
+/* misión, visión y pilares */
+.mv{padding:44px 0 20px}
+.mv-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:20px 0 34px}
+.mv-card{background:var(--carbon);color:var(--crema);border-radius:18px;padding:26px 24px;border-top:5px solid var(--brasa)}
+.mv-card.v{border-top-color:var(--bosque)}
+.mv-card h3{color:#fff;font-size:1.35rem;margin:6px 0 12px}
+.mv-card p{color:#E9E2D2;margin:0 0 10px}
+.mv-t{display:inline-block;font-weight:800;letter-spacing:.12em;text-transform:uppercase;font-size:.78rem;color:var(--brasa)}
+.mv-card.v .mv-t{color:#74C69D}
+.mv-h{margin:30px 0 14px}
+.pil5{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.pil5 .card b{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--brasa);color:#fff;margin-bottom:8px}
+.filo{margin:32px 0;padding:22px 24px;background:var(--crema);border-left:6px solid var(--bosque);border-radius:12px;color:var(--carbon);font-size:1.05rem;line-height:1.6}
+.filo .mv-t{display:block;color:var(--bosque);margin-bottom:8px}
+.mv-nota{font-size:.9rem;opacity:.8;margin:10px 0 26px}
+.lema{text-align:center;background:var(--carbon);color:#fff;border-radius:18px;padding:30px 18px;border-bottom:5px solid var(--brasa)}
+.lema strong{display:block;font-family:Anton,Impact,sans-serif;font-size:2.4rem;letter-spacing:.06em;color:var(--brasa)}
+.lema span{display:block;font-size:1.25rem;font-weight:700;margin:6px 0}
+.lema small{display:block;letter-spacing:.14em;text-transform:uppercase;color:#CFC8B8;font-size:.78rem}
+@media(max-width:760px){.mv-grid{grid-template-columns:1fr}}
+@media(min-width:1000px){.pil5{grid-template-columns:repeat(5,1fr)}}
+.mv .tabla td{text-align:left}
+.mv .tabla th{text-align:left}
