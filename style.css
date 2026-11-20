@@ -583,3 +583,13 @@ nav .share-btn{margin-left:0}
 .cart-f .btn.wa{border-radius:999px;padding:16px 24px}
 .cart .vacio{background:#fff;border-radius:22px;padding:18px}
 .cart .btn.pill.add{border-radius:999px;padding:14px 20px}
+/* redes sociales */
+.redes-ic{display:flex;gap:14px;margin:0 0 18px}
+.redes-ic.centro{justify-content:center;margin:0 auto 20px}
+.redes-ic a{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--deep);color:#fff;text-decoration:none;box-shadow:0 6px 16px rgba(0,0,0,.25);transition:transform .2s,background .2s}
+.redes-ic a:hover{transform:translateY(-3px);background:var(--lime)}
+.pie-redes a{background:#fff;color:#000;text-decoration:none}
+.pie-redes a:hover{background:var(--lime2);color:#fff}
+footer.pie .pie-redes{margin-top:22px}
+footer.pie .pie-redes a{background:#fff;color:#000}
+footer.pie .pie-redes a:hover{background:var(--lime2);color:#fff}
