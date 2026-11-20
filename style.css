@@ -742,3 +742,9 @@ main{padding-bottom:40px}
 .card .ir{display:inline-block;margin-top:8px;color:var(--bosque);font-weight:700;text-decoration:underline}
 a.card{text-decoration:none;display:block}
 .pie-redes{margin-top:22px}
+/* móvil: botón flotante discreto, solo ícono */
+@media(max-width:700px){
+  .wa-float{width:60px;height:60px;padding:0;justify-content:center;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px))}
+  .wa-float span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .wa-float svg{width:32px;height:32px}
+}
