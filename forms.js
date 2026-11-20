@@ -12,12 +12,13 @@
     ['nombre','negocio','municipio','direccion'].forEach(function(n){var el=f.elements[n];if(val(n).length<2){err(el,L('Escribe este dato.','Please fill in this field.'));bad=bad||el}});
     var t=val('telefono').replace(/[\s()-]/g,'').replace(/^\+?502/,'');
     if(!/^[2-7]\d{7}$/.test(t)){err(f.elements.telefono,L('Escribe un teléfono de 8 dígitos (Guatemala).','Enter an 8-digit phone number (Guatemala).'));bad=bad||f.elements.telefono}
+    if(val('correo')&&!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val('correo'))){err(f.elements.correo,L('Escribe un correo válido, como nombre@dominio.com.','Enter a valid email, like name@domain.com.'));bad=bad||f.elements.correo}
     ['departamento','tipo','interes','volumen'].forEach(function(n){if(!val(n)){err(f.elements[n],L('Elige una opción.','Choose an option.'));bad=bad||f.elements[n]}});
     if(!val('privacidad')){err(f.elements.privacidad,L('Debes aceptar el aviso de privacidad.','You must accept the privacy notice.'));bad=bad||f.elements.privacidad}
     return bad;
   }
   function id(){var d=new Date(),p=function(n){return String(n).padStart(2,'0')};return 'GEA-'+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+Math.random().toString(36).slice(2,6).toUpperCase()}
-  function datos(rid){return {id:rid,fecha:new Date().toISOString(),nombre:val('nombre'),negocio:val('negocio'),telefono:val('telefono'),departamento:val('departamento'),municipio:val('municipio'),direccion:val('direccion'),tipo:val('tipo'),interes:val('interes'),volumen:val('volumen'),comentarios:val('comentarios'),idioma:EN?'en':'es',pagina:location.href}}
+  function datos(rid){return {id:rid,fecha:new Date().toISOString(),nombre:val('nombre'),correo:val('correo'),negocio:val('negocio'),telefono:val('telefono'),departamento:val('departamento'),municipio:val('municipio'),direccion:val('direccion'),tipo:val('tipo'),interes:val('interes'),volumen:val('volumen'),comentarios:val('comentarios'),idioma:EN?'en':'es',pagina:location.href}}
   function textoWA(d){
     if(EN)return 'Hi, I would like information about becoming a GEA distributor.\nApplication: '+d.id+'\nName: '+d.nombre+'\nBusiness: '+d.negocio+' ('+d.tipo+')\nPhone: '+d.telefono+'\nLocation: '+d.municipio+', '+d.departamento+'\nInterest: '+d.interes+'\nEstimated volume: '+d.volumen+(d.comentarios?'\nComments: '+d.comentarios:'');
     return 'Hola, deseo información para convertirme en distribuidor GEA.\nSolicitud: '+d.id+'\nNombre: '+d.nombre+'\nNegocio: '+d.negocio+' ('+d.tipo+')\nTeléfono: '+d.telefono+'\nUbicación: '+d.municipio+', '+d.departamento+'\nInterés: '+d.interes+'\nVolumen estimado: '+d.volumen+(d.comentarios?'\nComentarios: '+d.comentarios:'');

@@ -889,3 +889,15 @@ a.card{text-decoration:none;display:block}
 .lang-sw::before{content:"🌐";margin-right:7px}
 .lang-sw:hover{background:var(--brasa-d)!important}
 @media(max-width:520px){.topstrip .wrap{justify-content:center!important}}
+
+/* estados de equipo (v. 2026-11) */
+.estado.m{background:#FFF3C9;color:#7A5A00;border:1px solid #D9A400}
+.estado.t{background:#E3EEF9;color:#1B4E7A;border:1px solid #2B7BBF}
+.estado.o{background:#D9F2E3;color:#14532D;border:1px solid #1E8E4E}
+.leyenda-est{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}
+.leyenda-d ul{color:#3A2A18}
+
+/* datos opcionales del pedido */
+.cdat{display:grid;gap:8px;margin:0 0 12px}
+.cdat label{display:grid;gap:3px;font-size:.8rem;font-weight:700;color:#4A4036}
+.cdat input{font:inherit;font-size:16px;padding:9px 12px;border:1px solid rgba(26,26,26,.25);border-radius:10px;background:#fff;color:#1A1A1A;width:100%;box-sizing:border-box}

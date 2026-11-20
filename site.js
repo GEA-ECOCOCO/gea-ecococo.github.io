@@ -125,13 +125,16 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     nota.textContent = v >= GRANDE
       ? gL('Para pedidos grandes te cotizamos precio por volumen por WhatsApp.','For large orders we quote a volume price on WhatsApp.')
       : gL('Precio al consumidor final: Q'+PRECIO+' por kg. Venta de contado.','End-consumer price: Q'+PRECIO+' per kg. Cash sale.');
-    var msg = gL('Hola, quiero ' + v + ' kg de briquetas ECOCOCO. ¿Disponibilidad y entrega?','Hi, I\'d like ' + v + ' kg of ECOCOCO briquettes. Availability and delivery?');
+    var Qf = function (n) { return 'Q' + n.toLocaleString(GEA_LOC); };
+    var msg = gL('Hola, quiero hacer este pedido de ECOCOCO:\n• Briquetas ECOCOCO: ' + v + ' kg × ' + Qf(PRECIO) + ' por kg = ' + Qf(meta) + '\nTotal del pedido: ' + Qf(meta) + '\nEntrega y forma de pago: por coordinar.\nUbicación / departamento: ',
+      'Hi, I\'d like to place this ECOCOCO order:\n• ECOCOCO briquettes: ' + v + ' kg × ' + Qf(PRECIO) + ' per kg = ' + Qf(meta) + '\nOrder total: ' + Qf(meta) + '\nDelivery and payment: to be arranged.\nLocation / department: ');
     wa.href = 'https://wa.me/50242794894?text=' + encodeURIComponent(msg);
     document.querySelectorAll('.chips button').forEach(function (b) {
       b.classList.toggle('on', parseInt(b.getAttribute('data-k'), 10) === v);
     });
   }
   kg.addEventListener('input', actualizar);
+  kg.addEventListener('change', function () { var n = Math.floor(Number(kg.value)); kg.value = (isFinite(n) && n > 0) ? Math.min(999, n) : 1; actualizar(); });
   document.getElementById('menos').addEventListener('click', function () { kg.value = Math.max(1, (parseInt(kg.value, 10) || 1) - 1); actualizar(); });
   document.getElementById('mas').addEventListener('click', function () { kg.value = Math.min(999, (parseInt(kg.value, 10) || 0) + 1); actualizar(); });
   document.querySelectorAll('.chips button').forEach(function (b) {
@@ -287,13 +290,13 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   var IDX=[
    ['Misión y visión','Transformamos recursos. Desarrollamos industria.','quienes-somos.html#mision-vision','misión visión valores filosofía pilares'],
    ['Quiénes somos','Visión industrial y sostenible de GEA Carbón | ECOCOCO','quienes-somos.html','empresa visión misión gea retalhuleu'],
-   ['Nuestro producto','Briquetas ECOCOCO: beneficios, por qué enciende rápido, uso seguro','producto.html','briqueta carbón coco enciende resistencia calor seguridad monóxido'],
+   ['Nuestro producto','Briquetas ECOCOCO: tiempo de encendido, beneficios, uso seguro','producto.html','briqueta carbón coco encendido 5 10 minutos calor seguridad monóxido'],
    ['Míralo encender','Video y fotos de las briquetas en la brasa','en-accion.html','video fotos brasa parrilla encender'],
    ['Proceso de producción','De la cáscara de coco a la briqueta','proceso.html','cáscara carbonización molienda mezcla secado'],
    ['Bitácora de la planta','Avance real: hornos, pruebas y primeros lotes','bitacora.html','planta horno pruebas lotes avance'],
    ['Precios','Precio por kg, bulto de 25 kg para mayoristas y calculadora','precios.html','precio costo cuánto bulto kg calculadora mayorista'],
    ['Distribuidores y mayoristas','Condiciones comerciales y pedidos por volumen','distribuidores.html','distribuidor mayorista tienda restaurante volumen negocio'],
-   ['Impacto ambiental','Datos de los residuos de coco y del aceite usado, y cómo los reducimos','impacto-ambiental.html','ambiente aceite reciclado contaminación leña guatemala residuos'],
+   ['Impacto ambiental','Aprovechamiento de la cáscara de coco, datos de fuentes públicas y metas','impacto-ambiental.html','ambiente cáscara coco residuo agroindustrial contaminación leña guatemala potencial'],
    ['Cómo comprar y preguntas frecuentes','Pasos para pedir, mínimos, pago y entregas','como-comprar.html','cómo comprar pedir preguntas frecuentes pago entrega factura'],
    ['Tecnología GEA','Ingeniería y producción mecanizada','tecnologia-gea.html','tecnología ingeniería horno molino mezcladora prensa'],
    ['Contacto','WhatsApp 4279-4894 y correo','contacto.html','whatsapp teléfono correo pedido'],
@@ -304,14 +307,14 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   var IDX_EN=[
    ['Who we are','Industrial and sustainable vision of GEA Carbón | ECOCOCO','quienes-somos.html','company vision mission gea retalhuleu'],
    ['Mission and vision','We transform resources. We develop industry.','quienes-somos.html#mision-vision','mission vision values philosophy pillars'],
-   ['Our product','ECOCOCO briquettes: benefits, why they light fast, safe use','producto.html','briquette charcoal coconut lights strength heat safety monoxide'],
+   ['Our product','ECOCOCO briquettes: ignition time, benefits, safe use','producto.html','briquette charcoal coconut ignition 5 10 minutes heat safety monoxide'],
    ['See it light up','Video and photos of the briquettes on the embers','en-accion.html','video photos embers grill light'],
    ['Production process','From coconut shell to briquette','proceso.html','shell carbonization grinding mixing drying'],
    ['Plant log','Real progress: kilns, tests and first batches','bitacora.html','plant kiln tests batches progress'],
    ['Prices','Price per kg, 25 kg sack for wholesalers and calculator','precios.html','price cost how much sack kg calculator wholesale'],
    ['How to buy and FAQ','Steps to order, minimums, payment and delivery','como-comprar.html','how buy order faq questions payment delivery invoice'],
    ['Distributors and wholesalers','Commercial terms and volume orders','distribuidores.html','distributor wholesale shop restaurant volume business'],
-   ['Environmental impact','Data on coconut waste and used oil, and how we reduce them','impacto-ambiental.html','environment recycled oil pollution firewood guatemala waste'],
+   ['Environmental impact','Making use of coconut shell, public-source data and goals','impacto-ambiental.html','environment coconut shell agro-industrial waste pollution firewood guatemala potential'],
    ['GEA Technology','Engineering and mechanized production','tecnologia-gea.html','technology engineering kiln mill mixer press'],
    ['Contact','WhatsApp 4279-4894 and email','contacto.html','whatsapp phone email order'],
    ['Delivery and returns','How we deliver and when returns apply','entregas-devoluciones.html','shipping delivery returns'],
@@ -326,6 +329,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   /* ---- almacenamiento ---- */
   var cart={};
   try{cart=JSON.parse(localStorage.getItem('carrito-ecococo')||'{}')||{}}catch(e){cart={}}
+  (function(){var c={};Object.keys(cart||{}).forEach(function(k){var n=Math.floor(Number(cart[k]));if(window.GEA_PRODUCTS&&GEA_PRODUCTS[k]&&isFinite(n)&&n>0)c[k]=Math.min(n,999)});cart=c})();
   Object.keys(cart).forEach(function(k){if(!PROD[k]||!(cart[k]>0))delete cart[k]});
   function save(){try{localStorage.setItem('carrito-ecococo',JSON.stringify(cart))}catch(e){}}
   function Q(n){return 'Q'+n.toLocaleString(GEA_LOC)}
@@ -356,19 +360,34 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   /* ---- carrito ---- */
   function count(){return Object.keys(cart).reduce(function(a,k){return a+cart[k]},0)}
   function total(){return Object.keys(cart).reduce(function(a,k){return a+cart[k]*PROD[k].p},0)}
+  var cNom='',cUbi='';
   function paint(){
     var n=count();
     document.querySelectorAll('.cart-n').forEach(function(b){b.textContent=n;b.hidden=!n});
     var ks=Object.keys(cart);
     if(!ks.length){cb.innerHTML='<p class="vacio">'+gL('Tu carrito está vacío. Agrega tu carbón ECOCOCO para armar tu pedido.','Your cart is empty. Add your ECOCOCO charcoal to build your order.')+'</p><p><button type="button" class="btn pill add" data-add="k1">'+gL('Agregar bolsa 1 kg','Add 1 kg bag')+' · Q'+PROD.k1.p+'</button></p><p><button type="button" class="btn pill add" data-add="k25">'+gL('Agregar bulto 25 kg','Add 25 kg sack')+' · Q'+PROD.k25.p+'</button></p>';cf.innerHTML='';return}
     cb.innerHTML=ks.map(function(k){var p=PROD[k];return '<div class="li"><div class="li-t"><b>'+pn(k)+'</b><span>'+Q(p.p)+' '+gL('c/u','each')+'</span></div><div class="li-q"><button type="button" data-q="-1" data-k="'+k+'" aria-label="'+gL('Quitar uno','Remove one')+'">−</button><span>'+cart[k]+'</span><button type="button" data-q="1" data-k="'+k+'" aria-label="'+gL('Agregar uno','Add one')+'">+</button></div><div class="li-s">'+Q(cart[k]*p.p)+'</div><button type="button" class="li-x" data-del="'+k+'" aria-label="'+gL('Eliminar','Remove')+'">✕</button></div>'}).join('');
-    var msg=encodeURIComponent(gL('Hola, quiero hacer este pedido de ECOCOCO:','Hi, I\'d like to place this ECOCOCO order:'))+'%0A'+ks.map(function(k){return '• '+cart[k]+' × '+pn(k)+' = '+Q(cart[k]*PROD[k].p)}).map(encodeURIComponent).join('%0A')+'%0A'+encodeURIComponent(gL('Total estimado: ','Estimated total: ')+Q(total()))+'%0A'+encodeURIComponent(gL('Mi nombre y ubicación: ','My name and location: '));
+    function msgWA(){
+      var L=[gL('Hola, quiero hacer este pedido de ECOCOCO:','Hi, I\'d like to place this ECOCOCO order:')];
+      if(cNom)L.push(gL('Nombre: ','Name: ')+cNom);
+      if(cUbi)L.push(gL('Ubicación / departamento: ','Location / department: ')+cUbi);
+      L.push('');
+      ks.forEach(function(k){var p=PROD[k];L.push('• '+pn(k)+': '+cart[k]+' × '+Q(p.p)+' = '+Q(cart[k]*p.p))});
+      L.push('');L.push(gL('Total del pedido: ','Order total: ')+Q(total()));
+      L.push(gL('Entrega y forma de pago: por coordinar.','Delivery and payment: to be arranged.'));
+      return 'https://wa.me/'+WA+'?text='+encodeURIComponent(L.join('\n'));
+    }
     var bulto=cart.k25>0;
-    cf.innerHTML='<div class="tot"><span>'+gL('Total estimado','Estimated total')+'</span><b>'+Q(total())+'</b></div><p class="nota">'+gL('Precio a consumidor final. ','End-consumer price. ')+(bulto?gL('En bultos de 25 kg hay precio especial según volumen, lo confirmamos por WhatsApp. ','For 25 kg sacks there is a special volume price, which we confirm on WhatsApp. '):'')+gL('Entrega y forma de pago se acuerdan por WhatsApp. Aún no cobramos en línea.','Delivery and payment are arranged on WhatsApp. We do not charge online yet.')+'</p><a class="btn wa" href="https://wa.me/'+WA+'?text='+msg+'">'+gL('Enviar pedido por WhatsApp','Send order on WhatsApp')+'</a><button type="button" class="vaciar" data-vaciar>'+gL('Vaciar carrito','Empty cart')+'</button>'}
+    cf.innerHTML='<div class="tot"><span>'+gL('Total estimado','Estimated total')+'</span><b>'+Q(total())+'</b></div><p class="nota">'+gL('Precio a consumidor final. ','End-consumer price. ')+(bulto?gL('En bultos de 25 kg hay precio especial según volumen, lo confirmamos por WhatsApp. ','For 25 kg sacks there is a special volume price, which we confirm on WhatsApp. '):'')+gL('Entrega y forma de pago se acuerdan por WhatsApp. Aún no cobramos en línea.','Delivery and payment are arranged on WhatsApp. We do not charge online yet.')+'</p><div class="cdat"><label>'+gL('Tu nombre (opcional)','Your name (optional)')+'<input type="text" id="c-nom" maxlength="60" autocomplete="name"></label><label>'+gL('Ubicación o departamento (opcional)','Location or department (optional)')+'<input type="text" id="c-ubi" maxlength="60" autocomplete="address-level1"></label></div><a class="btn wa" id="c-wa" href="'+msgWA()+'" target="_blank" rel="noopener">'+gL('Enviar pedido por WhatsApp','Send order on WhatsApp')+'</a><button type="button" class="vaciar" data-vaciar>'+gL('Vaciar carrito','Empty cart')+'</button>';
+    var iN=q('#c-nom',cf),iU=q('#c-ubi',cf),aW=q('#c-wa',cf);
+    iN.value=cNom;iU.value=cUbi;
+    function sync(){cNom=iN.value.replace(/\s+/g,' ').trim();cUbi=iU.value.replace(/\s+/g,' ').trim();aW.href=msgWA()}
+    iN.addEventListener('input',sync);iU.addEventListener('input',sync);
+  }
   var last=null;
   function abrirC(){sb.hidden=true;last=document.activeElement;cd.setAttribute('aria-hidden','false');cbg.hidden=false;body.classList.add('noscroll');cd.classList.add('on');paint();q('.ovl-x',cd).focus()}
   function closeC(){cd.setAttribute('aria-hidden','true');cd.classList.remove('on');cbg.hidden=true;if(sb.hidden)body.classList.remove('noscroll')}
-  function add(k,n){cart[k]=(cart[k]||0)+(n||1);if(cart[k]<=0)delete cart[k];save();paint()}
+  function add(k,n){if(!PROD[k])return;n=Math.floor(Number(n));if(!isFinite(n)||n===0)n=1;cart[k]=Math.min(999,Math.max(0,(cart[k]||0)+n));if(cart[k]<=0)delete cart[k];save();paint()}
   document.addEventListener('click',function(e){
     var t=e.target;
     var a=t.closest('[data-add]');if(a){add(a.getAttribute('data-add'));if(sb.hidden===false)sb.hidden=true;abrirC();return}
