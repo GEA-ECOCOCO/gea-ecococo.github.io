@@ -910,3 +910,17 @@ a.card{text-decoration:none;display:block}
 /* catálogo PDF */
 .cat-pdf{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin:0 0 34px;border-left:6px solid #E85D04}
 .cat-pdf>div{flex:1 1 320px}.cat-pdf h3{margin:4px 0 6px}.cat-pdf .btn{flex:0 0 auto}
+
+/* selector de motivo de WhatsApp */
+.wch{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center}
+.wch[hidden]{display:none}
+.wch-in{background:#F5F0E6;color:#1A1A1A;width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:18px 18px 24px;max-height:92vh;overflow:auto}
+.wch-h{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.wch-h h2{font-family:Anton,sans-serif;font-weight:400;letter-spacing:.03em;text-transform:uppercase;font-size:1.6rem;margin:0;color:#1A1A1A}
+.wch-s{margin:6px 0 14px;color:#4A4036;font-size:.92rem}
+.wch-l{display:grid;gap:10px}
+.wch-l button{display:flex;align-items:center;gap:14px;text-align:left;width:100%;padding:13px 16px;background:#fff;border:1px solid rgba(26,26,26,.15);border-radius:16px;font:inherit;color:#1A1A1A;cursor:pointer;box-shadow:0 2px 8px rgba(90,60,30,.1)}
+.wch-l button:hover,.wch-l button:focus-visible{border-color:#25D366;box-shadow:0 0 0 3px rgba(37,211,102,.3);outline:0}
+.wch-l b{display:block;font-size:1rem}.wch-l small{color:#6B5436;font-size:.84rem}
+.wch-i{font-size:1.6rem;flex:0 0 auto}
+@media(min-width:560px){.wch{align-items:center}.wch-in{border-radius:24px}}

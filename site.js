@@ -425,3 +425,46 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     });
   })});
 })();
+
+/* Selector de motivo antes de abrir WhatsApp */
+(function(){
+  var WA='50242794894',dlg=null,last=null;
+  var OPT=[
+    ['🛒',gL('Consumidor final','End consumer'),gL('Quiero comprar carbón para mi casa','I want to buy charcoal for home'),
+      gL('Hola, soy consumidor final y quiero comprar carbón ECOCOCO (bolsa de 1 kg).\nCantidad: \nUbicación / departamento: ','Hi, I am an end consumer and I want to buy ECOCOCO charcoal (1 kg bag).\nQuantity: \nLocation / department: ')],
+    ['🏪',gL('Tienda o abarrotes','Shop or grocery store'),gL('Quiero surtir mi negocio','I want to stock my shop'),
+      gL('Hola, tengo una tienda o abarrotería y quiero información para vender ECOCOCO.\nNombre del negocio: \nCantidad aproximada (kg): \nUbicación / departamento: ','Hi, I have a shop or grocery store and I want information to sell ECOCOCO.\nBusiness name: \nApproximate quantity (kg): \nLocation / department: ')],
+    ['🍖',gL('Restaurante o parrillada','Restaurant or grill'),gL('Uso el carbón en mi cocina o asador','I use charcoal in my kitchen or grill'),
+      gL('Hola, tengo un restaurante o parrillada y quiero cotizar carbón ECOCOCO.\nNombre del negocio: \nConsumo aproximado por semana (kg): \nUbicación / departamento: ','Hi, I have a restaurant or grill and I would like a quote for ECOCOCO charcoal.\nBusiness name: \nApproximate weekly use (kg): \nLocation / department: ')],
+    ['🚚',gL('Distribuidor o mayorista','Distributor or wholesaler'),gL('Bultos de 25 kg y precio por volumen','25 kg sacks and volume price'),
+      gL('Hola, quiero ser distribuidor o comprar al por mayor (bultos de 25 kg) de ECOCOCO.\nNegocio: \nCantidad (kg): \nUbicación / departamento: ','Hi, I want to become a distributor or buy ECOCOCO wholesale (25 kg sacks).\nBusiness: \nQuantity (kg): \nLocation / department: ')],
+    ['💬',gL('Quiero más información','I want more information'),gL('Tengo preguntas sobre el producto','I have questions about the product'),
+      gL('Hola, quiero más información sobre el carbón ECOCOCO.','Hi, I would like more information about ECOCOCO charcoal.')]
+  ];
+  function cerrar(){if(!dlg)return;dlg.hidden=true;document.body.classList.remove('noscroll');if(last&&last.focus)last.focus()}
+  function build(){
+    dlg=document.createElement('div');dlg.className='wch';dlg.hidden=true;dlg.setAttribute('role','dialog');dlg.setAttribute('aria-modal','true');dlg.setAttribute('aria-label',gL('¿Qué necesitas?','What do you need?'));
+    dlg.innerHTML='<div class="wch-in"><div class="wch-h"><h2>'+gL('¿Qué necesitas?','What do you need?')+'</h2><button type="button" class="ovl-x" aria-label="'+gL('Cerrar','Close')+'">✕</button></div><p class="wch-s">'+gL('Elige una opción y abrimos WhatsApp con el mensaje listo.','Choose an option and we open WhatsApp with the message ready.')+'</p><div class="wch-l">'+
+      OPT.map(function(o,i){return '<button type="button" data-o="'+i+'"><span class="wch-i" aria-hidden="true">'+o[0]+'</span><span><b>'+o[1]+'</b><small>'+o[2]+'</small></span></button>'}).join('')+'</div></div>';
+    document.body.appendChild(dlg);
+    dlg.addEventListener('click',function(e){
+      if(e.target===dlg||e.target.closest('.ovl-x')){cerrar();return}
+      var b=e.target.closest('[data-o]');if(!b)return;
+      var o=OPT[+b.getAttribute('data-o')];
+      if(window.geaTrack)geaTrack('click_whatsapp',{pagina:location.pathname,destino:'selector: '+o[1]});
+      window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(o[3]),'_blank','noopener');
+      cerrar();
+    });
+  }
+  document.addEventListener('click',function(e){
+    var a=e.target.closest&&e.target.closest('a[href^="https://wa.me/'+WA+'"]');
+    if(!a||e.defaultPrevented)return;
+    if(a.id==='c-wa'||a.id==='calc-wa'||a.hasAttribute('data-direct')||a.closest('.form-ok'))return;
+    if(/25%20kg/.test(a.getAttribute('href'))&&/cotizar/i.test(a.getAttribute('href')))return;
+    e.preventDefault();
+    if(!dlg)build();
+    last=a;dlg.hidden=false;document.body.classList.add('noscroll');
+    var f=dlg.querySelector('[data-o]');if(f)f.focus();
+  },true);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&dlg&&!dlg.hidden)cerrar()});
+})();
