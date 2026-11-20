@@ -208,3 +208,30 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   });
   document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !sheet.hidden) cerrar(); });
 })();
+
+// Pedido mayorista por bultos de 25 kg
+(function () {
+  var inp = document.getElementById('bultos');
+  if (!inp) return;
+  var KG = 25, kgEl = document.getElementById('b-kg'), nota = document.getElementById('b-nota'), wa = document.getElementById('b-wa');
+  function act() {
+    var n = Math.max(1, Math.min(200, parseInt(inp.value, 10) || 1));
+    var kg = n * KG;
+    kgEl.textContent = kg.toLocaleString('es-GT') + ' kg';
+    nota.textContent = n === 1
+      ? 'Un bulto sirve para entrega en Retalhuleu y la Costa Sur. Para otros departamentos el mínimo son 2 bultos (50 kg).'
+      : 'Te cotizamos el precio por bulto y confirmamos la fecha de entrega.';
+    var msg = 'Hola, soy mayorista y quiero ' + n + (n === 1 ? ' bulto' : ' bultos') + ' de 25 kg de ECOCOCO (' + kg + ' kg).\nNegocio: \nUbicación: ';
+    wa.href = 'https://wa.me/50242794894?text=' + encodeURIComponent(msg);
+    document.querySelectorAll('.chips button[data-b]').forEach(function (b) {
+      b.classList.toggle('on', parseInt(b.getAttribute('data-b'), 10) === n);
+    });
+  }
+  inp.addEventListener('input', act);
+  document.getElementById('b-menos').addEventListener('click', function () { inp.value = Math.max(1, (parseInt(inp.value, 10) || 1) - 1); act(); });
+  document.getElementById('b-mas').addEventListener('click', function () { inp.value = Math.min(200, (parseInt(inp.value, 10) || 0) + 1); act(); });
+  document.querySelectorAll('.chips button[data-b]').forEach(function (b) {
+    b.addEventListener('click', function () { inp.value = b.getAttribute('data-b'); act(); });
+  });
+  act();
+})();
