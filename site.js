@@ -426,35 +426,110 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   })});
 })();
 
-/* Selector de motivo antes de abrir WhatsApp */
+/* Selector de motivo + formulario antes de abrir WhatsApp */
 (function(){
-  var WA='50242794894',dlg=null,last=null;
+  var WA='50242794894',dlg=null,last=null,cur=null;
+  var DEP=['Alta Verapaz','Baja Verapaz','Chimaltenango','Chiquimula','El Progreso','Escuintla','Guatemala','Huehuetenango','Izabal','Jalapa','Jutiapa','Petén','Quetzaltenango','Quiché','Retalhuleu','Sacatepéquez','San Marcos','Santa Rosa','Sololá','Suchitepéquez','Totonicapán','Zacapa'];
+  /* campo: [clave, etiqueta ES, etiqueta EN, tipo, obligatorio] */
+  var F={
+    nom:['nom','Tu nombre','Your name','text',1],
+    neg:['neg','Nombre del negocio','Business name','text',1],
+    cant:['cant','Cantidad','Quantity','qty',1],
+    dep:['dep','Departamento','Department','dep',1],
+    mun:['mun','Municipio o zona','Town or area','text',1],
+    esp:['esp','Especificaciones o comentarios (opcional)','Specifications or comments (optional)','area',0]
+  };
   var OPT=[
-    ['🛒',gL('Consumidor final','End consumer'),gL('Quiero comprar carbón para mi casa','I want to buy charcoal for home'),
-      gL('Hola, soy consumidor final y quiero comprar carbón ECOCOCO (bolsa de 1 kg).\nCantidad: \nUbicación / departamento: ','Hi, I am an end consumer and I want to buy ECOCOCO charcoal (1 kg bag).\nQuantity: \nLocation / department: ')],
-    ['🏪',gL('Tienda o abarrotes','Shop or grocery store'),gL('Quiero surtir mi negocio','I want to stock my shop'),
-      gL('Hola, tengo una tienda o abarrotería y quiero información para vender ECOCOCO.\nNombre del negocio: \nCantidad aproximada (kg): \nUbicación / departamento: ','Hi, I have a shop or grocery store and I want information to sell ECOCOCO.\nBusiness name: \nApproximate quantity (kg): \nLocation / department: ')],
-    ['🍖',gL('Restaurante o parrillada','Restaurant or grill'),gL('Uso el carbón en mi cocina o asador','I use charcoal in my kitchen or grill'),
-      gL('Hola, tengo un restaurante o parrillada y quiero cotizar carbón ECOCOCO.\nNombre del negocio: \nConsumo aproximado por semana (kg): \nUbicación / departamento: ','Hi, I have a restaurant or grill and I would like a quote for ECOCOCO charcoal.\nBusiness name: \nApproximate weekly use (kg): \nLocation / department: ')],
-    ['🚚',gL('Distribuidor o mayorista','Distributor or wholesaler'),gL('Bultos de 25 kg y precio por volumen','25 kg sacks and volume price'),
-      gL('Hola, quiero ser distribuidor o comprar al por mayor (bultos de 25 kg) de ECOCOCO.\nNegocio: \nCantidad (kg): \nUbicación / departamento: ','Hi, I want to become a distributor or buy ECOCOCO wholesale (25 kg sacks).\nBusiness: \nQuantity (kg): \nLocation / department: ')],
-    ['💬',gL('Quiero más información','I want more information'),gL('Tengo preguntas sobre el producto','I have questions about the product'),
-      gL('Hola, quiero más información sobre el carbón ECOCOCO.','Hi, I would like more information about ECOCOCO charcoal.')]
+    {i:'🛒',t:['Consumidor final','End consumer'],d:['Quiero comprar carbón para mi casa','I want to buy charcoal for home'],
+      saludo:['Hola, soy consumidor final y quiero comprar carbón ECOCOCO.','Hi, I am an end consumer and I want to buy ECOCOCO charcoal.'],
+      f:['nom','cant','dep','mun','esp'],unidades:[['bolsa','bolsas de 1 kg','1 kg bags',1]],
+      lug:'Ubicación de entrega'},
+    {i:'🏪',t:['Tienda o abarrotes','Shop or grocery store'],d:['Quiero surtir mi negocio','I want to stock my shop'],
+      saludo:['Hola, tengo una tienda o abarrotería y quiero información para vender ECOCOCO.','Hi, I have a shop or grocery store and I want information to sell ECOCOCO.'],
+      f:['neg','nom','cant','dep','mun','esp'],unidades:[['kg','kg','kg',1],['bulto','bultos de 25 kg','25 kg sacks',25]]},
+    {i:'🍖',t:['Restaurante o parrillada','Restaurant or grill'],d:['Uso el carbón en mi cocina o asador','I use charcoal in my kitchen or grill'],
+      saludo:['Hola, tengo un restaurante o parrillada y quiero cotizar carbón ECOCOCO.','Hi, I have a restaurant or grill and I would like a quote for ECOCOCO charcoal.'],
+      f:['neg','nom','cant','dep','mun','esp'],unidades:[['kg','kg por semana','kg per week',1],['kgm','kg por mes','kg per month',1]]},
+    {i:'🚚',t:['Distribuidor o mayorista','Distributor or wholesaler'],d:['Bultos de 25 kg y precio por volumen','25 kg sacks and volume price'],
+      saludo:['Hola, quiero ser distribuidor o comprar al por mayor ECOCOCO.','Hi, I want to become a distributor or buy ECOCOCO wholesale.'],
+      f:['neg','nom','cant','dep','mun','esp'],unidades:[['bulto','bultos de 25 kg','25 kg sacks',25],['kg','kg','kg',1]]},
+    {i:'💬',t:['Quiero más información','I want more information'],d:['Tengo preguntas sobre el producto','I have questions about the product'],
+      saludo:['Hola, quiero más información sobre el carbón ECOCOCO.','Hi, I would like more information about ECOCOCO charcoal.'],
+      f:['nom','esp'],preg:1}
   ];
+  function X(a){return gL(a[0],a[1])}
+  function esc(t){return String(t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  function Qf(n){return 'Q'+n.toLocaleString(GEA_LOC)}
   function cerrar(){if(!dlg)return;dlg.hidden=true;document.body.classList.remove('noscroll');if(last&&last.focus)last.focus()}
+  function lista(){
+    cur=null;
+    dlg.querySelector('.wch-in').innerHTML='<div class="wch-h"><h2>'+gL('¿Qué necesitas?','What do you need?')+'</h2><button type="button" class="ovl-x" aria-label="'+gL('Cerrar','Close')+'">✕</button></div><p class="wch-s">'+gL('Elige una opción, completa los datos y abrimos WhatsApp con el mensaje listo.','Choose an option, fill in the details and we open WhatsApp with the message ready.')+'</p><div class="wch-l">'+
+      OPT.map(function(o,i){return '<button type="button" data-o="'+i+'"><span class="wch-i" aria-hidden="true">'+o.i+'</span><span><b>'+X(o.t)+'</b><small>'+X(o.d)+'</small></span></button>'}).join('')+'</div>';
+    var f=dlg.querySelector('[data-o]');if(f)f.focus();
+  }
+  function campo(o,k){
+    var d=F[k],id='wf-'+k,r=d[4]?' required':'',lab=gL(d[1],d[2]),h='';
+    if(k==='nom'&&o.preg===undefined&&false)lab=lab;
+    if(k==='nom'){var req=!o.preg;h+='<label for="'+id+'">'+lab+(req?' *':gL(' (opcional)',' (optional)'))+'</label><input id="'+id+'" name="nom" maxlength="60" autocomplete="name"'+(req?' required':'')+'>';}
+    else if(k==='neg')h+='<label for="'+id+'">'+lab+' *</label><input id="'+id+'" name="neg" maxlength="80" autocomplete="organization" required>';
+    else if(k==='cant'){
+      var u=o.unidades;
+      h+='<label for="'+id+'">'+gL('Cantidad','Quantity')+' *</label><div class="wf-q"><input id="'+id+'" name="cant" type="number" inputmode="numeric" min="1" max="99999" step="1" required>'+
+        (u.length>1?'<select name="uni" aria-label="'+gL('Unidad','Unit')+'">'+u.map(function(x,i){return '<option value="'+i+'">'+gL(x[1],x[2])+'</option>'}).join('')+'</select>':'<span class="wf-u">'+gL(u[0][1],u[0][2])+'</span>')+'</div>';
+    }
+    else if(k==='dep')h+='<label for="'+id+'">'+gL(o.lug||'Departamento','Department')+' *</label><select id="'+id+'" name="dep" required><option value="">'+gL('Selecciona','Select')+'</option>'+DEP.map(function(x){return '<option>'+x+'</option>'}).join('')+'</select>';
+    else if(k==='mun')h+='<label for="'+id+'">'+lab+' *</label><input id="'+id+'" name="mun" maxlength="80" autocomplete="address-level2" required>';
+    else if(k==='esp')h+='<label for="'+id+'">'+(o.preg?gL('¿Qué quieres saber? *','What would you like to know? *'):lab)+'</label><textarea id="'+id+'" name="esp" rows="'+(o.preg?4:3)+'" maxlength="400"'+(o.preg?' required':'')+'></textarea>';
+    return '<div class="wf-c">'+h+'<span class="wf-e" aria-live="polite"></span></div>';
+  }
+  function formulario(n){
+    var o=OPT[n];cur=n;
+    dlg.querySelector('.wch-in').innerHTML='<div class="wch-h"><button type="button" class="wch-b" data-back aria-label="'+gL('Volver','Back')+'">←</button><h2>'+X(o.t)+'</h2><button type="button" class="ovl-x" aria-label="'+gL('Cerrar','Close')+'">✕</button></div><p class="wch-s">'+gL('Completa los datos. Los campos con * son obligatorios.','Fill in the details. Fields with * are required.')+'</p><form class="wf" novalidate>'+o.f.map(function(k){return campo(o,k)}).join('')+'<button type="submit" class="btn wa wf-go">'+gL('Enviar por WhatsApp','Send on WhatsApp')+'</button><p class="wf-n">'+gL('Se abrirá WhatsApp con tu mensaje ya escrito. Puedes revisarlo antes de enviarlo.','WhatsApp will open with your message ready. You can review it before sending.')+'</p></form>';
+    var f=dlg.querySelector('input,select,textarea');if(f)f.focus();
+  }
+  function mensaje(o,v){
+    var L=[X(o.saludo),''];
+    if(v.neg)L.push(gL('Negocio: ','Business: ')+v.neg);
+    if(v.nom)L.push(gL('Nombre: ','Name: ')+v.nom);
+    if(v.cant){
+      var u=o.unidades[+(v.uni||0)],n=+v.cant;
+      L.push(gL('Cantidad: ','Quantity: ')+n.toLocaleString(GEA_LOC)+' '+gL(u[1],u[2]));
+      var kg=n*u[3],P=window.GEA_PRODUCTS;
+      if(P&&(u[0]==='bolsa'))L.push(gL('Total estimado (Q'+P.k1.p+' por bolsa): ','Estimated total (Q'+P.k1.p+' per bag): ')+Qf(n*P.k1.p));
+      else if(P&&u[0]==='bulto')L.push(gL('Precio de lista estimado (Q'+P.k25.p+' por bulto): ','Estimated list price (Q'+P.k25.p+' per sack): ')+Qf(n*P.k25.p)+gL(' (kg totales: ',' (total kg: ')+kg.toLocaleString(GEA_LOC)+')');
+    }
+    if(v.dep)L.push(gL(o.lug?'Ubicación de entrega: ':'Departamento: ',o.lug?'Delivery location: ':'Department: ')+v.dep+(v.mun?', '+v.mun:''));
+    if(v.esp)L.push((o.preg?gL('Consulta: ','Question: '):gL('Especificaciones: ','Specifications: '))+v.esp);
+    return L.join('\n');
+  }
+  function enviar(form){
+    var o=OPT[cur],v={},bad=null;
+    form.querySelectorAll('.wf-e').forEach(function(e){e.textContent=''});
+    form.querySelectorAll('.inv').forEach(function(e){e.classList.remove('inv');e.removeAttribute('aria-invalid')});
+    Array.prototype.forEach.call(form.elements,function(el){if(el.name)v[el.name]=(el.value||'').replace(/\s+/g,' ').trim()});
+    var ta=form.elements.esp;if(ta)v.esp=ta.value.replace(/[ \t]+/g,' ').trim();
+    function err(el,t){el.classList.add('inv');el.setAttribute('aria-invalid','true');var s=el.closest('.wf-c').querySelector('.wf-e');s.textContent=t;bad=bad||el}
+    Array.prototype.forEach.call(form.elements,function(el){
+      if(!el.name||el.type==='submit')return;
+      if(el.required&&!v[el.name]){err(el,gL('Completa este dato.','Please fill in this field.'));return}
+      if(el.name==='cant'){var n=Number(v.cant);if(!isFinite(n)||n<1||Math.floor(n)!==n||n>99999)err(el,gL('Escribe un número entero mayor que 0.','Enter a whole number greater than 0.'))}
+      if((el.name==='nom'||el.name==='neg'||el.name==='mun')&&v[el.name]&&v[el.name].length<2)err(el,gL('Escribe al menos 2 letras.','Enter at least 2 characters.'));
+      if(el.name==='esp'&&o.preg&&v.esp&&v.esp.length<5)err(el,gL('Cuéntanos un poco más.','Tell us a little more.'));
+    });
+    if(bad){bad.focus();return}
+    if(window.geaTrack)geaTrack('click_whatsapp',{pagina:location.pathname,destino:'formulario: '+X(o.t)});
+    window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(mensaje(o,v)),'_blank','noopener');
+    cerrar();
+  }
   function build(){
     dlg=document.createElement('div');dlg.className='wch';dlg.hidden=true;dlg.setAttribute('role','dialog');dlg.setAttribute('aria-modal','true');dlg.setAttribute('aria-label',gL('¿Qué necesitas?','What do you need?'));
-    dlg.innerHTML='<div class="wch-in"><div class="wch-h"><h2>'+gL('¿Qué necesitas?','What do you need?')+'</h2><button type="button" class="ovl-x" aria-label="'+gL('Cerrar','Close')+'">✕</button></div><p class="wch-s">'+gL('Elige una opción y abrimos WhatsApp con el mensaje listo.','Choose an option and we open WhatsApp with the message ready.')+'</p><div class="wch-l">'+
-      OPT.map(function(o,i){return '<button type="button" data-o="'+i+'"><span class="wch-i" aria-hidden="true">'+o[0]+'</span><span><b>'+o[1]+'</b><small>'+o[2]+'</small></span></button>'}).join('')+'</div></div>';
-    document.body.appendChild(dlg);
+    dlg.innerHTML='<div class="wch-in"></div>';document.body.appendChild(dlg);
     dlg.addEventListener('click',function(e){
       if(e.target===dlg||e.target.closest('.ovl-x')){cerrar();return}
-      var b=e.target.closest('[data-o]');if(!b)return;
-      var o=OPT[+b.getAttribute('data-o')];
-      if(window.geaTrack)geaTrack('click_whatsapp',{pagina:location.pathname,destino:'selector: '+o[1]});
-      window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(o[3]),'_blank','noopener');
-      cerrar();
+      if(e.target.closest('[data-back]')){lista();return}
+      var b=e.target.closest('[data-o]');if(b)formulario(+b.getAttribute('data-o'));
     });
+    dlg.addEventListener('submit',function(e){e.preventDefault();enviar(e.target)});
   }
   document.addEventListener('click',function(e){
     var a=e.target.closest&&e.target.closest('a[href^="https://wa.me/'+WA+'"]');
@@ -463,8 +538,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     if(/25%20kg/.test(a.getAttribute('href'))&&/cotizar/i.test(a.getAttribute('href')))return;
     e.preventDefault();
     if(!dlg)build();
-    last=a;dlg.hidden=false;document.body.classList.add('noscroll');
-    var f=dlg.querySelector('[data-o]');if(f)f.focus();
+    last=a;lista();dlg.hidden=false;document.body.classList.add('noscroll');
   },true);
   document.addEventListener('keydown',function(e){if(e.key==='Escape'&&dlg&&!dlg.hidden)cerrar()});
 })();

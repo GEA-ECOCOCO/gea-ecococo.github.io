@@ -924,3 +924,17 @@ a.card{text-decoration:none;display:block}
 .wch-l b{display:block;font-size:1rem}.wch-l small{color:#6B5436;font-size:.84rem}
 .wch-i{font-size:1.6rem;flex:0 0 auto}
 @media(min-width:560px){.wch{align-items:center}.wch-in{border-radius:24px}}
+
+/* formulario dentro del selector de WhatsApp */
+.wch-h .wch-b{background:none;border:1.5px solid #1A1A1A;color:#1A1A1A;border-radius:50%;width:38px;height:38px;font-size:1.2rem;cursor:pointer;flex:0 0 auto}
+.wch-h h2{flex:1}
+.wf{display:grid;gap:12px}
+.wf-c label{display:block;font-weight:700;font-size:.86rem;color:#4A4036;margin-bottom:4px}
+.wf-c input,.wf-c select,.wf-c textarea{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:11px 13px;border:1px solid rgba(26,26,26,.28);border-radius:12px;background:#fff;color:#1A1A1A}
+.wf-c textarea{resize:vertical;min-height:76px}
+.wf-c .inv{border-color:#C0392B;background:#FFF4F2}
+.wf-e{display:block;color:#C0392B;font-size:.8rem;min-height:0;margin-top:3px}.wf-e:empty{display:none}
+.wf-q{display:flex;gap:8px;align-items:center}.wf-q input{flex:1 1 40%}.wf-q select{flex:1 1 60%}.wf-u{flex:1 1 60%;color:#4A4036;font-weight:600}
+.wf-go{display:block;width:100%;text-align:center;margin:4px 0 0;border:0;cursor:pointer}
+.wf-n{font-size:.8rem;color:#6B5436;text-align:center;margin:0}
+.wch-in{box-sizing:border-box}
