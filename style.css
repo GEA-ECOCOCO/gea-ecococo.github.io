@@ -734,3 +734,11 @@ main{padding-bottom:40px}
   .menu .sub li{border-bottom:0}
   .has-sub>a.on{background:none;color:var(--brasa);box-shadow:inset 4px 0 0 var(--brasa)}
 }
+/* inicio enfocado en conversión */
+.prods-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;max-width:680px;margin-top:22px}
+.prods-grid .ccard.prod{flex:none}
+.ccard.prod .btn.wa{margin:8px 14px 0;text-align:center;animation:none;font-size:.95rem;padding:11px 18px}
+.band.primero{margin-top:-1px}
+.card .ir{display:inline-block;margin-top:8px;color:var(--bosque);font-weight:700;text-decoration:underline}
+a.card{text-decoration:none;display:block}
+.pie-redes{margin-top:22px}
