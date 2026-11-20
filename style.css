@@ -293,3 +293,18 @@ nav .wrap{max-width:1440px}
 .oilviz .tres span{color:#CFE6D5;font-size:.88rem}
 .oilviz .fte{margin-top:12px;color:var(--muted);font-size:.78rem}
 @media(max-width:700px){.oilviz .escala{flex-direction:column;align-items:stretch}.oilviz .flecha{text-align:center;transform:rotate(90deg);height:28px}.oilviz .mar{min-width:0}}
+
+/* Gráficas de barras */
+.barras h3{margin-bottom:14px}
+.barras .bar{margin-bottom:14px}
+.barras .bl{display:flex;justify-content:space-between;gap:10px;font-size:.9rem;color:#CFE6D5;margin-bottom:5px}
+.barras .bl b{color:var(--ink);white-space:nowrap}
+.barras .bt{height:14px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+.barras .bt i{display:block;height:100%;width:var(--w);border-radius:999px;animation:crece 1.1s ease-out both}
+.barras .bt i.bien{background:linear-gradient(90deg,var(--verde),var(--lime))}
+.barras .bt i.mal{background:linear-gradient(90deg,#c9461f,var(--alerta))}
+.barras .bt i.neu{background:linear-gradient(90deg,#4b7a58,#9DBBA6)}
+.barras .bn{color:var(--muted);font-size:.84rem;margin-top:4px}
+.barras .fte{color:var(--muted);font-size:.78rem;margin-top:10px;border-top:1px solid var(--panel-b);padding-top:8px}
+@keyframes crece{from{width:0}}
+@media(prefers-reduced-motion:reduce){.barras .bt i{animation:none}}
