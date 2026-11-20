@@ -236,3 +236,23 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   });
   act();
 })();
+
+// Panel de impacto: animación al entrar en pantalla
+(function () {
+  var p = document.getElementById('panel-impacto');
+  if (!p) return;
+  var cont = p.querySelectorAll('[data-count]');
+  function contar() {
+    cont.forEach(function (el) {
+      var fin = parseFloat(el.getAttribute('data-count')), suf = el.getAttribute('data-suf') || '', t0 = null;
+      function paso(t) { if (!t0) t0 = t; var k = Math.min((t - t0) / 1600, 1); el.textContent = Math.round(fin * (1 - Math.pow(1 - k, 3))) + suf; if (k < 1) requestAnimationFrame(paso); }
+      requestAnimationFrame(paso);
+    });
+  }
+  function ir() { p.classList.add('go'); contar(); }
+  if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    p.classList.add('go'); cont.forEach(function (el) { el.textContent = el.getAttribute('data-count') + (el.getAttribute('data-suf') || ''); }); return;
+  }
+  var io = new IntersectionObserver(function (e) { if (e[0].isIntersecting) { ir(); io.disconnect(); } }, { threshold: .25 });
+  io.observe(p);
+})();
