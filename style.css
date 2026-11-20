@@ -240,3 +240,18 @@ footer small{display:block;opacity:.7;font-size:.8rem;margin-top:6px}
 .dato small{display:block;margin-top:10px;color:var(--muted);font-size:.8rem}
 nav .wrap{max-width:1440px}
 .menu a{padding:8px 9px;letter-spacing:.05em}
+
+/* Ciclo y tira de fotos */
+.ciclo{display:grid;gap:14px}
+.ciclo .fila{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.ciclo .nodo{padding:10px 14px;border:1.5px solid var(--lime);border-radius:999px;color:var(--ink);font-size:.9rem;background:rgba(139,224,0,.08)}
+.ciclo .nodo.fin{background:var(--lime);color:#04100A;font-weight:700}
+.ciclo .nodo.of{border-color:var(--alerta);background:rgba(255,107,61,.08)}
+.ciclo i{width:20px;height:2px;background:var(--lime);position:relative;display:inline-block}
+.ciclo i::after{content:"";position:absolute;right:-1px;top:-4px;border-left:7px solid var(--lime);border-top:5px solid transparent;border-bottom:5px solid transparent}
+.ciclo .fila.e i{background:var(--alerta)}.ciclo .fila.e i::after{border-left-color:var(--alerta)}
+.ciclo .nota{color:var(--muted);font-size:.85rem;flex-basis:100%}
+.tira{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.tira figure{margin:0;border-radius:14px;overflow:hidden;border:1px solid var(--panel-b)}
+.tira img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}
+.tira figcaption{padding:8px 12px;color:var(--muted);font-size:.85rem;background:rgba(4,16,10,.7)}
