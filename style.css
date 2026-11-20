@@ -901,3 +901,8 @@ a.card{text-decoration:none;display:block}
 .cdat{display:grid;gap:8px;margin:0 0 12px}
 .cdat label{display:grid;gap:3px;font-size:.8rem;font-weight:700;color:#4A4036}
 .cdat input{font:inherit;font-size:16px;padding:9px 12px;border:1px solid rgba(26,26,26,.25);border-radius:10px;background:#fff;color:#1A1A1A;width:100%;box-sizing:border-box}
+
+/* separación del pie del carrito */
+.cart-f .cdat{margin:16px 0 22px;gap:12px}
+.cart-f .btn.wa{margin:0 0 18px}
+.cart-f .vaciar{padding:10px 6px;margin-top:2px}
