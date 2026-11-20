@@ -139,3 +139,40 @@ footer .sep{display:block;height:2px;width:90px;margin:0 auto 16px;background:li
   background:radial-gradient(260px circle at var(--mx) var(--my),rgba(139,224,0,.22),transparent 60%)}
 .card:hover::before{opacity:1}
 @media(prefers-reduced-motion:reduce){.grad,.btn.wa{animation:none}.js .rev{opacity:1;transform:none;transition:none}}
+
+/* Logo animado de la portada */
+.intro{position:relative;display:inline-block;max-width:100%}
+.rayos{position:absolute;left:50%;top:-110px;width:190%;height:170%;transform:translateX(-50%);pointer-events:none;
+  background:conic-gradient(from 158deg at 50% 0%,transparent 0 0deg,rgba(139,224,0,.20) 8deg,transparent 19deg,rgba(139,224,0,.12) 29deg,transparent 40deg,rgba(139,224,0,.22) 50deg,transparent 62deg,rgba(139,224,0,.12) 72deg,transparent 84deg,rgba(139,224,0,.18) 94deg,transparent 106deg,transparent 360deg);
+  -webkit-mask-image:linear-gradient(#000,transparent 75%);mask-image:linear-gradient(#000,transparent 75%);
+  opacity:0;animation:rayos 2.2s .1s ease-out both,sway 9s 2.3s ease-in-out infinite}
+@keyframes rayos{0%{opacity:0;transform:translateX(-50%) scaleY(.4)}100%{opacity:1;transform:translateX(-50%) scaleY(1)}}
+@keyframes sway{0%,100%{transform:translateX(-50%) rotate(-1.6deg)}50%{transform:translateX(-50%) rotate(1.6deg)}}
+.ondas{position:absolute;left:-14%;top:-8%;width:128%;height:116%;pointer-events:none;overflow:visible}
+.ondas path{fill:none;stroke:var(--lime);stroke-width:2.4;stroke-linecap:round;stroke-dasharray:900;stroke-dashoffset:900;opacity:.9;filter:drop-shadow(0 0 7px var(--lime))}
+.ondas .o1{animation:traza 1.9s .35s ease-out forwards,tenue 3s 2.3s ease-in-out infinite alternate}
+.ondas .o2{stroke:var(--verde);animation:traza 2.1s .6s ease-out forwards,tenue 3.6s 2.7s ease-in-out infinite alternate}
+.ondas .o3{stroke:var(--lime2);stroke-width:1.6;animation:traza 2.3s .8s ease-out forwards,tenue 4s 3.1s ease-in-out infinite alternate}
+@keyframes traza{0%{stroke-dashoffset:900;opacity:0}15%{opacity:1}100%{stroke-dashoffset:0;opacity:.85}}
+@keyframes tenue{0%{opacity:.85}100%{opacity:.25}}
+.logo-wrap{position:relative;padding:40px 34px;margin:-40px -34px}
+.reveal{clip-path:inset(0 100% 0 0);animation:revela 1.5s .55s cubic-bezier(.65,0,.2,1) forwards}
+@keyframes revela{0%{clip-path:inset(0 100% 0 0);filter:blur(10px) brightness(1.8)}100%{clip-path:inset(-140px -140px -140px -140px);filter:none}}
+.logo-wrap::after{content:"";position:absolute;top:36px;bottom:36px;left:0;width:3px;background:var(--lime);box-shadow:0 0 26px 7px var(--lime);opacity:0;animation:barra 1.5s .55s cubic-bezier(.65,0,.2,1) forwards}
+@keyframes barra{0%{left:0;opacity:1}90%{opacity:1}100%{left:calc(100% - 3px);opacity:0}}
+.logo-card{animation:flota 6s 2.2s ease-in-out infinite,destello 3.4s 2.2s ease-in-out infinite}
+@keyframes destello{0%,100%{box-shadow:0 0 0 1px rgba(139,224,0,.5),0 0 50px rgba(139,224,0,.25),0 30px 60px rgba(0,0,0,.5)}50%{box-shadow:0 0 0 1px rgba(139,224,0,.8),0 0 90px rgba(139,224,0,.5),0 30px 60px rgba(0,0,0,.5)}}
+.lema{margin:12px 0 0;min-height:1.6em;color:var(--lime2);letter-spacing:.16em;text-transform:uppercase;font-size:.82rem;font-weight:700}
+.lema .caret{display:inline-block;width:2px;height:1em;margin-left:3px;vertical-align:-2px;background:var(--lime);animation:parp .7s steps(1) infinite}
+@keyframes parp{50%{opacity:0}}
+.in1,.in2,.in3{animation:sube .8s both}
+.in1{animation-delay:2.6s}.in2{animation-delay:2.85s}.in3{animation-delay:3.1s}
+@keyframes sube{0%{opacity:0;transform:translateY(18px)}100%{opacity:1;transform:none}}
+/* visitas repetidas en la misma sesión: versión rápida */
+.rapido .rayos,.rapido .ondas path,.rapido .reveal,.rapido .logo-wrap::after,.rapido .in1,.rapido .in2,.rapido .in3{animation-delay:0s!important;animation-duration:.01s!important}
+.rapido .rayos{opacity:1}.rapido .ondas path{stroke-dashoffset:0;opacity:.35}
+@media(max-width:600px){.logo-wrap{padding:30px 24px;margin:-30px -24px}.logo-card img{width:min(520px,72vw)}.lema{font-size:.7rem;letter-spacing:.1em}}
+@media(prefers-reduced-motion:reduce){
+  .rayos,.ondas path,.reveal,.logo-wrap::after,.logo-card,.in1,.in2,.in3{animation:none!important}
+  .reveal{clip-path:none}.rayos{opacity:.7}.ondas path{stroke-dashoffset:0;opacity:.35}.logo-wrap::after{display:none}
+}

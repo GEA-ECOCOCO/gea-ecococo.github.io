@@ -80,3 +80,25 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     if (document.hidden) cancelAnimationFrame(raf); else { cancelAnimationFrame(raf); paso(); }
   });
 })();
+
+// Lema que se escribe solo en la portada
+(function () {
+  var l = document.getElementById('lema');
+  if (!l) return;
+  var texto = l.getAttribute('data-t') || '';
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var visto = false;
+  try { visto = sessionStorage.getItem('intro-ecococo') === '1'; sessionStorage.setItem('intro-ecococo', '1'); } catch (e) {}
+  if (visto) document.documentElement.classList.add('rapido');
+  if (reduce || visto) { l.textContent = texto; return; }
+  l.innerHTML = '<span class="caret"></span>';
+  var i = 0;
+  setTimeout(function escribir() {
+    if (i <= texto.length) {
+      l.innerHTML = texto.slice(0, i) + '<span class="caret"></span>';
+      i++; setTimeout(escribir, 42);
+    } else {
+      setTimeout(function () { l.textContent = texto; }, 900);
+    }
+  }, 2100);
+})();
