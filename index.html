@@ -30,6 +30,8 @@
     <input type="checkbox" id="chk">
     <label class="burger" for="chk" aria-label="Abrir menú">☰</label>
     <ul class="menu"><li><a href="index.html" class=on>Inicio</a></li><li><a href="quienes-somos.html">Quiénes somos</a></li><li><a href="producto.html">Producto</a></li><li><a href="en-accion.html">Míralo encender</a></li><li><a href="proceso.html">Proceso</a></li><li><a href="bitacora.html">Bitácora</a></li><li><a href="precios.html">Precios</a></li><li><a href="distribuidores.html">Distribuidores</a></li><li><a href="impacto-ambiental.html">Impacto ambiental</a></li><li><a href="contacto.html">Contacto</a></li></ul>
+    <button type="button" class="share-btn" data-buscar aria-label="Buscar en el sitio" title="Buscar"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
+    <button type="button" class="share-btn cart-btn" data-carrito aria-label="Abrir carrito" title="Carrito"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.6 12.4a1 1 0 001 .8h9.4a1 1 0 001-.8L21 7H6"/></svg><b class="cart-n" hidden>0</b></button>
     <button type="button" class="share-btn" data-compartir aria-label="Compartir esta página" title="Compartir"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-4M8.6 13.5l6.8 4"/></svg></button>
   </div>
 </nav>
@@ -47,6 +49,7 @@
   <p class="lema" id="lema" data-t="Transformamos residuos en oportunidades."><span class="lema-t">Transformamos residuos en oportunidades.</span></p>
   <h1 class="in1">Energía de la naturaleza, <span class="grad">hecha con tecnología</span></h1>
   <p class="lead in2">Briquetas de carbón de cáscara de coco hechas en Retalhuleu. Encienden rápido, resisten más y aprovechan un residuo agrícola de la Costa Sur de Guatemala.</p>
+  <form class="buscador-home in3" data-buscar-form role="search"><input type="search" placeholder="Buscar: precios, proceso…" aria-label="Buscar en el sitio"><button type="submit">Buscar</button></form>
   <div class="in3"><a class="btn wa" href="https://wa.me/50242794894?text=Hola%2C%20quiero%20pedir%20carb%C3%B3n%20ECOCOCO">Pedir por WhatsApp</a>
   <a class="btn sec" href="producto.html">Conoce el producto</a></div>
 </div></header>
@@ -59,7 +62,7 @@
 <section class="band verde"><div class="wrap">
   <h2 class="cond">También te puede interesar</h2>
   <p class="lead">Fabricado en Retalhuleu, Guatemala, a partir de un residuo del coco de la Costa Sur.</p>
-  <div class="carrusel prods" data-carrusel><div class="track"><div class="ccard prod"><span class="cimg"><img src="img/briquetas-encendidas.jpg" alt="Briquetas ECOCOCO" loading="lazy"></span><h3>ECOCOCO, bolsa de 1 kg</h3><p>Briqueta de carbón de cáscara de coco para tu parrilla o tu cocina.</p><b class="pr">Q20</b><a class="btn wa" href="https://wa.me/50242794894?text=Hola%2C%20quiero%20pedir%20carb%C3%B3n%20ECOCOCO">Pedir por WhatsApp</a></div><div class="ccard prod"><span class="cimg"><img src="img/carbon-polvo.jpg" alt="Bulto de carbón" loading="lazy"></span><h3>ECOCOCO, bulto de 25 kg</h3><p>Para tiendas y restaurantes. Precio especial para mayoristas según volumen.</p><b class="pr">Q350</b><a class="btn wa" href="https://wa.me/50242794894?text=Hola%2C%20quiero%20pedir%20carb%C3%B3n%20ECOCOCO">Cotizar por WhatsApp</a></div></div><div class="ctrl"><div class="prog"><i></i></div><button type="button" class="prev" aria-label="Anterior">‹</button><button type="button" class="next" aria-label="Siguiente">›</button></div></div>
+  <div class="carrusel prods" data-carrusel><div class="track"><div class="ccard prod"><span class="cimg"><img src="img/briquetas-encendidas.jpg" alt="Briquetas ECOCOCO" loading="lazy"></span><h3>ECOCOCO, bolsa de 1 kg</h3><p>Briqueta de carbón de cáscara de coco para tu parrilla o tu cocina.</p><b class="pr">Q20</b><button type="button" class="btn pill add" data-add="k1">Agregar al carrito</button></div><div class="ccard prod"><span class="cimg"><img src="img/carbon-polvo.jpg" alt="Bulto de carbón" loading="lazy"></span><h3>ECOCOCO, bulto de 25 kg</h3><p>Para tiendas y restaurantes. Precio especial para mayoristas según volumen.</p><b class="pr">Q350</b><button type="button" class="btn pill add" data-add="k25">Agregar al carrito</button></div></div><div class="ctrl"><div class="prog"><i></i></div><button type="button" class="prev" aria-label="Anterior">‹</button><button type="button" class="next" aria-label="Siguiente">›</button></div></div>
   <p style="margin-top:22px"><a class="btn pill" href="precios.html">Ver precios</a> <a class="btn pill sec2" href="distribuidores.html">Soy distribuidor</a></p>
 </div></section>
 
