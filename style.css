@@ -212,3 +212,16 @@ footer .sep{display:block;height:2px;width:90px;margin:0 auto 16px;background:li
 .sheet .nota{color:var(--muted);font-size:.8rem;margin-top:14px}
 .sheet .cerrar{float:right;cursor:pointer;background:none;border:1px solid var(--panel-b);color:var(--lime2);width:36px;height:36px;border-radius:50%;font-size:1.1rem}
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:1100;background:var(--lime);color:#04100A;font-weight:700;padding:10px 20px;border-radius:999px;box-shadow:0 0 24px rgba(139,224,0,.6)}
+
+/* Pie y páginas legales */
+footer .legal-links{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;margin:14px 0 8px;position:static;background:none;border:0;backdrop-filter:none}
+footer .legal-links a{color:var(--lime2);text-decoration:none;font-size:.88rem}
+footer .legal-links a:hover{text-decoration:underline}
+footer small{display:block;opacity:.7;font-size:.8rem;margin-top:6px}
+.legal{padding:28px}
+.legal::after{display:none}
+.legal h2{font-size:1.15rem;color:var(--lime2);margin:22px 0 8px}
+.legal h2:first-child{margin-top:0}
+.legal p,.legal li{color:#CFE6D5;margin-bottom:8px}
+.legal ul{margin:0 0 8px 22px}
+.legal a{color:var(--lime2)}
