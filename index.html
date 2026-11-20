@@ -72,6 +72,14 @@ p.lead{color:var(--gris);max-width:680px;margin-bottom:28px;font-size:1.06rem}
 .precio{font-size:2.3rem;font-weight:800;color:var(--navy)}
 .precio small{font-size:1rem;font-weight:400;color:var(--gris)}
 
+
+/* Fotos */
+.pasos img{width:100%;height:150px;object-fit:cover;border-radius:6px;margin-bottom:10px;display:block}
+.accion{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;align-items:stretch}
+.accion figure{background:#000;border-radius:10px;overflow:hidden;margin:0}
+.accion img,.accion video{width:100%;height:100%;min-height:260px;object-fit:cover;display:block}
+.accion figcaption{background:var(--navy);color:#CFE0F2;padding:10px 14px;font-size:.92rem}
+
 /* Aviso */
 .aviso{background:#FFF0F0;border:1px solid #CCDDEE;border-left:6px solid var(--rojo);border-radius:8px;padding:22px}
 .aviso h2{color:var(--rojo);font-size:1.35rem}
@@ -162,22 +170,34 @@ footer strong{color:#fff}
   </div>
 </section>
 
-<section id="proceso">
+<section id="en-accion">
+  <div class="wrap">
+    <div class="eyebrow">En acción</div>
+    <h2>Míralo encender</h2>
+    <p class="lead">Así se ven nuestras briquetas en la brasa.</p>
+    <div class="accion">
+      <figure><video controls muted playsinline preload="metadata" poster="img/poster.jpg"><source src="img/briqueta-video.mp4" type="video/mp4"></video><figcaption>Briquetas ECOCOCO encendiendo</figcaption></figure>
+      <figure><img src="img/briquetas-encendidas.jpg" alt="Briquetas de carbón de cáscara de coco encendidas con brasa visible" loading="lazy"><figcaption>Brasa de briquetas de cáscara de coco</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="proceso">
   <div class="wrap">
     <div class="eyebrow">Cómo lo hacemos</div>
     <h2>De la cáscara a la briqueta</h2>
     <p class="lead">Un proceso sencillo, hecho en Retalhuleu con materia prima de la región.</p>
     <ol class="pasos">
-      <li><strong>Cáscara de coco</strong>Recolectamos cáscara, un residuo agrícola local.</li>
+      <li><img src="img/cascara-coco.jpg" alt="Montón de cáscara de coco recibida" loading="lazy"><strong>Cáscara de coco</strong>Recolectamos cáscara, un residuo agrícola local.</li>
       <li><strong>Carbonización</strong>Se convierte en carbón en hornos de pirólisis.</li>
-      <li><strong>Molienda</strong>El carbón se muele hasta obtener polvo fino.</li>
+      <li><img src="img/carbon-polvo.jpg" alt="Carbón de cáscara de coco molido en polvo" loading="lazy"><strong>Molienda</strong>El carbón se muele hasta obtener polvo fino.</li>
       <li><strong>Mezcla</strong>Se une con ingredientes naturales, sin químicos.</li>
-      <li><strong>Prensado y secado</strong>Se forma la briqueta y se seca lista para empacar.</li>
+      <li><img src="img/briquetas-secado.jpg" alt="Briquetas secándose sobre tablas" loading="lazy"><strong>Prensado y secado</strong>Se forma la briqueta y se seca lista para empacar.</li>
     </ol>
   </div>
 </section>
 
-<section class="alt" id="precios">
+<section id="precios">
   <div class="wrap">
     <div class="eyebrow">Precios</div>
     <h2>Precios y distribución</h2>
