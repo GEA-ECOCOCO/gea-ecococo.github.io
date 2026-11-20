@@ -1,0 +1,16 @@
+{
+  "k1": {
+    "codigo": "ECO-1KG",
+    "nombre": "ECOCOCO, bolsa de 1 kg",
+    "corto": "Bolsa de 1 kg",
+    "peso_kg": 1,
+    "precio": 20
+  },
+  "k25": {
+    "codigo": "ECO-25KG",
+    "nombre": "ECOCOCO, bulto de 25 kg",
+    "corto": "Bulto de 25 kg",
+    "peso_kg": 25,
+    "precio": 350
+  }
+}

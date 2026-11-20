@@ -108,7 +108,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   var kg = document.getElementById('kg');
   if (!kg) return;
   var tot = document.getElementById('tot'), nota = document.getElementById('nota'), wa = document.getElementById('calc-wa');
-  var PRECIO = 20, GRANDE = 50, actual = 0, anim = 0;
+  var P=window.GEA_PRODUCTS||{k1:{p:20},k25:{p:350}}, PRECIO = P.k1.p, GRANDE = 50, actual = 0, anim = 0;
   function pintar(n) { tot.textContent = 'Q' + Math.round(n).toLocaleString('es-GT'); }
   function actualizar() {
     var v = Math.max(1, Math.min(999, parseInt(kg.value, 10) || 1));
@@ -123,7 +123,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     })(performance.now());
     nota.textContent = v >= GRANDE
       ? 'Para pedidos grandes te cotizamos precio por volumen por WhatsApp.'
-      : 'Precio al consumidor final: Q20 por kg. Venta de contado.';
+      : 'Precio al consumidor final: Q'+PRECIO+' por kg. Venta de contado.';
     var msg = 'Hola, quiero ' + v + ' kg de briquetas ECOCOCO. ¿Disponibilidad y entrega?';
     wa.href = 'https://wa.me/50242794894?text=' + encodeURIComponent(msg);
     document.querySelectorAll('.chips button').forEach(function (b) {
@@ -218,7 +218,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     var n = Math.max(1, Math.min(200, parseInt(inp.value, 10) || 1));
     var kg = n * KG;
     kgEl.textContent = kg.toLocaleString('es-GT') + ' kg';
-    var q = document.getElementById('b-q'); if (q) q.textContent = 'Q' + (n * 350).toLocaleString('es-GT');
+    var q = document.getElementById('b-q'); if (q) q.textContent = 'Q' + (n * ((window.GEA_PRODUCTS||{k25:{p:350}}).k25.p)).toLocaleString('es-GT');
     nota.textContent = n === 1
       ? 'Un bulto sirve para entrega en Retalhuleu y la Costa Sur. Para otros departamentos el mínimo son 2 bultos (50 kg).'
       : 'El precio de lista es referencial: con este volumen te cotizamos precio especial y confirmamos la fecha de entrega.';
@@ -282,14 +282,14 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
 /* Buscador y carrito */
 (function(){
   var WA='50242794894';
-  var PROD={k1:{n:'ECOCOCO, bolsa de 1 kg',p:20},k25:{n:'ECOCOCO, bulto de 25 kg',p:350}};
+  var PROD=window.GEA_PRODUCTS||{k1:{n:'ECOCOCO, bolsa de 1 kg',p:20},k25:{n:'ECOCOCO, bulto de 25 kg',p:350}};
   var IDX=[
    ['Quiénes somos','Visión industrial y sostenible de GEA EcoCoco','quienes-somos.html','empresa visión misión gea retalhuleu'],
    ['Nuestro producto','Briquetas ECOCOCO: beneficios, por qué enciende rápido, uso seguro','producto.html','briqueta carbón coco enciende resistencia calor seguridad monóxido'],
    ['Míralo encender','Video y fotos de las briquetas en la brasa','en-accion.html','video fotos brasa parrilla encender'],
    ['Proceso de producción','De la cáscara de coco a la briqueta','proceso.html','cáscara carbonización molienda mezcla secado'],
    ['Bitácora de la planta','Avance real: hornos, pruebas y primeros lotes','bitacora.html','planta horno pruebas lotes avance'],
-   ['Precios','Q20 por kg · bulto de 25 kg a Q350 · calculadora','precios.html','precio costo cuánto bulto kg calculadora mayorista'],
+   ['Precios','Precio por kg, bulto de 25 kg para mayoristas y calculadora','precios.html','precio costo cuánto bulto kg calculadora mayorista'],
    ['Distribuidores y mayoristas','Condiciones comerciales y pedidos por volumen','distribuidores.html','distribuidor mayorista tienda restaurante volumen negocio'],
    ['Impacto ambiental','Datos de los residuos de coco y del aceite usado, y cómo los reducimos','impacto-ambiental.html','ambiente aceite reciclado contaminación leña guatemala residuos'],
    ['Contacto','WhatsApp 4279-4894 y correo','contacto.html','whatsapp teléfono correo pedido'],
@@ -322,7 +322,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       if(ok)out.push(it)})}
     var pr=n.length&&n.some(function(w){return /precio|carrito|comprar|bolsa|bulto|kg|ecococo|carbon|briqueta/.test(w)});
     var h='';
-    if(pr){h+='<li class="prodres"><div><b>ECOCOCO, bolsa de 1 kg</b><span>Q20</span></div><button type="button" class="btn pill add" data-add="k1">Agregar</button></li><li class="prodres"><div><b>ECOCOCO, bulto de 25 kg</b><span>Q350</span></div><button type="button" class="btn pill add" data-add="k25">Agregar</button></li>'}
+    if(pr){h+='<li class="prodres"><div><b>ECOCOCO, bolsa de 1 kg</b><span>'+Q(PROD.k1.p)+'</span></div><button type="button" class="btn pill add" data-add="k1">Agregar</button></li><li class="prodres"><div><b>ECOCOCO, bulto de 25 kg</b><span>'+Q(PROD.k25.p)+'</span></div><button type="button" class="btn pill add" data-add="k25">Agregar</button></li>'}
     out.forEach(function(it){h+='<li><a href="'+it[2]+'"><b>'+it[0]+'</b><span>'+it[1]+'</span></a></li>'});
     if(!h)h=n.length?'<li class="vacio">No encontramos resultados. Escríbenos por <a href="https://wa.me/'+WA+'">WhatsApp</a> y te ayudamos.</li>':'<li class="vacio">Prueba con: precios, proceso, distribuidores, impacto…</li>';
     sres.innerHTML=h}
@@ -337,7 +337,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     var n=count();
     document.querySelectorAll('.cart-n').forEach(function(b){b.textContent=n;b.hidden=!n});
     var ks=Object.keys(cart);
-    if(!ks.length){cb.innerHTML='<p class="vacio">Tu carrito está vacío. Agrega tu carbón ECOCOCO para armar tu pedido.</p><p><button type="button" class="btn pill add" data-add="k1">Agregar bolsa 1 kg · Q20</button></p><p><button type="button" class="btn pill add" data-add="k25">Agregar bulto 25 kg · Q350</button></p>';cf.innerHTML='';return}
+    if(!ks.length){cb.innerHTML='<p class="vacio">Tu carrito está vacío. Agrega tu carbón ECOCOCO para armar tu pedido.</p><p><button type="button" class="btn pill add" data-add="k1">Agregar bolsa 1 kg · Q'+PROD.k1.p+'</button></p><p><button type="button" class="btn pill add" data-add="k25">Agregar bulto 25 kg · Q'+PROD.k25.p+'</button></p>';cf.innerHTML='';return}
     cb.innerHTML=ks.map(function(k){var p=PROD[k];return '<div class="li"><div class="li-t"><b>'+p.n+'</b><span>'+Q(p.p)+' c/u</span></div><div class="li-q"><button type="button" data-q="-1" data-k="'+k+'" aria-label="Quitar uno">−</button><span>'+cart[k]+'</span><button type="button" data-q="1" data-k="'+k+'" aria-label="Agregar uno">+</button></div><div class="li-s">'+Q(cart[k]*p.p)+'</div><button type="button" class="li-x" data-del="'+k+'" aria-label="Eliminar">✕</button></div>'}).join('');
     var msg='Hola, quiero hacer este pedido de ECOCOCO:%0A'+ks.map(function(k){return '• '+cart[k]+' × '+PROD[k].n+' = '+Q(cart[k]*PROD[k].p)}).map(encodeURIComponent).join('%0A')+'%0A'+encodeURIComponent('Total estimado: '+Q(total()))+'%0A'+encodeURIComponent('Mi nombre y ubicación: ');
     var bulto=cart.k25>0;
@@ -369,4 +369,17 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     b.addEventListener('click',function(e){e.stopPropagation();var o=li.classList.toggle('open');b.setAttribute('aria-expanded',o)});
   });
   document.addEventListener('click',function(e){if(!e.target.closest('.has-sub'))document.querySelectorAll('.has-sub.open').forEach(function(l){l.classList.remove('open');l.querySelector('.sub-t').setAttribute('aria-expanded','false')})});
+})();
+
+/* filtros de la bitácora */
+(function(){
+  var lista=document.getElementById('lista-bit');if(!lista)return;
+  var bs=document.querySelectorAll('.filtros button');
+  bs.forEach(function(b){b.addEventListener('click',function(){
+    var f=b.getAttribute('data-f');
+    bs.forEach(function(x){x.classList.toggle('on',x===b)});
+    lista.querySelectorAll('li[data-cat]').forEach(function(li){
+      li.hidden=!(f==='todas'||(' '+li.getAttribute('data-cat')+' ').indexOf(' '+f+' ')>-1);
+    });
+  })});
 })();
