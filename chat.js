@@ -3,7 +3,7 @@
 var C=window.GEA_CONFIG||{};if(!C.chatUrl)return;
 var EN=/^en/i.test(document.documentElement.lang||'');
 function L(es,en){return EN?en:es}
-var KEY='gea-chat',hist=[],busy=false,open=false,last=0;
+var KEY='gea-chat',CK='gea-chat-n',MAXQ=10,hist=[],busy=false,open=false,last=0;
 try{hist=JSON.parse(sessionStorage.getItem(KEY)||'[]').slice(-14)}catch(e){}
 function save(){try{sessionStorage.setItem(KEY,JSON.stringify(hist.slice(-14)))}catch(e){}}
 function track(n,p){try{window.geaTrack&&window.geaTrack(n,p||{})}catch(e){}}
@@ -49,6 +49,9 @@ function render(){
 function send(txt){
   txt=String(txt||'').trim().slice(0,500);if(!txt||busy)return;
   if(Date.now()-last<1200)return;last=Date.now();
+  var q=0;try{q=parseInt(sessionStorage.getItem(CK)||'0',10)}catch(e){}
+  if(q>=MAXQ){inp.value='';sug.hidden=true;fail('max');return}
+  try{sessionStorage.setItem(CK,String(q+1))}catch(e){}
   busy=true;sug.hidden=true;inp.value='';go.disabled=true;
   hist.push({role:'user',content:txt});save();add('user',txt);
   var wait=add('assistant','…');wait.classList.add('wait');
@@ -64,7 +67,7 @@ function send(txt){
   .then(function(){clearTimeout(to);busy=false;go.disabled=false;inp.focus()});
 }
 function fail(rate){
-  var m=add('assistant',rate?L('Estás enviando muchos mensajes. Espera un momento o escríbenos por WhatsApp.','You are sending many messages. Please wait a moment or message us on WhatsApp.'):L('No pude responder en este momento. Escríbenos por WhatsApp y te atendemos.','I couldn\'t answer right now. Message us on WhatsApp and we\'ll help you.'));
+  var m=add('assistant',rate==='max'?L('Llegaste al límite de preguntas de esta sesión. Para seguir, escríbenos por WhatsApp y te atiende una persona.','You reached this session\'s question limit. To continue, message us on WhatsApp and a person will help you.'):rate?L('Estás enviando muchos mensajes. Espera un momento o escríbenos por WhatsApp.','You are sending many messages. Please wait a moment or message us on WhatsApp.'):L('No pude responder en este momento. Escríbenos por WhatsApp y te atendemos.','I couldn\'t answer right now. Message us on WhatsApp and we\'ll help you.'));
   var a=el('a','chat-wa',L('Escribir por WhatsApp','Message on WhatsApp'));a.href=waLink();a.target='_blank';a.rel='noopener';m.appendChild(a);
 }
 function toggle(v){

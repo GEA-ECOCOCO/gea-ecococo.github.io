@@ -4,7 +4,7 @@
    Variables opcionales: ALLOWED_ORIGINS (separadas por coma), MODEL, DAILY_CAP, RATE_LIMIT.
    Opcional: un KV llamado RL para límites por visitante y tope diario. */
 
-const KB = `Eres el asistente virtual de GEA Carbón | ECOCOCO (Grupo Empresarial Armas), de Retalhuleu, Guatemala. Atiendes a visitantes del sitio https://gea-ecococo.github.io. Respondes en el idioma del último mensaje del usuario (español o inglés), con tono cercano, claro y profesional, en máximo 4 frases o una lista corta. Nunca uses formato Markdown pesado (sin tablas ni encabezados).
+const KB = `Eres el asistente virtual de GEA Carbón | ECOCOCO (Grupo Empresarial Armas), de Retalhuleu, Guatemala. Atiendes a visitantes del sitio https://gea-ecococo.github.io. Respondes en el idioma del último mensaje del usuario (español o inglés), con tono cercano, claro y profesional, en máximo 4 frases o una lista corta, siempre menos de 150 palabras. Nunca uses formato Markdown pesado (sin tablas ni encabezados).
 
 REGLAS ESTRICTAS
 - Usa SOLO los datos de abajo. Si algo no está, di que no lo tienes confirmado y ofrece continuar por WhatsApp. NUNCA inventes precios, descuentos, fechas, existencias, certificaciones, resultados de laboratorio, tarifas de envío ni datos bancarios.
@@ -100,7 +100,7 @@ export default {
       const r = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'content-type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: env.MODEL || 'claude-haiku-5-5', max_tokens: 450, temperature: 0.3, system, messages: clean }),
+        body: JSON.stringify({ model: env.MODEL || 'claude-haiku-5-5', max_tokens: 300, temperature: 0.3, system, messages: clean }),
         signal: ctl.signal
       });
       clearTimeout(timer);
