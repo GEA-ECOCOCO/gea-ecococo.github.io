@@ -606,3 +606,20 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   },true);
   document.addEventListener('keydown',function(e){if(e.key==='Escape'&&dlg&&!dlg.hidden)cerrar()});
 })();
+
+// Comparador de precio por libra (página de distribuidores)
+(function(){
+  var inp=document.getElementById('cmp-in'),out=document.getElementById('cmp-out');if(!inp||!out)return;
+  var P=Number(String(inp.getAttribute('data-p')).replace(/[^0-9.]/g,''));
+  function f(n){return 'Q'+n.toLocaleString(GEA_EN?'en-US':'es-GT',{minimumFractionDigits:2,maximumFractionDigits:2})}
+  function upd(){
+    var v=parseFloat(String(inp.value).replace(',','.'));
+    if(!isFinite(v)||v<=0||v>999){out.textContent='';return}
+    var d=v-P,pct=Math.abs(d)/v*100,lb100=Math.abs(d)*100;
+    if(Math.abs(d)<0.005)out.textContent=gL('Pagas lo mismo por libra que con ECOCOCO en bulto ('+f(P)+').','You pay the same per pound as with ECOCOCO in sacks ('+f(P)+').');
+    else if(d>0)out.textContent=gL('Con ECOCOCO en bulto pagarías '+f(P)+' por libra: '+f(d)+' menos que hoy ('+pct.toFixed(0)+' %). En 100 libras, '+f(lb100)+' de diferencia. Compara solo precio; el rendimiento lo publicaremos con resultados de laboratorio.','With ECOCOCO in sacks you would pay '+f(P)+' per pound: '+f(d)+' less than today ('+pct.toFixed(0)+'%). On 100 pounds, a difference of '+f(lb100)+'. This compares price only; we will publish performance once we have laboratory results.');
+    else out.textContent=gL('Con ECOCOCO en bulto pagarías '+f(P)+' por libra: '+f(-d)+' más que hoy. Compara también la forma y el origen; el rendimiento lo publicaremos con resultados de laboratorio.','With ECOCOCO in sacks you would pay '+f(P)+' per pound: '+f(-d)+' more than today. Also compare shape and origin; we will publish performance once we have laboratory results.');
+    if(window.geaTrack&&!inp._t){inp._t=1;geaTrack('use_comparador',{destino:'distribuidores'})}
+  }
+  inp.addEventListener('input',upd);
+})();
