@@ -1119,3 +1119,13 @@ body.chat-open .wa-float,body.chat-open .cart-float{visibility:hidden}
 .band.seo h2{font-size:clamp(22px,4.6vw,30px);line-height:1.25;margin-bottom:14px}
 .band.seo p{line-height:1.65;margin-bottom:12px}
 .band.seo a{color:#0B4D1F;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+
+/* Botón del asistente IA: más visible y claro */
+.chat-float{width:auto;height:58px;padding:0 20px 0 16px;border-radius:999px;gap:10px;background:linear-gradient(135deg,#B6F23C,#8BE000);color:#04100A;border:2px solid #04100A;box-shadow:0 8px 22px rgba(0,0,0,.45),0 0 0 0 rgba(139,224,0,.6);animation:cfpulse 2.8s ease-out infinite;font-family:inherit;position:fixed}
+.chat-float .cf-t{display:flex;flex-direction:column;align-items:flex-start;line-height:1.05;text-align:left}
+.chat-float .cf-t b{font-family:var(--cond);text-transform:uppercase;letter-spacing:.03em;font-size:1.02rem;font-weight:400}
+.chat-float .cf-t small{font-size:.72rem;font-weight:700;opacity:.8}
+.chat-float .cf-ia{position:absolute;top:-9px;right:12px;font-style:normal;font-weight:800;font-size:.68rem;background:#04100A;color:#B6F23C;border-radius:999px;padding:2px 7px;letter-spacing:.06em}
+@keyframes cfpulse{0%{box-shadow:0 8px 22px rgba(0,0,0,.45),0 0 0 0 rgba(139,224,0,.55)}70%{box-shadow:0 8px 22px rgba(0,0,0,.45),0 0 0 14px rgba(139,224,0,0)}100%{box-shadow:0 8px 22px rgba(0,0,0,.45),0 0 0 0 rgba(139,224,0,0)}}
+@media(max-width:700px){.chat-float{width:auto;height:54px;padding:0 16px 0 13px;right:12px}}
+@media(prefers-reduced-motion:reduce){.chat-float{animation:none}}
