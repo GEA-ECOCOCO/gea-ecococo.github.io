@@ -1070,3 +1070,5 @@ body.noscroll .cart-float{display:none}
 .cmp #cmp-in{width:160px;text-align:center;font-size:1.4rem;font-weight:700}
 .cmp #cmp-in{background:#fff;color:#1A1A1A;border:2px solid #1A1A1A;border-radius:12px;padding:8px 10px}
 .cmp #cmp-in::placeholder{color:#8A7D6A;font-weight:400}
+
+.usd-note{margin-top:10px;font-size:.82rem;color:#C9BFA8;max-width:720px}

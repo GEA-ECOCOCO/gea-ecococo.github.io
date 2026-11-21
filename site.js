@@ -623,3 +623,27 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   }
   inp.addEventListener('input',upd);
 })();
+
+// Equivalencia aproximada en USD junto a los precios en quetzales (solo versión en inglés)
+(function(){
+  if(!GEA_EN)return;
+  var R=Number((window.GEA_CONFIG||{}).usdRate)||7.65;
+  var re=/Q\s?(\d{1,3}(?:,\d{3})*|\d+)(\.\d{1,2})?(?![\d,])/g;
+  function usd(q){return 'US$'+(q/R).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
+  function run(){
+    var main=document.querySelector('main')||document.body,w=document.createTreeWalker(main,NodeFilter.SHOW_TEXT,{acceptNode:function(n){
+      var p=n.parentNode;if(!p||/^(SCRIPT|STYLE|NOSCRIPT|TEXTAREA|INPUT|OPTION)$/.test(p.nodeName))return NodeFilter.FILTER_REJECT;
+      if(p.closest('.cart,#carrito,.wch,#ord-ok,.consent,.sheet,.ovl,[data-usd="no"],#tot,#b-tot,.total,.tot,.li-s,.res'))return NodeFilter.FILTER_REJECT;
+      return re.test(n.nodeValue)?(re.lastIndex=0,NodeFilter.FILTER_ACCEPT):(re.lastIndex=0,NodeFilter.FILTER_REJECT)}}),L=[],n;
+    while((n=w.nextNode()))L.push(n);
+    var any=false;
+    L.forEach(function(t){
+      var v=t.nodeValue.replace(re,function(m,i,d,off,str){var pre=str.slice(0,off);if(pre.lastIndexOf('(')>pre.lastIndexOf(')'))return m;var q=parseFloat(String(i).replace(/,/g,'')+(d||''));if(!isFinite(q)||q<=0)return m;any=true;return m+' (≈ '+usd(q)+')'});
+      t.nodeValue=v});
+    if(any){
+      var f=document.querySelector('.pie-dat');
+      if(f&&!document.getElementById('usd-note')){var p=document.createElement('p');p.id='usd-note';p.className='usd-note';p.textContent='USD amounts are approximate, based on the Banco de Guatemala reference rate (about Q'+R.toFixed(2)+' per US$1). Prices are charged in quetzales (Q).';f.parentNode.insertBefore(p,f.nextSibling)}
+    }
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
+})();
