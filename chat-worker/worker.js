@@ -99,7 +99,7 @@ export default {
       const timer = setTimeout(() => ctl.abort(), 22000);
       const r = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+        headers: { 'content-type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': env.ANTHROPIC_VERSION || '2023-06-01' },
         body: JSON.stringify({ model: env.MODEL || 'claude-haiku-5-5', max_tokens: 300, temperature: 0.3, system, messages: clean }),
         signal: ctl.signal
       });

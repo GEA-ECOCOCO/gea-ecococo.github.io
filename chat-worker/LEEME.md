@@ -7,7 +7,7 @@ El chat del sitio no se muestra hasta que pongas la dirección de tu Worker en `
 3. En el Worker: **Settings → Variables and Secrets → Add** → tipo *Secret*, nombre `ANTHROPIC_API_KEY`, valor tu clave.
 4. (Recomendado) **Storage & Databases → KV → Create** un namespace `RL`; en el Worker, **Bindings → Add → KV namespace**, variable `RL`. Activa límite por visitante (20 mensajes/10 min) y tope diario (500 mensajes). Cambiables con variables `RATE_LIMIT` y `DAILY_CAP`.
 5. Si compras dominio propio, agrega la variable `ALLOWED_ORIGINS` con `https://gea-ecococo.github.io,https://tudominio.com`.
-6. Opcional: variable `MODEL` para cambiar de modelo (por defecto `claude-haiku-5-5`).
+6. Opcional: variable `MODEL` para cambiar de modelo (por defecto `claude-haiku-5-5`, el más económico) y `ANTHROPIC_VERSION` si la API pide otra versión (por defecto `2023-06-01`; la consola mostró `2026-10-21`).
 7. Copia la URL del Worker (termina en `workers.dev`) y pégala en `config.js`: `chatUrl:'https://ecococo-chat.TU-USUARIO.workers.dev'`. Publica y espera ~10 min.
 
 Prueba: abre el sitio, toca el botón verde del chat y pregunta "¿cuánto cuesta el bulto?". Si algo falla, el chat ofrece WhatsApp.
