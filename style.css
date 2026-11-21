@@ -1140,3 +1140,7 @@ footer.pie{padding-bottom:calc(236px + env(safe-area-inset-bottom,0px))}
 /* Botón instalar app */
 .pwa-i{margin-top:16px;background:#B6F23C;color:#04100A;border:0;border-radius:999px;padding:11px 20px;font-family:var(--cond);text-transform:uppercase;letter-spacing:.04em;font-size:1rem;cursor:pointer}
 .pwa-i:hover{filter:brightness(1.06)}
+
+.chat-links{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chat-ln{display:inline-block;background:#fff;color:#0B2E17;border:1.5px solid #1f7a3a;text-decoration:none;font-weight:700;font-size:.85rem;padding:7px 12px;border-radius:999px}
+.chat-ln:hover{background:#eaf7ee}

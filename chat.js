@@ -27,11 +27,16 @@ function waLink(){
   var t=L('Hola, vengo del asistente de la página. ','Hello, I come from the website assistant. ')+(q?L('Mi consulta: ','My question: ')+q.slice(0,300):'');
   return 'https://wa.me/'+(C.whatsapp||'50242794894')+'?text='+encodeURIComponent(t);
 }
-function add(role,text){
+var LINKS={'producto':['producto.html','Ver producto','View product'],'precios':['precios.html','Ver precios y pedir','See prices & order'],'como-comprar':['como-comprar.html','Cómo comprar','How to buy'],'distribuidores':['distribuidores.html','Ser distribuidor','Become a distributor'],'entregas':['entregas-devoluciones.html','Entregas y devoluciones','Delivery & returns'],'proceso':['proceso.html','Cómo lo producimos','How we make it'],'impacto':['impacto-ambiental.html','Impacto ambiental','Environmental impact'],'contacto':['contacto.html','Contacto','Contact'],'medicion':['medicion.html','Medición','Measurement'],'nosotros':['quienes-somos.html','Quiénes somos','About us']};
+function linkBtns(keys){var d=el('div','chat-links');keys.slice(0,2).forEach(function(k){var x=LINKS[k];if(!x)return;var a=el('a','chat-ln',L(x[1],x[2])+' →');a.href=x[0];a.addEventListener('click',function(){track('click_chat_link',{destino:k})});d.appendChild(a)});return d.childNodes.length?d:null}
+function add(role,text,fk){
+  var lk=[];if(role==='assistant'){text=String(text).replace(/\[\[LINK:([a-z-]+)\]\]/g,function(_,k){if(LINKS[k]&&lk.indexOf(k)<0)lk.push(k);return ''});text=text.replace(/\s+$/,'')}
+  if(!lk.length&&fk)lk=fk;
   var wa=false;if(role==='assistant'&&/\[\[WA\]\]/.test(text)){wa=true;text=text.replace(/\s*\[\[WA\]\]\s*/g,' ').trim()}
   var m=el('div','chat-m '+(role==='user'?'u':'a'));
   String(text).split(/\n+/).forEach(function(par){if(par.trim())m.appendChild(el('p','',par))});
   if(wa){var a=el('a','chat-wa',L('Continuar por WhatsApp','Continue on WhatsApp'));a.href=waLink();a.target='_blank';a.rel='noopener';a.addEventListener('click',function(){track('click_whatsapp',{destino:'asistente'})});m.appendChild(a)}
+  if(lk.length){var lb=linkBtns(lk);if(lb)m.appendChild(lb)}
   log.appendChild(m);log.scrollTop=log.scrollHeight;return m;
 }
 function render(){
@@ -50,7 +55,7 @@ function norm(x){return String(x).toLowerCase().normalize('NFD').replace(/[\u030
 function local(txt){
   if(!DB)return null;var w=norm(txt).split(/\s+/).filter(Boolean),best=null,bs=0;
   DB.faq.forEach(function(f){var ks=f.k.split(' '),sc=0;w.forEach(function(x){if(x.length>2&&ks.indexOf(x)!==-1)sc++});if(sc>bs){bs=sc;best=f}});
-  if(best)return(EN?best.en:best.es)+(best.wa?' [[WA]]':'');
+  if(best)return(EN?best.en:best.es)+(best.link||[]).map(function(k){return ' [[LINK:'+k+']]'}).join('')+(best.wa?' [[WA]]':'');
   if(w.some(function(x){return DB.greet.k.split(' ').indexOf(x)!==-1})&&w.length<4)return EN?DB.greet.en:DB.greet.es;
   return null}
 function done(){busy=false;go.disabled=false;inp.focus()}
