@@ -21,6 +21,7 @@ var go=el('button','',L('Enviar','Send'));go.type='submit';fm.appendChild(inp);f
 var ft=el('div','chat-ft',AI?L('Las respuestas las genera una IA con los datos de este sitio. Para pedidos y precios finales confirma por WhatsApp. No escribas datos personales sensibles.','Answers are AI-generated from this site\'s data. For orders and final prices confirm via WhatsApp. Do not type sensitive personal data.'):L('Respuestas automáticas con los datos de este sitio. Para pedidos y precios finales confirma por WhatsApp.','Automatic answers based on this site\'s data. For orders and final prices confirm via WhatsApp.'));
 box.appendChild(hd);box.appendChild(log);box.appendChild(sug);box.appendChild(fm);box.appendChild(ft);
 document.body.appendChild(btn);document.body.appendChild(box);
+(function(){var t=setTimeout(function(){btn.classList.add('mini')},8000);function ex(){btn.classList.remove('mini')}btn.addEventListener('mouseenter',ex);btn.addEventListener('focus',ex);btn.addEventListener('mouseleave',function(){clearTimeout(t);t=setTimeout(function(){btn.classList.add('mini')},3000)});btn.addEventListener('blur',function(){btn.classList.add('mini')})})();
 
 function waLink(){
   var q='';for(var i=hist.length-1;i>=0;i--){if(hist[i].role==='user'){q=hist[i].content;break}}
