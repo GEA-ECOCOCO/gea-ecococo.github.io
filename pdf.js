@@ -148,7 +148,7 @@
     // Pie
     doc.rect(0,H-70,W,70,C.carbon);
     doc.rect(0,H-70,W,3,C.brasa);
-    doc.text(L('Para enviar o confirmar este pedido: WhatsApp 4279-4894','To send or confirm this order: WhatsApp 4279-4894'),M,H-44,10,{bold:true,color:C.crema});
+    doc.text(L('Para enviar o confirmar este pedido: WhatsApp +502 4279-4894','To send or confirm this order: WhatsApp +502 4279-4894'),M,H-44,10,{bold:true,color:C.crema});
     doc.text('geaecococo.ventas@gmail.com  ·  gea-ecococo.github.io',M,H-28,9.5,{color:[.85,.8,.72]});
     doc.text('ECOCOCO · GEA Carbón',W-M,H-28,9.5,{color:[.85,.8,.72],right:true});
     return build(doc);

@@ -299,7 +299,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
    ['Impacto ambiental','Aprovechamiento de la cáscara de coco, datos de fuentes públicas y metas','impacto-ambiental.html','ambiente cáscara coco residuo agroindustrial contaminación leña guatemala potencial'],
    ['Cómo comprar y preguntas frecuentes','Pasos para pedir, mínimos, pago y entregas','como-comprar.html','cómo comprar pedir preguntas frecuentes pago entrega factura'],
    ['Tecnología GEA','Ingeniería y producción mecanizada','tecnologia-gea.html','tecnología ingeniería horno molino mezcladora prensa'],
-   ['Contacto','WhatsApp 4279-4894 y correo','contacto.html','whatsapp teléfono correo pedido'],
+   ['Contacto','WhatsApp +502 4279-4894 y correo','contacto.html','whatsapp teléfono correo pedido'],
    ['Entregas y devoluciones','Cómo entregamos y cuándo aplican devoluciones','entregas-devoluciones.html','envío entrega devolución'],
    ['Términos y condiciones','Condiciones de uso y compra','terminos.html','términos legal'],
    ['Privacidad','Cómo tratamos tus datos','privacidad.html','datos privacidad']
@@ -316,7 +316,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
    ['Distributors and wholesalers','Commercial terms and volume orders','distribuidores.html','distributor wholesale shop restaurant volume business'],
    ['Environmental impact','Making use of coconut shell, public-source data and goals','impacto-ambiental.html','environment coconut shell agro-industrial waste pollution firewood guatemala potential'],
    ['GEA Technology','Engineering and mechanized production','tecnologia-gea.html','technology engineering kiln mill mixer press'],
-   ['Contact','WhatsApp 4279-4894 and email','contacto.html','whatsapp phone email order'],
+   ['Contact','WhatsApp +502 4279-4894 and email','contacto.html','whatsapp phone email order'],
    ['Delivery and returns','How we deliver and when returns apply','entregas-devoluciones.html','shipping delivery returns'],
    ['Terms and conditions','Terms of use and purchase','terminos.html','terms legal'],
    ['Privacy','How we handle your data','privacidad.html','data privacy']
@@ -388,7 +388,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       return 'https://wa.me/'+WA+'?text='+encodeURIComponent(L.join('\n'));
     }
     var bulto=cart.k25>0;
-    cf.innerHTML='<div class="tot"><span>'+gL('Total estimado','Estimated total')+'</span><b>'+Q(total())+'</b></div><p class="nota">'+gL('Precio a consumidor final. ','End-consumer price. ')+(bulto?gL('En bultos de 25 kg hay precio especial según volumen, lo confirmamos por WhatsApp. ','For 25 kg sacks there is a special volume price, which we confirm on WhatsApp. '):'')+gL('Entrega y forma de pago se acuerdan por WhatsApp. Aún no cobramos en línea.','Delivery and payment are arranged on WhatsApp. We do not charge online yet.')+'</p><div class="cdat"><p class="cdat-h">'+gL('Datos para la entrega','Delivery details')+'</p>'+
+    cf.innerHTML='<div class="tot"><span>'+gL('Total estimado','Estimated total')+'</span><b>'+Q(total())+'</b></div><p class="nota">'+gL('Precio a consumidor final. ','End-consumer price. ')+(bulto?gL('En bultos de 25 kg hay precio especial según volumen, lo confirmamos por WhatsApp. ','For 25 kg sacks there is a special volume price, which we confirm on WhatsApp. '):'')+gL('Entrega y forma de pago se acuerdan por WhatsApp. Aún no cobramos en línea.','Delivery and payment are arranged on WhatsApp. We do not charge online yet.')+'</p><p class="nota exp-l">'+gL('¿Envío fuera de Guatemala? ','Shipping outside Guatemala? ')+'<button type="button" class="lnk" data-exp>'+gL('Solicita una cotización de exportación','Request an export quote')+'</button></p><div class="cdat"><p class="cdat-h">'+gL('Datos para la entrega','Delivery details')+'</p>'+
       cfield('nom',gL('Nombre completo *','Full name *'),'text','name',80)+cfield('tel',gL('Teléfono (WhatsApp) *','Phone (WhatsApp) *'),'tel','tel',20)+
       '<div class="cf"><label for="c-dep">'+gL('Departamento *','Department *')+'</label><select id="c-dep" data-c="dep"><option value="">'+gL('Selecciona','Select')+'</option>'+DEPS.map(function(x){return '<option>'+x+'</option>'}).join('')+'</select><span class="ce"></span></div>'+
       cfield('mun',gL('Municipio *','Town *'),'text','address-level2',60)+cfield('zon',gL('Colonia, lotificación, sección o zona *','Neighborhood, subdivision, section or zone *'),'text','off',80)+
@@ -433,7 +433,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       '<ol class="ord-p"><li>'+gL('Toca <b>Abrir WhatsApp</b>. Se abre el chat con tu pedido ya escrito. Envíalo.','Tap <b>Open WhatsApp</b>. The chat opens with your order already written. Send it.')+'</li>'+
       '<li>'+gL('En el chat toca el clip <b>📎</b>, elige <b>Documento</b> y selecciona el PDF <b>'+name+'</b> (está en tus Descargas). Envíalo.','In the chat tap the paperclip <b>📎</b>, choose <b>Document</b> and select the PDF <b>'+name+'</b> (it is in your Downloads). Send it.')+'</li></ol>'+
       '<a class="btn wa" data-direct target="_blank" rel="noopener" href="'+href+'">'+gL('Abrir WhatsApp','Open WhatsApp')+'</a>'+
-      (canShare?'<button type="button" class="btn pdf" data-share>'+gL('Compartir el PDF desde mi teléfono','Share the PDF from my phone')+'</button><p class="ord-n">'+gL('Al compartir, elige WhatsApp y luego el chat de GEA Carbón (4279-4894).','When sharing, choose WhatsApp and then the GEA Carbón chat (4279-4894).')+'</p>':'')+
+      (canShare?'<button type="button" class="btn pdf" data-share>'+gL('Compartir el PDF desde mi teléfono','Share the PDF from my phone')+'</button><p class="ord-n">'+gL('Al compartir, elige WhatsApp y luego el chat de GEA Carbón (+502 4279-4894).','When sharing, choose WhatsApp and then the GEA Carbón chat (+502 4279-4894).')+'</p>':'')+
       '<button type="button" class="vaciar" data-again>'+gL('Descargar el PDF otra vez','Download the PDF again')+'</button></div>';
     document.body.appendChild(m);
     function cierra(){m.remove()}
@@ -500,8 +500,13 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     cant:['cant','Cantidad','Quantity','qty',1],
     dep:['dep','Departamento','Department','dep',1],
     mun:['mun','Municipio o zona','Town or area','text',1],
-    esp:['esp','Especificaciones o comentarios (opcional)','Specifications or comments (optional)','area',0]
+    esp:['esp','Especificaciones o comentarios (opcional)','Specifications or comments (optional)','area',0],
+    pais:['pais','País de destino','Destination country','text',1],
+    dest:['dest','Ciudad o puerto de destino','Destination city or port','text',1],
+    inc:['inc','Condición de entrega (Incoterm)','Delivery terms (Incoterm)','sel',1],
+    mail:['mail','Correo electrónico','Email','mail',1]
   };
+  var INC=[['FOB (puerto de salida en Guatemala)','FOB (Guatemalan port of departure)'],['CIF (hasta el puerto de destino)','CIF (to the destination port)'],['EXW (en la planta, Retalhuleu)','EXW (at the plant, Retalhuleu)'],['No estoy seguro; necesito asesoría','Not sure; I need guidance']];
   var OPT=[
     {i:'🛒',t:['Consumidor final','End consumer'],d:['Quiero comprar carbón para mi casa','I want to buy charcoal for home'],
       saludo:['Hola, soy consumidor final y quiero comprar carbón ECOCOCO.','Hi, I am an end consumer and I want to buy ECOCOCO charcoal.'],
@@ -516,11 +521,15 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     {i:'🚚',t:['Distribuidor o mayorista','Distributor or wholesaler'],d:['Bultos de 25 kg y precio por volumen','25 kg sacks and volume price'],
       saludo:['Hola, quiero ser distribuidor o comprar al por mayor ECOCOCO.','Hi, I want to become a distributor or buy ECOCOCO wholesale.'],
       f:['neg','nom','cant','dep','mun','esp'],unidades:[['bulto','bultos de 25 kg','25 kg sacks',25],['kg','kg','kg',1]]},
+    {i:'🌎',t:['Exportación (fuera de Guatemala)','Export (outside Guatemala)'],d:['Quiero comprar para otro país','I want to buy for another country'],
+      saludo:['Hola, quiero una cotización de exportación de carbón ECOCOCO.','Hi, I would like an export quote for ECOCOCO charcoal.'],
+      nota:['Las cotizaciones de exportación se preparan caso por caso: confirmamos disponibilidad, empaque, documentos y condiciones de envío. No incluyen precios de lista locales.','Export quotes are prepared case by case: we confirm availability, packaging, documents and shipping terms. They do not use local list prices.'],
+      f:['neg','nom','mail','pais','dest','cant','inc','esp'],unidades:[['kg','kg','kg',1],['bulto','bultos de 25 kg','25 kg sacks',25],['ton','toneladas','metric tons',1000]],exp:1},
     {i:'💬',t:['Quiero más información','I want more information'],d:['Tengo preguntas sobre el producto','I have questions about the product'],
       saludo:['Hola, quiero más información sobre el carbón ECOCOCO.','Hi, I would like more information about ECOCOCO charcoal.'],
       f:['nom','esp'],preg:1}
   ];
-  var OPT_ES=['Consumidor final','Tienda o abarrotes','Restaurante o parrillada','Distribuidor o mayorista','Más información'];
+  var OPT_ES=['Consumidor final','Tienda o abarrotes','Restaurante o parrillada','Distribuidor o mayorista','Exportación','Más información'];
   function X(a){return gL(a[0],a[1])}
   function esc(t){return String(t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
   function Qf(n){return 'Q'+n.toLocaleString(GEA_LOC)}
@@ -543,12 +552,16 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     }
     else if(k==='dep')h+='<label for="'+id+'">'+gL(o.lug||'Departamento','Department')+' *</label><select id="'+id+'" name="dep" required><option value="">'+gL('Selecciona','Select')+'</option>'+DEP.map(function(x){return '<option>'+x+'</option>'}).join('')+'</select>';
     else if(k==='mun')h+='<label for="'+id+'">'+lab+' *</label><input id="'+id+'" name="mun" maxlength="80" autocomplete="address-level2" required>';
+    else if(k==='pais')h+='<label for="'+id+'">'+lab+' *</label><input id="'+id+'" name="pais" maxlength="60" autocomplete="country-name" required>';
+    else if(k==='dest')h+='<label for="'+id+'">'+lab+' *</label><input id="'+id+'" name="dest" maxlength="80" required>';
+    else if(k==='mail')h+='<label for="'+id+'">'+lab+' *</label><input id="'+id+'" name="mail" type="email" inputmode="email" maxlength="100" autocomplete="email" required>';
+    else if(k==='inc')h+='<label for="'+id+'">'+lab+' *</label><select id="'+id+'" name="inc" required><option value="">'+gL('Selecciona','Select')+'</option>'+INC.map(function(x){return '<option>'+gL(x[0],x[1])+'</option>'}).join('')+'</select>';
     else if(k==='esp')h+='<label for="'+id+'">'+(o.preg?gL('¿Qué quieres saber? *','What would you like to know? *'):lab)+'</label><textarea id="'+id+'" name="esp" rows="'+(o.preg?4:3)+'" maxlength="400"'+(o.preg?' required':'')+'></textarea>';
     return '<div class="wf-c">'+h+'<span class="wf-e" aria-live="polite"></span></div>';
   }
   function formulario(n){
     var o=OPT[n];cur=n;
-    dlg.querySelector('.wch-in').innerHTML='<div class="wch-h"><button type="button" class="wch-b" data-back aria-label="'+gL('Volver','Back')+'">←</button><h2>'+X(o.t)+'</h2><button type="button" class="ovl-x" aria-label="'+gL('Cerrar','Close')+'">✕</button></div><p class="wch-s">'+gL('Completa los datos. Los campos con * son obligatorios.','Fill in the details. Fields with * are required.')+'</p><form class="wf" novalidate>'+o.f.map(function(k){return campo(o,k)}).join('')+'<button type="submit" class="btn wa wf-go">'+gL('Enviar por WhatsApp','Send on WhatsApp')+'</button><p class="wf-n">'+gL('Se abrirá WhatsApp con tu mensaje ya escrito. Puedes revisarlo antes de enviarlo.','WhatsApp will open with your message ready. You can review it before sending.')+'</p></form>';
+    dlg.querySelector('.wch-in').innerHTML='<div class="wch-h"><button type="button" class="wch-b" data-back aria-label="'+gL('Volver','Back')+'">←</button><h2>'+X(o.t)+'</h2><button type="button" class="ovl-x" aria-label="'+gL('Cerrar','Close')+'">✕</button></div><p class="wch-s">'+gL('Completa los datos. Los campos con * son obligatorios.','Fill in the details. Fields with * are required.')+'</p>'+(o.nota?'<p class="wch-s wf-x">'+X(o.nota)+'</p>':'')+'<form class="wf" novalidate>'+o.f.map(function(k){return campo(o,k)}).join('')+'<button type="submit" class="btn wa wf-go">'+gL('Enviar por WhatsApp','Send on WhatsApp')+'</button><p class="wf-n">'+gL('Se abrirá WhatsApp con tu mensaje ya escrito. Puedes revisarlo antes de enviarlo.','WhatsApp will open with your message ready. You can review it before sending.')+'</p></form>';
     var f=dlg.querySelector('input,select,textarea');if(f)f.focus();
   }
   function mensaje(o,v){
@@ -559,9 +572,14 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       var u=o.unidades[+(v.uni||0)],n=+v.cant;
       L.push(gL('Cantidad: ','Quantity: ')+n.toLocaleString(GEA_LOC)+' '+gL(u[1],u[2]));
       var kg=n*u[3],P=window.GEA_PRODUCTS;
-      if(P&&(u[0]==='bolsa'))L.push(gL('Total estimado (Q'+P.k1.p+' por bolsa): ','Estimated total (Q'+P.k1.p+' per bag): ')+Qf(n*P.k1.p));
+      if(o.exp){if(u[0]==='bulto')L.push(gL('Total aproximado: ','Approximate total: ')+(kg/1000>=1?(kg/1000).toLocaleString(GEA_LOC)+gL(' toneladas',' metric tons'):kg.toLocaleString(GEA_LOC)+' kg'))}
+      else if(P&&(u[0]==='bolsa'))L.push(gL('Total estimado (Q'+P.k1.p+' por bolsa): ','Estimated total (Q'+P.k1.p+' per bag): ')+Qf(n*P.k1.p));
       else if(P&&u[0]==='bulto')L.push(gL('Precio de lista estimado (Q'+P.k25.p+' por bulto): ','Estimated list price (Q'+P.k25.p+' per sack): ')+Qf(n*P.k25.p)+gL(' (kg totales: ',' (total kg: ')+kg.toLocaleString(GEA_LOC)+')');
     }
+    if(v.pais)L.push(gL('País de destino: ','Destination country: ')+v.pais);
+    if(v.dest)L.push(gL('Ciudad o puerto de destino: ','Destination city or port: ')+v.dest);
+    if(v.inc)L.push(gL('Condición de entrega: ','Delivery terms: ')+v.inc);
+    if(v.mail)L.push(gL('Correo: ','Email: ')+v.mail);
     if(v.dep)L.push(gL(o.lug?'Ubicación de entrega: ':'Departamento: ',o.lug?'Delivery location: ':'Department: ')+v.dep+(v.mun?', '+v.mun:''));
     if(v.esp)L.push((o.preg?gL('Consulta: ','Question: '):gL('Especificaciones: ','Specifications: '))+v.esp);
     return L.join('\n');
@@ -577,11 +595,12 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       if(!el.name||el.type==='submit')return;
       if(el.required&&!v[el.name]){err(el,gL('Completa este dato.','Please fill in this field.'));return}
       if(el.name==='cant'){var n=Number(v.cant);if(!isFinite(n)||n<1||Math.floor(n)!==n||n>99999)err(el,gL('Escribe un número entero mayor que 0.','Enter a whole number greater than 0.'))}
-      if((el.name==='nom'||el.name==='neg'||el.name==='mun')&&v[el.name]&&v[el.name].length<2)err(el,gL('Escribe al menos 2 letras.','Enter at least 2 characters.'));
+      if(el.name==='mail'&&v.mail&&!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.mail))err(el,gL('Escribe un correo válido.','Enter a valid email address.'));
+      if((el.name==='nom'||el.name==='neg'||el.name==='mun'||el.name==='pais'||el.name==='dest')&&v[el.name]&&v[el.name].length<2)err(el,gL('Escribe al menos 2 letras.','Enter at least 2 characters.'));
       if(el.name==='esp'&&o.preg&&v.esp&&v.esp.length<5)err(el,gL('Cuéntanos un poco más.','Tell us a little more.'));
     });
     if(bad){bad.focus();return}
-    if(window.geaTrack){geaTrack('click_whatsapp',{destino:'formulario: '+OPT_ES[cur]});if(cur>=1&&cur<=3)geaTrack('generate_lead',{tipo:OPT_ES[cur],via:'whatsapp'})}
+    if(window.geaTrack){geaTrack('click_whatsapp',{destino:'formulario: '+OPT_ES[cur]});if(cur>=1&&cur<=4)geaTrack('generate_lead',{tipo:OPT_ES[cur],via:'whatsapp'})}
     window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(mensaje(o,v)),'_blank','noopener');
     cerrar();
   }
@@ -605,6 +624,19 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     last=a;lista();dlg.hidden=false;document.body.classList.add('noscroll');
   },true);
   document.addEventListener('keydown',function(e){if(e.key==='Escape'&&dlg&&!dlg.hidden)cerrar()});
+  var EXP=OPT.length-2;
+  window.geaExport=function(from){
+    if(!dlg)build();
+    last=from||document.activeElement;formulario(EXP);dlg.hidden=false;document.body.classList.add('noscroll');
+    if(window.geaTrack)geaTrack('click_whatsapp',{destino:'exportacion_desde_carrito'});
+  };
+  document.addEventListener('click',function(e){
+    var b=e.target.closest&&e.target.closest('[data-exp]');if(!b)return;
+    e.preventDefault();
+    var c=document.getElementById('carrito')||document.querySelector('.cart');
+    if(c&&c.classList.contains('on')){c.classList.remove('on');c.setAttribute('aria-hidden','true');var bg=document.querySelector('.cart-bg');if(bg)bg.hidden=true;document.body.classList.remove('noscroll')}
+    window.geaExport(b);
+  });
 })();
 
 // Comparador de precio por libra (página de distribuidores)
@@ -624,14 +656,13 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   inp.addEventListener('input',upd);
 })();
 
-// Equivalencia aproximada en USD junto a los precios en quetzales (solo versión en inglés).
+// Equivalencia aproximada en USD junto a los precios en quetzales (español e inglés).
 // Usa el tipo de cambio del día (open.er-api.com, se guarda 6 h en el dispositivo). Si falla, usa el de config.js.
 (function(){
-  if(!GEA_EN)return;
-  var CFG=window.GEA_CONFIG||{},FB=Number(CFG.usdRate)||7.65,FBD=CFG.usdDate||'Nov 20, 2026';
+  var CFG=window.GEA_CONFIG||{},FB=Number(CFG.usdRate)||7.65,FBD=GEA_EN?(CFG.usdDate||'Nov 20, 2026'):(CFG.usdDateEs||'20 nov 2026');
   var R=FB,live=false,when='';
   var re=/Q\s?(\d{1,3}(?:,\d{3})*|\d+)(\.\d{1,2})?(?![\d,])/g;
-  function usd(q){return 'US$'+(q/R).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
+  function usd(q){return 'US$'+(q/R).toLocaleString(GEA_EN?'en-US':'es-GT',{minimumFractionDigits:2,maximumFractionDigits:2})}
   function mark(){
     var main=document.querySelector('main')||document.body,w=document.createTreeWalker(main,NodeFilter.SHOW_TEXT,{acceptNode:function(n){
       var p=n.parentNode;if(!p||/^(SCRIPT|STYLE|NOSCRIPT|TEXTAREA|INPUT|OPTION)$/.test(p.nodeName))return NodeFilter.FILTER_REJECT;
@@ -654,11 +685,11 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     if(!document.querySelector('.usd'))return;
     var f=document.querySelector('.pie-dat');if(!f)return;
     var p=document.getElementById('usd-note');if(!p){p=document.createElement('p');p.id='usd-note';p.className='usd-note';f.parentNode.insertBefore(p,f.nextSibling)}
-    p.textContent=(live?'Exchange rate today: Q'+R.toFixed(2)+' per US$1 (updated '+when+'). ':'Reference rate: Q'+R.toFixed(2)+' per US$1 (Banco de Guatemala, '+FBD+'). ')+'USD amounts are approximate. Prices are charged in quetzales (Q). ';
+    p.textContent=GEA_EN?((live?'Exchange rate today: Q'+R.toFixed(2)+' per US$1 (updated '+when+'). ':'Reference rate: Q'+R.toFixed(2)+' per US$1 (Banco de Guatemala, '+FBD+'). ')+'USD amounts are approximate. Prices are charged in quetzales (Q). '):((live?'Tipo de cambio de hoy: Q'+R.toFixed(2)+' por US$1 (actualizado '+when+'). ':'Tipo de cambio de referencia: Q'+R.toFixed(2)+' por US$1 (Banco de Guatemala, '+FBD+'). ')+'Los montos en dólares son aproximados. Los precios se cobran en quetzales (Q). ');
     if(live){var a=document.createElement('a');a.href='https://www.exchangerate-api.com';a.target='_blank';a.rel='noopener';a.textContent='Rates By Exchange Rate API';p.appendChild(a)}
   }
   function apply(r,t){if(!(r>5&&r<12))return false;R=r;live=true;when=t;refresh();return true}
-  function fmt(ms){try{return new Date(ms).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}catch(e){return ''}}
+  function fmt(ms){try{return new Date(ms).toLocaleDateString(GEA_EN?'en-US':'es-GT',{month:'short',day:'numeric',year:'numeric'})}catch(e){return ''}}
   function getRate(){
     var c=null;try{c=JSON.parse(localStorage.getItem('gea-usd')||'null')}catch(e){}
     if(c&&c.r&&Date.now()-c.t<6*3600e3){apply(c.r,fmt(c.t));return}
