@@ -3,5 +3,6 @@
    formKey: clave PÚBLICA del servicio, si la requiere (Web3Forms la llama access_key).
    ga4Id: ID de medición de Google Analytics 4 (G-XXXXXXXXXX). Vacío = analítica apagada.
    usdRate: quetzales por 1 USD, solo para la equivalencia aproximada en la versión en inglés (tipo de cambio de referencia del Banguat, 20 nov 2026: 7.6478). Actualízalo cuando cambie.
+   chatUrl: dirección del Worker de Cloudflare del asistente con IA (ver chat-worker/LEEME.md). Vacío = el chat no se muestra.
    reportUrl: enlace de inserción (embed) de un informe de Looker Studio con permisos solo para GEA. Vacío = no se muestra. */
-window.GEA_CONFIG={formEndpoint:'',formKey:'',ga4Id:'G-W9EH1L3LKN',reportUrl:'',whatsapp:'50242794894',usdRate:7.65,usdDate:'Nov 20, 2026'};
+window.GEA_CONFIG={chatUrl:'',formEndpoint:'',formKey:'',ga4Id:'G-W9EH1L3LKN',reportUrl:'',whatsapp:'50242794894',usdRate:7.65,usdDate:'Nov 20, 2026'};
