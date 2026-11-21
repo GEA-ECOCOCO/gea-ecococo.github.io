@@ -1056,3 +1056,11 @@ p:has(>.btn+.btn)>.btn{margin:0!important}
 .pg b{display:block;font-size:1rem;margin-bottom:4px;color:#1A1A1A}
 .pg span{font-size:.9rem;color:#6B5436}
 .pagos-n{margin-top:12px;color:var(--muted);font-size:.92rem}
+
+/* carrito flotante, encima del botón de WhatsApp */
+.cart-float{position:fixed;right:16px;bottom:calc(16px + 66px + 12px + env(safe-area-inset-bottom,0px));z-index:900;width:58px;height:58px;border-radius:50%;background:#1A1A1A;color:#F5F0E6;border:2px solid #E85D04;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.35);transition:transform .15s,background .15s}
+.cart-float:hover,.cart-float:focus-visible{background:#000;transform:translateY(-2px);outline:0}
+.cart-float .cart-n{top:-6px;right:-6px}
+body.noscroll .cart-float{display:none}
+@media(max-width:700px){.cart-float{right:17px;width:54px;height:54px;bottom:calc(14px + 60px + 12px + env(safe-area-inset-bottom,0px))}}
+@media print{.cart-float{display:none}}
