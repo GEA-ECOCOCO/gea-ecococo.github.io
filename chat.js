@@ -3,7 +3,7 @@
 var C=window.GEA_CONFIG||{};var AI=!!C.chatUrl;var DB=window.GEA_FAQ;if(!AI&&!DB)return;
 var EN=/^en/i.test(document.documentElement.lang||'');
 function L(es,en){return EN?en:es}
-var KEY='gea-chat',CK='gea-chat-n',MAXQ=10,hist=[],busy=false,open=false,last=0;
+var KEY='gea-chat',CK='gea-chat-n',MAXQ=20,hist=[],busy=false,open=false,last=0;
 try{hist=JSON.parse(sessionStorage.getItem(KEY)||'[]').slice(-14)}catch(e){}
 function save(){try{sessionStorage.setItem(KEY,JSON.stringify(hist.slice(-14)))}catch(e){}}
 function track(n,p){try{window.geaTrack&&window.geaTrack(n,p||{})}catch(e){}}
@@ -36,7 +36,7 @@ function add(role,text){
 }
 function render(){
   log.textContent='';
-  if(!hist.length){add('assistant',L('Hola, soy el asistente de ECOCOCO. Puedo ayudarte con precios, presentaciones, pedidos, entregas, pagos y uso del carbón. ¿Qué necesitas?','Hi, I\'m the ECOCOCO assistant. I can help with prices, sizes, orders, delivery, payment and how to use the charcoal. What do you need?'));
+  if(!hist.length){add('assistant',L('Hola, soy tu asesor de ECOCOCO. Cuéntame qué buscas y te oriento: ¿es para tu casa, para un restaurante o para revender?','Hi, I\'m your ECOCOCO advisor. Tell me what you\'re looking for and I\'ll guide you: is it for your home, a restaurant or to resell?'));
     sug.hidden=false}
   else{hist.forEach(function(h){add(h.role,h.content)});sug.hidden=true}
 }
