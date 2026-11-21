@@ -58,7 +58,7 @@ function answerLocal(txt,wait){
   var r=local(txt);if(wait)wait.remove();
   if(!r)r=L('No tengo ese dato confirmado. Escríbenos por WhatsApp y una persona te responde. [[WA]]','I don\'t have that confirmed. Message us on WhatsApp and a person will answer. [[WA]]');
   hist.push({role:'assistant',content:r});save();add('assistant',r);done()}
-function dbg(m){try{if(true)add('assistant','[diagnóstico] '+m)}catch(e){}}
+function dbg(m){try{if(location.hash.indexOf('chatdebug')>-1)add('assistant','[diagnóstico] '+m)}catch(e){}}
 function send(txt){
   txt=String(txt||'').trim().slice(0,500);if(!txt||busy)return;
   if(Date.now()-last<1200)return;last=Date.now();
@@ -75,7 +75,7 @@ function send(txt){
   .then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j,s:r.status}})})
   .then(function(o){
     clearTimeout(to);
-    if(o.ok&&o.j&&o.j.reply){wait.remove();hist.push({role:'assistant',content:o.j.reply});save();add('assistant',o.j.reply);done()}
+    if(o.ok&&o.j&&o.j.reply){var rp=String(o.j.reply).replace(/\*\*/g,'').replace(/^#+\s*/gm,'');wait.remove();hist.push({role:'assistant',content:rp});save();add('assistant',rp);done()}
     else if(o.s===429){wait.remove();hist.pop();save();fail(true);done()}
     else{dbg('HTTP '+o.s+' '+JSON.stringify(o.j));answerLocal(txt,wait)}
   }).catch(function(e){clearTimeout(to);dbg('fetch: '+(e&&e.message||e));answerLocal(txt,wait)});
