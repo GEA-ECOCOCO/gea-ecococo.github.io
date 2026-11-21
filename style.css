@@ -1136,3 +1136,7 @@ body.chat-open .wa-float,body.chat-open .cart-float{visibility:hidden}
 
 /* Respiro al final del footer para que los botones flotantes no tapen el texto legal */
 footer.pie{padding-bottom:calc(236px + env(safe-area-inset-bottom,0px))}
+
+/* Botón instalar app */
+.pwa-i{margin-top:16px;background:#B6F23C;color:#04100A;border:0;border-radius:999px;padding:11px 20px;font-family:var(--cond);text-transform:uppercase;letter-spacing:.04em;font-size:1rem;cursor:pointer}
+.pwa-i:hover{filter:brightness(1.06)}

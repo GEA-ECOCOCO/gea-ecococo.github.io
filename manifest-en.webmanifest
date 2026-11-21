@@ -1,0 +1,75 @@
+{
+ "name": "ECOCOCO · GEA Carbón",
+ "short_name": "ECOCOCO",
+ "description": "Coconut shell charcoal briquettes. Prices, orders and virtual advisor.",
+ "lang": "en",
+ "id": "/en/",
+ "start_url": "/en/?utm_source=pwa",
+ "scope": "/en/",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#04100A",
+ "theme_color": "#04100A",
+ "categories": [
+  "shopping",
+  "business"
+ ],
+ "icons": [
+  {
+   "src": "/img/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "/img/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "/img/icon-maskable-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "maskable"
+  },
+  {
+   "src": "/img/icon-maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ],
+ "shortcuts": [
+  {
+   "name": "Prices",
+   "url": "/en/precios.html",
+   "icons": [
+    {
+     "src": "/img/icon-192.png",
+     "sizes": "192x192"
+    }
+   ]
+  },
+  {
+   "name": "How to buy",
+   "url": "/en/como-comprar.html",
+   "icons": [
+    {
+     "src": "/img/icon-192.png",
+     "sizes": "192x192"
+    }
+   ]
+  },
+  {
+   "name": "Distributors",
+   "url": "/en/distribuidores.html",
+   "icons": [
+    {
+     "src": "/img/icon-192.png",
+     "sizes": "192x192"
+    }
+   ]
+  }
+ ]
+}

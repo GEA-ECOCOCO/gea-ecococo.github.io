@@ -715,3 +715,22 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   function run(){if(mark())note();getRate()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
 })();
+
+/* App instalable (PWA): service worker + botón "Instalar app" */
+(function(){
+  if('serviceWorker' in navigator){addEventListener('load',function(){try{navigator.serviceWorker.register('/sw.js').catch(function(){})}catch(e){}})}
+  function std(){try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false}}
+  if(std())return;
+  var dp=null;
+  function show(){
+    if(document.getElementById('pwa-i'))return;
+    var f=document.querySelector('footer.pie .wrap');if(!f)return;
+    var en=(document.documentElement.lang||'').indexOf('en')===0;
+    var b=document.createElement('button');b.id='pwa-i';b.type='button';b.className='pwa-i';
+    b.textContent=en?'Install app':'Instalar app';
+    b.onclick=function(){if(!dp)return;dp.prompt();dp.userChoice.then(function(){},function(){}).then(function(){dp=null;if(b.parentNode)b.parentNode.removeChild(b)})};
+    f.appendChild(b);
+  }
+  addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e;show()});
+  addEventListener('appinstalled',function(){var b=document.getElementById('pwa-i');if(b&&b.parentNode)b.parentNode.removeChild(b)});
+})();

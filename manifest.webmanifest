@@ -1,0 +1,75 @@
+{
+ "name": "ECOCOCO · GEA Carbón",
+ "short_name": "ECOCOCO",
+ "description": "Briquetas de carbón de cáscara de coco. Precios, pedidos y asesor virtual.",
+ "lang": "es",
+ "id": "/",
+ "start_url": "/?utm_source=pwa",
+ "scope": "/",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#04100A",
+ "theme_color": "#04100A",
+ "categories": [
+  "shopping",
+  "business"
+ ],
+ "icons": [
+  {
+   "src": "/img/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "/img/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "/img/icon-maskable-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "maskable"
+  },
+  {
+   "src": "/img/icon-maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ],
+ "shortcuts": [
+  {
+   "name": "Precios",
+   "url": "/precios.html",
+   "icons": [
+    {
+     "src": "/img/icon-192.png",
+     "sizes": "192x192"
+    }
+   ]
+  },
+  {
+   "name": "Cómo comprar",
+   "url": "/como-comprar.html",
+   "icons": [
+    {
+     "src": "/img/icon-192.png",
+     "sizes": "192x192"
+    }
+   ]
+  },
+  {
+   "name": "Distribuidores",
+   "url": "/distribuidores.html",
+   "icons": [
+    {
+     "src": "/img/icon-192.png",
+     "sizes": "192x192"
+    }
+   ]
+  }
+ ]
+}
