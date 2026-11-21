@@ -730,6 +730,9 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   window.GEA_INSTALL={standalone:std,help:help,install:function(cb){
     if(dp){var p=dp;dp=null;p.prompt();p.userChoice.then(function(c){cb&&cb(c&&c.outcome==='accepted'?'ok':'no')},function(){cb&&cb('no')})}
     else cb&&cb('manual',help())}};
+  var promo=document.querySelector('[data-app-promo]');
+  if(promo&&!std()){promo.hidden=false;var pb=promo.querySelector('[data-app-install]'),pn=promo.querySelector('[data-app-note]');
+    pb.addEventListener('click',function(){try{window.geaTrack&&geaTrack('click_instalar_app',{origen:'inicio'})}catch(e){}GEA_INSTALL.install(function(r,h){if(r==='manual'){pn.textContent=h;pn.hidden=false}else if(r==='ok')promo.hidden=true})})}
   if(std())return;
   function mount(){
     if(document.getElementById('pwa-i'))return;

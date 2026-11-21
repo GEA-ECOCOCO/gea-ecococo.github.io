@@ -1151,3 +1151,11 @@ footer.pie{padding-bottom:calc(236px + env(safe-area-inset-bottom,0px))}
 .pwa-tb{background:none;border:0;color:#04100A;font:700 .9rem/1.3 inherit;font-family:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .pwa-tx{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;color:#04100A;font-size:1.5rem;line-height:1;width:32px;height:32px;cursor:pointer}
 .pwa-tn{flex-basis:100%;font-size:.85rem}
+.app-promo{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px 14px;max-width:620px;margin:0 auto 22px;padding:14px 16px;border-radius:22px;background:linear-gradient(135deg,#B6F23C,#7BD33A);color:#04100A;box-shadow:0 12px 34px rgba(0,0,0,.4);text-align:left}
+.app-promo[hidden]{display:none}
+.app-promo:before{content:'📲';font-size:2rem;line-height:1}
+.ap-tx{flex:1 1 200px;display:flex;flex-direction:column;gap:2px}
+.ap-t{font-family:var(--cond);text-transform:uppercase;letter-spacing:.04em;font-size:1.15rem}
+.ap-s{font-size:.9rem;line-height:1.3}
+.ap-bt{border:0;border-radius:999px;background:#04100A;color:#B6F23C;font-family:var(--cond);text-transform:uppercase;letter-spacing:.05em;font-size:1rem;padding:12px 22px;cursor:pointer}
+.ap-n{flex-basis:100%;font-size:.88rem;font-weight:600}
