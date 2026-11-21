@@ -418,8 +418,33 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       var url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ECOCOCO-'+ordNo+'.pdf';document.body.appendChild(a);a.click();
       setTimeout(function(){URL.revokeObjectURL(url);a.remove()},1500);
       if(window.geaTrack)geaTrack('download_order_pdf',{destino:'carrito'});
+      ordenListo(blob,'ECOCOCO-'+ordNo+'.pdf',ordNo,aW.href);
     });
     aW.addEventListener('click',function(e){var bad=valida();if(bad){e.preventDefault();e.stopPropagation();bad.focus();return}aW.href=msgWA();if(window.geaTrack)geaTrack('click_whatsapp',{destino:'carrito'})});
+  }
+  function ordenListo(blob,name,no,href){
+    var old=document.getElementById('ord-ok');if(old)old.remove();
+    var m=document.createElement('div');m.className='wch';m.id='ord-ok';m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.setAttribute('aria-label',gL('Tu orden está lista','Your order is ready'));
+    var canShare=false;
+    try{var f=new File([blob],name,{type:'application/pdf'});canShare=!!(navigator.canShare&&navigator.canShare({files:[f]}))}catch(e){}
+    m.innerHTML='<div class="wch-in"><div class="wch-h"><h2>'+gL('Tu orden está lista','Your order is ready')+'</h2><button type="button" class="wch-b" aria-label="'+gL('Cerrar','Close')+'" data-x>✕</button></div>'+
+      '<p class="wch-s">'+gL('Se descargó el PDF <b>'+name+'</b>. Para que GEA Carbón lo reciba, sigue estos pasos:','The PDF <b>'+name+'</b> was downloaded. To send it to GEA Carbón, follow these steps:')+'</p>'+
+      '<ol class="ord-p"><li>'+gL('Toca <b>Abrir WhatsApp</b>. Se abre el chat con tu pedido ya escrito. Envíalo.','Tap <b>Open WhatsApp</b>. The chat opens with your order already written. Send it.')+'</li>'+
+      '<li>'+gL('En el chat toca el clip <b>📎</b>, elige <b>Documento</b> y selecciona el PDF <b>'+name+'</b> (está en tus Descargas). Envíalo.','In the chat tap the paperclip <b>📎</b>, choose <b>Document</b> and select the PDF <b>'+name+'</b> (it is in your Downloads). Send it.')+'</li></ol>'+
+      '<a class="btn wa" data-direct target="_blank" rel="noopener" href="'+href+'">'+gL('Abrir WhatsApp','Open WhatsApp')+'</a>'+
+      (canShare?'<button type="button" class="btn pdf" data-share>'+gL('Compartir el PDF desde mi teléfono','Share the PDF from my phone')+'</button><p class="ord-n">'+gL('Al compartir, elige WhatsApp y luego el chat de GEA Carbón (4279-4894).','When sharing, choose WhatsApp and then the GEA Carbón chat (4279-4894).')+'</p>':'')+
+      '<button type="button" class="vaciar" data-again>'+gL('Descargar el PDF otra vez','Download the PDF again')+'</button></div>';
+    document.body.appendChild(m);
+    function cierra(){m.remove()}
+    m.addEventListener('click',function(e){
+      var t=e.target;
+      if(t===m||t.closest('[data-x]')){cierra();return}
+      if(t.closest('[data-again]')){var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(u);a.remove()},1500)}
+      if(t.closest('[data-share]')){navigator.share({files:[new File([blob],name,{type:'application/pdf'})],title:'ECOCOCO '+no,text:gL('Orden de pedido ','Order ')+no}).catch(function(){});if(window.geaTrack)geaTrack('click_whatsapp',{destino:'orden_pdf_compartir'})}
+      if(t.closest('a[data-direct]')&&window.geaTrack)geaTrack('click_whatsapp',{destino:'orden_pdf'});
+    });
+    document.addEventListener('keydown',function k(e){if(e.key==='Escape'){cierra();document.removeEventListener('keydown',k)}});
+    var first=m.querySelector('a[data-direct]');if(first)first.focus();
   }
   var last=null;
   function abrirC(){sb.hidden=true;last=document.activeElement;cd.setAttribute('aria-hidden','false');cbg.hidden=false;body.classList.add('noscroll');cd.classList.add('on');paint();q('.ovl-x',cd).focus()}

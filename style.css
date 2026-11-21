@@ -1036,3 +1036,13 @@ p:has(>.btn+.btn)>.btn{margin:0!important}
 /* botón «Descargar orden en PDF» en el carrito */
 .cart-f .btn.pdf{display:block;width:100%;box-sizing:border-box;margin:0 0 14px;padding:14px 24px;border-radius:999px;background:transparent;color:#1A1A1A;border:2px solid #1A1A1A;font-family:var(--cond);text-transform:uppercase;letter-spacing:.05em;font-size:1rem;cursor:pointer;text-align:center;animation:none}
 .cart-f .btn.pdf:hover,.cart-f .btn.pdf:focus-visible{background:#1A1A1A;color:#F5F0E6;outline:0}
+
+/* ventana «Tu orden está lista» */
+#ord-ok{z-index:1300}
+#ord-ok .ord-p{margin:0 0 16px 20px;padding:0;color:#2A231C;font-size:.95rem;line-height:1.5}
+#ord-ok .ord-p li{margin-bottom:10px}
+#ord-ok .btn.wa{display:block;text-align:center;margin:0 0 14px;border-radius:999px;padding:15px 24px}
+#ord-ok .btn.pdf{display:block;width:100%;box-sizing:border-box;margin:0 0 8px;padding:13px 24px;border-radius:999px;background:transparent;color:#1A1A1A;border:2px solid #1A1A1A;font-family:var(--cond);text-transform:uppercase;letter-spacing:.05em;font-size:1rem;cursor:pointer}
+#ord-ok .ord-n{font-size:.85rem;color:#6B5436;margin:0 0 14px}
+#ord-ok .vaciar{display:block;margin:6px auto 0;background:none;border:0;color:#6B5436;text-decoration:underline;cursor:pointer;padding:10px 6px}
+@media(min-width:901px){#ord-ok .ord-p{font-size:1.05rem}}
