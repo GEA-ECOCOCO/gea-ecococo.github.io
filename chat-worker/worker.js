@@ -1,4 +1,4 @@
-/* ECOCOCO · Asistente de chat (Cloudflare Worker) · v2.1 reglas prudentes
+/* ECOCOCO · Asistente de chat (Cloudflare Worker) · v2.2
    Recibe la conversación desde el sitio, la envía a la API de Anthropic con los datos de GEA Carbón
    y devuelve la respuesta. La clave de la API vive SOLO aquí, como secreto: ANTHROPIC_API_KEY.
    Variables opcionales: ALLOWED_ORIGINS (separadas por coma), MODEL, DAILY_CAP, RATE_LIMIT.
@@ -101,12 +101,14 @@ export default {
     try {
       const ctl = new AbortController();
       const timer = setTimeout(() => ctl.abort(), 22000);
-      const r = await fetch('https://api.anthropic.com/v1/messages', {
+      const call = (model) => fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'content-type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': env.ANTHROPIC_VERSION || '2023-06-01' },
-        body: JSON.stringify({ model: env.MODEL || 'claude-haiku-5-5', max_tokens: 300, system, messages: clean }),
+        body: JSON.stringify({ model, max_tokens: 300, system, messages: clean }),
         signal: ctl.signal
       });
+      let r = await call(env.MODEL || 'claude-haiku-4-5');
+      if (!r.ok && (r.status === 400 || r.status === 404) && !env.MODEL_STRICT) r = await call('claude-haiku-4-5');
       clearTimeout(timer);
       if (!r.ok) { let d = ''; try { const e = await r.json(); d = String((e && e.error && e.error.message) || '').slice(0, 160); } catch (_) {} return json({ error: 'upstream', status: r.status, detail: d }, 502, origin); }
       const data = await r.json();
