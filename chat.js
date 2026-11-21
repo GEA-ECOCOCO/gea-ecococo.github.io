@@ -58,7 +58,7 @@ function answerLocal(txt,wait){
   var r=local(txt);if(wait)wait.remove();
   if(!r)r=L('No tengo ese dato confirmado. Escríbenos por WhatsApp y una persona te responde. [[WA]]','I don\'t have that confirmed. Message us on WhatsApp and a person will answer. [[WA]]');
   hist.push({role:'assistant',content:r});save();add('assistant',r);done()}
-function dbg(m){try{if(location.hash.indexOf('chatdebug')>-1)add('assistant','[diagnóstico] '+m)}catch(e){}}
+function dbg(m){try{if(true)add('assistant','[diagnóstico] '+m)}catch(e){}}
 function send(txt){
   txt=String(txt||'').trim().slice(0,500);if(!txt||busy)return;
   if(Date.now()-last<1200)return;last=Date.now();
