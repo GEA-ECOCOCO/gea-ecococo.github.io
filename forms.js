@@ -30,7 +30,8 @@
      +'<p>'+L('Número de solicitud','Application number')+': <strong>'+d.id+'</strong></p>'
      +(registrada?'<p>'+L('Nuestro equipo comercial te contactará al '+d.telefono+'. Si quieres agilizarlo, escríbenos también por WhatsApp.','Our sales team will contact you at '+d.telefono+'. To speed things up, message us on WhatsApp too.')+'</p>'
                  :'<p>'+L('Para completar tu solicitud, envíala por WhatsApp con un toque. Así la recibe directamente nuestro equipo comercial.','To complete your application, send it on WhatsApp with one tap. That way our sales team receives it directly.')+'</p>')
-     +'<p><a class="btn wa" target="_blank" rel="noopener" href="'+wa+'">'+L('Enviar por WhatsApp','Send on WhatsApp')+'</a></p>';
+     +'<p><a class="btn wa" target="_blank" rel="noopener" href="'+wa+'">'+L('Enviar por WhatsApp','Send on WhatsApp')+'</a></p>'
+     +'<p><a class="btn" href="mailto:geaecococo.ventas@gmail.com?subject='+encodeURIComponent(L('Solicitud de distribuidor ','Distributor application ')+d.id)+'&body='+encodeURIComponent(textoWA(d))+'">'+L('O enviar por correo','Or send by email')+'</a></p>';
     ok.focus();
     if(window.geaTrack)geaTrack('generate_lead',{tipo:d.tipo,registrada:!!registrada});
   }
