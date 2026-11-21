@@ -368,6 +368,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     var ks=Object.keys(cart);
     if(!ks.length){cb.innerHTML='<p class="vacio">'+gL('Tu carrito está vacío. Agrega tu carbón ECOCOCO para armar tu pedido.','Your cart is empty. Add your ECOCOCO charcoal to build your order.')+'</p><p><button type="button" class="btn pill add" data-add="k1">'+gL('Agregar bolsa 1 kg','Add 1 kg bag')+' · Q'+PROD.k1.p+'</button></p><p><button type="button" class="btn pill add" data-add="k25">'+gL('Agregar bulto 25 kg','Add 25 kg sack')+' · Q'+PROD.k25.p+'</button></p>';cf.innerHTML='';return}
     cb.innerHTML=ks.map(function(k){var p=PROD[k];return '<div class="li"><div class="li-t"><b>'+pn(k)+'</b><span>'+Q(p.p)+' '+gL('c/u','each')+'</span></div><div class="li-q"><button type="button" data-q="-1" data-k="'+k+'" aria-label="'+gL('Quitar uno','Remove one')+'">−</button><span>'+cart[k]+'</span><button type="button" data-q="1" data-k="'+k+'" aria-label="'+gL('Agregar uno','Add one')+'">+</button></div><div class="li-s">'+Q(cart[k]*p.p)+'</div><button type="button" class="li-x" data-del="'+k+'" aria-label="'+gL('Eliminar','Remove')+'">✕</button></div>'}).join('');
+    var ordNo='';
     function msgWA(){
       var L=[gL('Hola, quiero hacer este pedido de ECOCOCO:','Hi, I\'d like to place this ECOCOCO order:')];
       L.push('');L.push(gL('DATOS DE ENTREGA','DELIVERY DETAILS'));
@@ -379,7 +380,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       if(cD.dir)L.push(gL('Calle o avenida y N.º de casa o lote: ','Street or avenue and house or lot no.: ')+cD.dir);
       if(cD.ref)L.push(gL('Referencia: ','Landmark: ')+cD.ref);
       if(cD.nota)L.push(gL('Notas: ','Notes: ')+cD.nota);
-      L.push('');L.push(gL('PEDIDO','ORDER'));
+      L.push('');L.push(gL('PEDIDO','ORDER')+(ordNo?' '+ordNo:''));
       ks.forEach(function(k){var p=PROD[k];L.push('• '+pn(k)+': '+cart[k]+' × '+Q(p.p)+' = '+Q(cart[k]*p.p))});
       L.push('');L.push(gL('Total del pedido: ','Order total: ')+Q(total()));
       L.push(gL('Entrega y forma de pago: por coordinar.','Delivery and payment: to be arranged.'));
@@ -391,7 +392,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       '<div class="cf"><label for="c-dep">'+gL('Departamento *','Department *')+'</label><select id="c-dep" data-c="dep"><option value="">'+gL('Selecciona','Select')+'</option>'+DEPS.map(function(x){return '<option>'+x+'</option>'}).join('')+'</select><span class="ce"></span></div>'+
       cfield('mun',gL('Municipio *','Town *'),'text','address-level2',60)+cfield('zon',gL('Colonia, lotificación, sección o zona *','Neighborhood, subdivision, section or zone *'),'text','off',80)+
       cfield('dir',gL('Calle o avenida y número de casa o lote *','Street or avenue and house or lot number *'),'text','street-address',100)+cfield('ref',gL('Referencia para llegar *','Landmark to find you *'),'text','off',120,gL('Ej. frente a la iglesia, portón negro','E.g. in front of the church, black gate'))+cfield('nota',gL('Notas o especificaciones (opcional)','Notes or specifications (optional)'),'text','off',150)+
-      '<p class="cdat-p">'+gL('Estos datos solo se usan para coordinar tu entrega y viajan en el mensaje de WhatsApp. No los guardamos en el sitio.','These details are only used to arrange your delivery and travel in the WhatsApp message. We do not store them on the site.')+'</p></div><a class="btn wa" id="c-wa" href="'+msgWA()+'" target="_blank" rel="noopener">'+gL('Enviar pedido por WhatsApp','Send order on WhatsApp')+'</a><button type="button" class="vaciar" data-vaciar>'+gL('Vaciar carrito','Empty cart')+'</button>';
+      '<p class="cdat-p">'+gL('Estos datos solo se usan para coordinar tu entrega y viajan en el mensaje de WhatsApp. No los guardamos en el sitio.','These details are only used to arrange your delivery and travel in the WhatsApp message. We do not store them on the site.')+'</p></div><a class="btn wa" id="c-wa" href="'+msgWA()+'" target="_blank" rel="noopener">'+gL('Enviar pedido por WhatsApp','Send order on WhatsApp')+'</a><button type="button" class="btn pdf" id="c-pdf">'+gL('Descargar orden en PDF','Download order PDF')+'</button><button type="button" class="vaciar" data-vaciar>'+gL('Vaciar carrito','Empty cart')+'</button>';
     var aW=q('#c-wa',cf),REQ=['nom','tel','dep','mun','zon','dir','ref'];
     cf.querySelectorAll('[data-c]').forEach(function(el){el.value=cD[el.getAttribute('data-c')]||'';
       var h=function(){cD[el.getAttribute('data-c')]=el.value.replace(/\s+/g,' ').trim();aW.href=msgWA()};el.addEventListener('input',h);el.addEventListener('change',h)});
@@ -407,6 +408,17 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       });
       return bad;
     }
+    var aP=q('#c-pdf',cf);
+    if(aP)aP.addEventListener('click',function(){
+      var bad=valida();if(bad){bad.focus();return}
+      if(typeof window.geaOrdenPDF!=='function'){alert(gL('El generador de PDF aún no cargó. Intenta de nuevo en unos segundos.','The PDF generator has not loaded yet. Please try again in a few seconds.'));return}
+      ordNo=window.geaOrdenNo();aW.href=msgWA();
+      var items=Object.keys(cart).map(function(k){return {cod:PROD[k].c,nom:pn(k),cant:cart[k],p:PROD[k].p}});
+      var blob=window.geaOrdenPDF({en:GEA_EN,no:ordNo,fecha:window.geaOrdenFecha(GEA_EN),cli:cD,items:items,bulto:cart.k25>0});
+      var url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ECOCOCO-'+ordNo+'.pdf';document.body.appendChild(a);a.click();
+      setTimeout(function(){URL.revokeObjectURL(url);a.remove()},1500);
+      if(window.geaTrack)geaTrack('download_order_pdf',{destino:'carrito'});
+    });
     aW.addEventListener('click',function(e){var bad=valida();if(bad){e.preventDefault();e.stopPropagation();bad.focus();return}aW.href=msgWA();if(window.geaTrack)geaTrack('click_whatsapp',{destino:'carrito'})});
   }
   var last=null;

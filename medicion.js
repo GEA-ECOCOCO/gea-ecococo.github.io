@@ -1,7 +1,7 @@
 /* Panel de medición: estado de la conexión, informe y registro de pruebas de este dispositivo. */
 (function(){
   var C=window.GEA_CONFIG||{},$=function(i){return document.getElementById(i)};
-  var NOM={page_view:'Visita de página',click_whatsapp:'Clic en WhatsApp',view_item:'Producto consultado',add_to_cart:'Agregado al carrito',view_cart:'Carrito abierto',generate_lead:'Solicitud (distribuidor / negocio)',download_catalog:'Descarga de catálogo',language_switch:'Cambio de idioma'};
+  var NOM={page_view:'Visita de página',click_whatsapp:'Clic en WhatsApp',view_item:'Producto consultado',add_to_cart:'Agregado al carrito',view_cart:'Carrito abierto',download_order_pdf:'Orden en PDF descargada',generate_lead:'Solicitud (distribuidor / negocio)',download_catalog:'Descarga de catálogo',language_switch:'Cambio de idioma'};
   var KPI=[['page_view','Visitas de página'],['view_item','Productos consultados'],['add_to_cart','Agregados al carrito'],['click_whatsapp','Clics en WhatsApp'],['generate_lead','Solicitudes de negocios'],['download_catalog','Descargas del catálogo']];
   function log(){try{return JSON.parse(localStorage.getItem('gea-med-log'))||[]}catch(e){return []}}
   function esc(t){return String(t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}

@@ -1032,3 +1032,7 @@ p:has(>.btn+.btn)>.btn{margin:0!important}
   .consent p{font-size:1.05rem}
   .consent button{padding:11px 24px;font-size:1.05rem}
 }
+
+/* botón «Descargar orden en PDF» en el carrito */
+.cart-f .btn.pdf{display:block;width:100%;box-sizing:border-box;margin:0 0 14px;padding:14px 24px;border-radius:999px;background:transparent;color:#1A1A1A;border:2px solid #1A1A1A;font-family:var(--cond);text-transform:uppercase;letter-spacing:.05em;font-size:1rem;cursor:pointer;text-align:center;animation:none}
+.cart-f .btn.pdf:hover,.cart-f .btn.pdf:focus-visible{background:#1A1A1A;color:#F5F0E6;outline:0}
