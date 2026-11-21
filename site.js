@@ -310,7 +310,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
    ['Our product','ECOCOCO briquettes: ignition time, benefits, safe use','producto.html','briquette charcoal coconut ignition 5 10 minutes heat safety monoxide'],
    ['See it light up','Video and photos of the briquettes on the embers','en-accion.html','video photos embers grill light'],
    ['Production process','From coconut shell to briquette','proceso.html','shell carbonization grinding mixing drying'],
-   ['Plant log','Real progress: kilns, tests and first batches','bitacora.html','plant kiln tests batches progress'],
+   ['Plant updates','Real progress: kilns, tests and first batches','bitacora.html','plant kiln tests batches progress'],
    ['Prices','Price per kg, 25 kg sack for wholesalers and calculator','precios.html','price cost how much sack kg calculator wholesale'],
    ['How to buy and FAQ','Steps to order, minimums, payment and delivery','como-comprar.html','how buy order faq questions payment delivery invoice'],
    ['Distributors and wholesalers','Commercial terms and volume orders','distribuidores.html','distributor wholesale shop restaurant volume business'],
