@@ -716,21 +716,32 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
 })();
 
-/* App instalable (PWA): service worker + botón "Instalar app" */
+/* App instalable (PWA): service worker + invitación a instalar */
 (function(){
   if('serviceWorker' in navigator){addEventListener('load',function(){try{navigator.serviceWorker.register('/sw.js').catch(function(){})}catch(e){}})}
   function std(){try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false}}
+  var en=(document.documentElement.lang||'').indexOf('en')===0,dp=null;
+  var ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  function help(){
+    if(ios)return en?'On iPhone: tap the Share button in Safari, then "Add to Home Screen".':'En iPhone: toca el botón Compartir de Safari y luego "Añadir a pantalla de inicio".';
+    return en?'On Android: open the browser menu (the three dots) and tap "Install app" or "Add to Home screen".':'En Android: abre el menú del navegador (los tres puntos) y toca "Instalar aplicación" o "Añadir a pantalla de inicio".';
+  }
+  /* Se expone para el chat: install(cb) intenta el aviso nativo; si no hay, devuelve instrucciones */
+  window.GEA_INSTALL={standalone:std,help:help,install:function(cb){
+    if(dp){var p=dp;dp=null;p.prompt();p.userChoice.then(function(c){cb&&cb(c&&c.outcome==='accepted'?'ok':'no')},function(){cb&&cb('no')})}
+    else cb&&cb('manual',help())}};
   if(std())return;
-  var dp=null;
-  function show(){
+  function mount(){
     if(document.getElementById('pwa-i'))return;
     var f=document.querySelector('footer.pie .wrap');if(!f)return;
-    var en=(document.documentElement.lang||'').indexOf('en')===0;
+    var d=document.createElement('div');d.className='pwa-box';
     var b=document.createElement('button');b.id='pwa-i';b.type='button';b.className='pwa-i';
-    b.textContent=en?'Install app':'Instalar app';
-    b.onclick=function(){if(!dp)return;dp.prompt();dp.userChoice.then(function(){},function(){}).then(function(){dp=null;if(b.parentNode)b.parentNode.removeChild(b)})};
-    f.appendChild(b);
+    b.textContent=en?'Install the ECOCOCO app':'Instalar la app ECOCOCO';
+    var n=document.createElement('p');n.className='pwa-n';n.hidden=true;
+    b.onclick=function(){GEA_INSTALL.install(function(r,h){if(r==='manual'){n.textContent=h;n.hidden=false}else if(r==='ok'){d.remove()}})};
+    d.appendChild(b);d.appendChild(n);f.appendChild(d);
   }
-  addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e;show()});
-  addEventListener('appinstalled',function(){var b=document.getElementById('pwa-i');if(b&&b.parentNode)b.parentNode.removeChild(b)});
+  addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e});
+  addEventListener('appinstalled',function(){var d=document.querySelector('.pwa-box');if(d)d.remove()});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
 })();

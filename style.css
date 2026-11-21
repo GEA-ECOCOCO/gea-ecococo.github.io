@@ -1144,3 +1144,6 @@ footer.pie{padding-bottom:calc(236px + env(safe-area-inset-bottom,0px))}
 .chat-links{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .chat-ln{display:inline-block;background:#fff;color:#0B2E17;border:1.5px solid #1f7a3a;text-decoration:none;font-weight:700;font-size:.85rem;padding:7px 12px;border-radius:999px}
 .chat-ln:hover{background:#eaf7ee}
+.pwa-n{margin:10px 0 0;font-size:.9rem;opacity:.9}
+.chat-inst{background:#B6F23C;border-color:#B6F23C;cursor:pointer;font-family:inherit}
+.chat-hp{margin:8px 0 0;font-size:.85rem}

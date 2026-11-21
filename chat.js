@@ -31,12 +31,16 @@ var LINKS={'producto':['producto.html','Ver producto','View product'],'precios':
 function linkBtns(keys){var d=el('div','chat-links');keys.slice(0,2).forEach(function(k){var x=LINKS[k];if(!x)return;var a=el('a','chat-ln',L(x[1],x[2])+' →');a.href=x[0];a.addEventListener('click',function(){track('click_chat_link',{destino:k})});d.appendChild(a)});return d.childNodes.length?d:null}
 function add(role,text,fk){
   var lk=[];if(role==='assistant'){text=String(text).replace(/\[\[LINK:([a-z-]+)\]\]/g,function(_,k){if(LINKS[k]&&lk.indexOf(k)<0)lk.push(k);return ''});text=text.replace(/\s+$/,'')}
+  var inst=false;if(role==='assistant'&&/\[\[INSTALL\]\]/.test(text)){inst=true;text=text.replace(/\s*\[\[INSTALL\]\]\s*/g,' ').trim()}
   if(!lk.length&&fk)lk=fk;
   var wa=false;if(role==='assistant'&&/\[\[WA\]\]/.test(text)){wa=true;text=text.replace(/\s*\[\[WA\]\]\s*/g,' ').trim()}
   var m=el('div','chat-m '+(role==='user'?'u':'a'));
   String(text).split(/\n+/).forEach(function(par){if(par.trim())m.appendChild(el('p','',par))});
   if(wa){var a=el('a','chat-wa',L('Continuar por WhatsApp','Continue on WhatsApp'));a.href=waLink();a.target='_blank';a.rel='noopener';a.addEventListener('click',function(){track('click_whatsapp',{destino:'asistente'})});m.appendChild(a)}
   if(lk.length){var lb=linkBtns(lk);if(lb)m.appendChild(lb)}
+  if(inst&&!(window.GEA_INSTALL&&GEA_INSTALL.standalone())){var ib=el('button','chat-ln chat-inst',L('Instalar la app →','Install the app →'));ib.type='button';var hp=el('p','chat-hp');hp.hidden=true;
+    ib.addEventListener('click',function(){track('click_instalar_app',{origen:'asistente'});if(!window.GEA_INSTALL)return;GEA_INSTALL.install(function(r,h){if(r==='manual'){hp.textContent=h;hp.hidden=false}else if(r==='ok'){ib.remove()}})});
+    m.appendChild(ib);m.appendChild(hp)}
   log.appendChild(m);log.scrollTop=log.scrollHeight;return m;
 }
 function render(){
@@ -48,14 +52,15 @@ function render(){
 [[L('¿Cuánto cuesta?','How much is it?'),L('¿Cuánto cuesta cada presentación?','How much does each size cost?')],
  [L('¿Cómo hago un pedido?','How do I order?'),L('¿Cómo hago un pedido y cuáles son los métodos de pago?','How do I place an order and what payment methods are available?')],
  [L('Quiero distribuir','I want to resell'),L('Quiero ser distribuidor, ¿qué necesito?','I want to become a distributor, what do I need?')],
- [L('Envíos y exportación','Shipping & export'),L('¿Hacen envíos y cotizan exportación?','Do you ship and quote exports?')]].forEach(function(s){
+ [L('Envíos y exportación','Shipping & export'),L('¿Hacen envíos y cotizan exportación?','Do you ship and quote exports?')],
+ [L('Instalar la app','Install the app'),L('¿Cómo instalo la app en mi celular?','How do I install the app on my phone?')]].forEach(function(s){
   var b=el('button','',s[0]);b.type='button';b.addEventListener('click',function(){send(s[1])});sug.appendChild(b)});
 
 function norm(x){return String(x).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,' ')}
 function local(txt){
   if(!DB)return null;var w=norm(txt).split(/\s+/).filter(Boolean),best=null,bs=0;
   DB.faq.forEach(function(f){var ks=f.k.split(' '),sc=0;w.forEach(function(x){if(x.length>2&&ks.indexOf(x)!==-1)sc++});if(sc>bs){bs=sc;best=f}});
-  if(best)return(EN?best.en:best.es)+(best.link||[]).map(function(k){return ' [[LINK:'+k+']]'}).join('')+(best.wa?' [[WA]]':'');
+  if(best)return(EN?best.en:best.es)+(best.inst?' [[INSTALL]]':'')+(best.link||[]).map(function(k){return ' [[LINK:'+k+']]'}).join('')+(best.wa?' [[WA]]':'');
   if(w.some(function(x){return DB.greet.k.split(' ').indexOf(x)!==-1})&&w.length<4)return EN?DB.greet.en:DB.greet.es;
   return null}
 function done(){busy=false;go.disabled=false;inp.focus()}
