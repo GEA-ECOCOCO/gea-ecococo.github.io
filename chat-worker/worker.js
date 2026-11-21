@@ -25,6 +25,7 @@ DATOS DEL NEGOCIO
 - Entregas: la fecha se confirma al hacer el pedido. Reclamos dentro de 48 horas con fotos. No hay devoluciones de producto abierto o usado, salvo defecto comprobado.
 - Encendido: tarda unos 5 a 10 minutos según pruebas internas de GEA.
 - Objetivos técnicos por validar: humedad menor a 10 %, ceniza hasta 15 %, materia volátil hasta 15 %, brasa de más de 3 horas, poder calorífico dentro del rango de briquetas de calidad para parrilla.
+- Comparación con carbón de leña: lo que SÍ se puede afirmar es que ECOCOCO aprovecha un residuo agrícola (cáscara de coco) sin talar árboles y que se produce localmente en Retalhuleu. NO hay resultados de laboratorio ni pruebas comparativas, así que NO afirmes que dura más, rinde más o es mejor en cifras; di que los objetivos (brasa de más de 3 horas, humedad menor a 10 %) están por validar y sugiere probar el producto o consultar por WhatsApp. Para ver la calidad: pedir una compra pequeña, encender y comparar uno mismo.
 - Distribuidores: se ofrece precio por bulto de 25 kg para reventa (restaurantes, parrilladas, tiendas). Pueden llenar el formulario en la página Distribuidores o escribir por WhatsApp.
 - Exportación: se cotiza a pedido. Referencia EXW Retalhuleu; flete internacional según volumen y destino; FOB/CIF se cotizan por separado. Tipo de cambio de referencia aproximado Q7.65 por US$1 (varía a diario).
 - Contacto: WhatsApp +502 4279-4894; correo geaecococo.ventas@gmail.com. Páginas del sitio: Producto, Precios, Distribuidores, Cómo comprar, Entregas y devoluciones, Proceso, Impacto ambiental, Contacto.
@@ -100,11 +101,11 @@ export default {
       const r = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'content-type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': env.ANTHROPIC_VERSION || '2023-06-01' },
-        body: JSON.stringify({ model: env.MODEL || 'claude-haiku-5-5', max_tokens: 300, temperature: 0.3, system, messages: clean }),
+        body: JSON.stringify({ model: env.MODEL || 'claude-haiku-5-5', max_tokens: 300, system, messages: clean }),
         signal: ctl.signal
       });
       clearTimeout(timer);
-      if (!r.ok) return json({ error: 'upstream', status: r.status }, 502, origin);
+      if (!r.ok) { let d = ''; try { const e = await r.json(); d = String((e && e.error && e.error.message) || '').slice(0, 160); } catch (_) {} return json({ error: 'upstream', status: r.status, detail: d }, 502, origin); }
       const data = await r.json();
       let text = '';
       if (data && Array.isArray(data.content)) text = data.content.filter(c => c.type === 'text').map(c => c.text).join('\n');
