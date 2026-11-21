@@ -998,3 +998,37 @@ p:has(>.btn+.btn)>.btn{margin:0!important}
   .menu>li.has-sub>.sub-t:active,.menu>li.has-sub.open>.sub-t{background:rgba(232,93,4,.35)}
   .menu>li.has-sub.open>.sub-t{transform:none}
 }
+
+/* ventana «¿Qué necesitas?» más grande en escritorio */
+@media(min-width:901px){
+  .wch-in{max-width:680px;padding:28px 30px 32px}
+  .wch-h h2{font-size:2.1rem}
+  .wch-s{font-size:1.05rem;margin:8px 0 20px}
+  .wch-l{gap:14px}
+  .wch-l button{padding:18px 22px;gap:18px;border-radius:18px}
+  .wch-l b{font-size:1.2rem}
+  .wch-l small{font-size:1rem}
+  .wch-i{font-size:2.1rem}
+  .wch-h .wch-b{width:44px;height:44px;font-size:1.4rem}
+}
+
+/* ventanas flotantes más grandes en escritorio */
+@media(min-width:901px){
+  .sheet .panel{width:min(680px,100%);padding:32px 34px}
+  .sheet h3{font-size:1.6rem}
+  .sheet .sub{font-size:1.05rem;margin-bottom:20px}
+  .redes{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:14px}
+  .redes a,.redes button{padding:16px 8px;font-size:.92rem;gap:9px}
+  .redes i{width:52px;height:52px;font-size:1.1rem}
+  .sheet .nota{font-size:.92rem}
+  .sheet .cerrar{width:44px;height:44px;font-size:1.3rem}
+  .ovl{padding-top:90px}
+  .ovl-in{max-width:860px}
+  .ovl-x{width:48px;height:48px;font-size:1.3rem}
+  .res a b,.res .prodres b{font-size:1.5rem}
+  .res a span,.res .prodres span{font-size:1.05rem}
+  .cart{width:min(520px,100vw)}
+  .consent{max-width:880px;padding:22px 26px}
+  .consent p{font-size:1.05rem}
+  .consent button{padding:11px 24px;font-size:1.05rem}
+}
