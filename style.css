@@ -1046,3 +1046,5 @@ p:has(>.btn+.btn)>.btn{margin:0!important}
 #ord-ok .ord-n{font-size:.85rem;color:#6B5436;margin:0 0 14px}
 #ord-ok .vaciar{display:block;margin:6px auto 0;background:none;border:0;color:#6B5436;text-decoration:underline;cursor:pointer;padding:10px 6px}
 @media(min-width:901px){#ord-ok .ord-p{font-size:1.05rem}}
+
+.mv-link b{margin-bottom:8px}

@@ -379,6 +379,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       if(cD.zon)L.push(gL('Colonia / lotificación / sección / zona: ','Neighborhood / subdivision / section / zone: ')+cD.zon);
       if(cD.dir)L.push(gL('Calle o avenida y N.º de casa o lote: ','Street or avenue and house or lot no.: ')+cD.dir);
       if(cD.ref)L.push(gL('Referencia: ','Landmark: ')+cD.ref);
+      if(cD.nit)L.push('NIT: '+cD.nit);
       if(cD.nota)L.push(gL('Notas: ','Notes: ')+cD.nota);
       L.push('');L.push(gL('PEDIDO','ORDER')+(ordNo?' '+ordNo:''));
       ks.forEach(function(k){var p=PROD[k];L.push('• '+pn(k)+': '+cart[k]+' × '+Q(p.p)+' = '+Q(cart[k]*p.p))});
@@ -391,7 +392,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       cfield('nom',gL('Nombre completo *','Full name *'),'text','name',80)+cfield('tel',gL('Teléfono (WhatsApp) *','Phone (WhatsApp) *'),'tel','tel',20)+
       '<div class="cf"><label for="c-dep">'+gL('Departamento *','Department *')+'</label><select id="c-dep" data-c="dep"><option value="">'+gL('Selecciona','Select')+'</option>'+DEPS.map(function(x){return '<option>'+x+'</option>'}).join('')+'</select><span class="ce"></span></div>'+
       cfield('mun',gL('Municipio *','Town *'),'text','address-level2',60)+cfield('zon',gL('Colonia, lotificación, sección o zona *','Neighborhood, subdivision, section or zone *'),'text','off',80)+
-      cfield('dir',gL('Calle o avenida y número de casa o lote *','Street or avenue and house or lot number *'),'text','street-address',100)+cfield('ref',gL('Referencia para llegar *','Landmark to find you *'),'text','off',120,gL('Ej. frente a la iglesia, portón negro','E.g. in front of the church, black gate'))+cfield('nota',gL('Notas o especificaciones (opcional)','Notes or specifications (optional)'),'text','off',150)+
+      cfield('dir',gL('Calle o avenida y número de casa o lote *','Street or avenue and house or lot number *'),'text','street-address',100)+cfield('ref',gL('Referencia para llegar *','Landmark to find you *'),'text','off',120,gL('Ej. frente a la iglesia, portón negro','E.g. in front of the church, black gate'))+cfield('nit',gL('NIT para factura (opcional; si no tienes, CF)','Tax ID (NIT) for invoice (optional; use CF if none)'),'text','off',20)+cfield('nota',gL('Notas o especificaciones (opcional)','Notes or specifications (optional)'),'text','off',150)+
       '<p class="cdat-p">'+gL('Estos datos solo se usan para coordinar tu entrega y viajan en el mensaje de WhatsApp. No los guardamos en el sitio.','These details are only used to arrange your delivery and travel in the WhatsApp message. We do not store them on the site.')+'</p></div><a class="btn wa" id="c-wa" href="'+msgWA()+'" target="_blank" rel="noopener">'+gL('Enviar pedido por WhatsApp','Send order on WhatsApp')+'</a><button type="button" class="btn pdf" id="c-pdf">'+gL('Descargar orden en PDF','Download order PDF')+'</button><button type="button" class="vaciar" data-vaciar>'+gL('Vaciar carrito','Empty cart')+'</button>';
     var aW=q('#c-wa',cf),REQ=['nom','tel','dep','mun','zon','dir','ref'];
     cf.querySelectorAll('[data-c]').forEach(function(el){el.value=cD[el.getAttribute('data-c')]||'';

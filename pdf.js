@@ -90,6 +90,7 @@
       [L('Colonia, lotificación, sección o zona','Neighborhood, subdivision, section or zone'),c.zon],
       [L('Calle o avenida y N.º de casa o lote','Street or avenue and house or lot no.'),c.dir],
       [L('Referencia','Landmark'),c.ref]];
+    if(c.nit)rows.push([L('NIT para factura','Tax ID (NIT) for invoice'),c.nit]);
     if(c.nota)rows.push([L('Notas','Notes'),c.nota]);
     rows.forEach(function(r){
       if(!r[1])return;
