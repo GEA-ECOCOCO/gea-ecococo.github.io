@@ -523,7 +523,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       f:['neg','nom','cant','dep','mun','esp'],unidades:[['bulto','bultos de 25 kg','25 kg sacks',25],['kg','kg','kg',1]]},
     {i:'🌎',t:['Exportación (fuera de Guatemala)','Export (outside Guatemala)'],d:['Quiero comprar para otro país','I want to buy for another country'],
       saludo:['Hola, quiero una cotización de exportación de carbón ECOCOCO.','Hi, I would like an export quote for ECOCOCO charcoal.'],
-      nota:['Las cotizaciones de exportación se preparan caso por caso: confirmamos disponibilidad, empaque, documentos y condiciones de envío. No incluyen precios de lista locales.','Export quotes are prepared case by case: we confirm availability, packaging, documents and shipping terms. They do not use local list prices.'],
+      nota:['Los precios en dólares son de referencia, en base EXW (en planta, Retalhuleu): no incluyen flete internacional, seguro ni trámites de exportación. El flete se cotiza según el volumen y el país de destino; FOB y CIF se cotizan aparte. Confirmamos disponibilidad, empaque y documentos en la cotización.','USD prices are for reference, on an EXW basis (at the plant, Retalhuleu): they do not include international freight, insurance or export procedures. Freight is quoted by volume and destination country; FOB and CIF are quoted separately. We confirm availability, packaging and documents in the quote.'],
       f:['neg','nom','mail','pais','dest','cant','inc','esp'],unidades:[['kg','kg','kg',1],['bulto','bultos de 25 kg','25 kg sacks',25],['ton','toneladas','metric tons',1000]],exp:1},
     {i:'💬',t:['Quiero más información','I want more information'],d:['Tengo preguntas sobre el producto','I have questions about the product'],
       saludo:['Hola, quiero más información sobre el carbón ECOCOCO.','Hi, I would like more information about ECOCOCO charcoal.'],
@@ -572,7 +572,14 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       var u=o.unidades[+(v.uni||0)],n=+v.cant;
       L.push(gL('Cantidad: ','Quantity: ')+n.toLocaleString(GEA_LOC)+' '+gL(u[1],u[2]));
       var kg=n*u[3],P=window.GEA_PRODUCTS;
-      if(o.exp){if(u[0]==='bulto')L.push(gL('Total aproximado: ','Approximate total: ')+(kg/1000>=1?(kg/1000).toLocaleString(GEA_LOC)+gL(' toneladas',' metric tons'):kg.toLocaleString(GEA_LOC)+' kg'))}
+      if(o.exp){
+        if(P){
+          var tq=kg*(P.k25.p/25),fx=window.geaFX?window.geaFX():null,rt=fx&&fx.r;
+          L.push(gL('Total de referencia (precio de lista, base EXW Retalhuleu, sin flete): ','Reference total (list price, EXW Retalhuleu basis, excluding freight): ')+Qf(tq)+(rt?' ≈ US$'+(tq/rt).toLocaleString(GEA_LOC,{minimumFractionDigits:2,maximumFractionDigits:2}):''));
+          if(rt)L.push(gL('Tipo de cambio aplicado: Q'+rt.toFixed(2)+' por US$1 ('+fx.d+')','Exchange rate applied: Q'+rt.toFixed(2)+' per US$1 ('+fx.d+')'));
+          L.push(gL('Flete internacional: se cotiza según volumen y país de destino.','International freight: quoted by volume and destination country.'))
+        }
+        if(u[0]==='bulto')L.push(gL('Total aproximado: ','Approximate total: ')+(kg/1000>=1?(kg/1000).toLocaleString(GEA_LOC)+gL(' toneladas',' metric tons'):kg.toLocaleString(GEA_LOC)+' kg'))}
       else if(P&&(u[0]==='bolsa'))L.push(gL('Total estimado (Q'+P.k1.p+' por bolsa): ','Estimated total (Q'+P.k1.p+' per bag): ')+Qf(n*P.k1.p));
       else if(P&&u[0]==='bulto')L.push(gL('Precio de lista estimado (Q'+P.k25.p+' por bulto): ','Estimated list price (Q'+P.k25.p+' per sack): ')+Qf(n*P.k25.p)+gL(' (kg totales: ',' (total kg: ')+kg.toLocaleString(GEA_LOC)+')');
     }
@@ -685,9 +692,10 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     if(!document.querySelector('.usd'))return;
     var f=document.querySelector('.pie-dat');if(!f)return;
     var p=document.getElementById('usd-note');if(!p){p=document.createElement('p');p.id='usd-note';p.className='usd-note';f.parentNode.insertBefore(p,f.nextSibling)}
-    p.textContent=GEA_EN?((live?'Exchange rate today: Q'+R.toFixed(2)+' per US$1 (updated '+when+'). ':'Reference rate: Q'+R.toFixed(2)+' per US$1 (Banco de Guatemala, '+FBD+'). ')+'USD amounts are approximate. Prices are charged in quetzales (Q). '):((live?'Tipo de cambio de hoy: Q'+R.toFixed(2)+' por US$1 (actualizado '+when+'). ':'Tipo de cambio de referencia: Q'+R.toFixed(2)+' por US$1 (Banco de Guatemala, '+FBD+'). ')+'Los montos en dólares son aproximados. Los precios se cobran en quetzales (Q). ');
+    p.textContent=GEA_EN?((live?'Exchange rate today: Q'+R.toFixed(2)+' per US$1 (updated '+when+'). ':'Reference rate: Q'+R.toFixed(2)+' per US$1 (Banco de Guatemala, '+FBD+'). ')+'USD amounts are approximate. Prices are charged in quetzales (Q). Export reference: EXW Retalhuleu; international freight is quoted by volume and destination country. '):((live?'Tipo de cambio de hoy: Q'+R.toFixed(2)+' por US$1 (actualizado '+when+'). ':'Tipo de cambio de referencia: Q'+R.toFixed(2)+' por US$1 (Banco de Guatemala, '+FBD+'). ')+'Los montos en dólares son aproximados. Los precios se cobran en quetzales (Q). Referencia para exportación: EXW Retalhuleu; el flete internacional se cotiza según el volumen y el país de destino. ');
     if(live){var a=document.createElement('a');a.href='https://www.exchangerate-api.com';a.target='_blank';a.rel='noopener';a.textContent='Rates By Exchange Rate API';p.appendChild(a)}
   }
+  window.geaFX=function(){return {r:R,live:live,d:live?when:FBD}};
   function apply(r,t){if(!(r>5&&r<12))return false;R=r;live=true;when=t;refresh();return true}
   function fmt(ms){try{return new Date(ms).toLocaleDateString(GEA_EN?'en-US':'es-GT',{month:'short',day:'numeric',year:'numeric'})}catch(e){return ''}}
   function getRate(){
