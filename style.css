@@ -1133,3 +1133,6 @@ body.chat-open .wa-float,body.chat-open .cart-float{visibility:hidden}
 /* Tarjetas de producto: precio y botones siempre alineados abajo */
 .prods-grid .ccard.prod{display:flex;flex-direction:column}
 .prods-grid .ccard.prod p{flex:1 1 auto}
+
+/* Respiro al final del footer para que los botones flotantes no tapen el texto legal */
+footer.pie{padding-bottom:calc(236px + env(safe-area-inset-bottom,0px))}
