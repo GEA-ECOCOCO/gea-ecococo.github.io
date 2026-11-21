@@ -1173,3 +1173,17 @@ footer.pie{padding-bottom:calc(236px + env(safe-area-inset-bottom,0px))}
 
 /* En celular el botón del asistente se contrae a un círculo tras 8 s para no tapar contenido */
 @media(max-width:700px){.chat-float.mini{width:54px;padding:0;justify-content:center}.chat-float.mini .cf-t{display:none}.chat-float.mini .cf-ia{right:-2px}}
+
+/* Guías PDF */
+.dl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin:18px 0 6px}
+.dl-big{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+.dl-card{display:flex;gap:14px;align-items:flex-start;background:#F5F0E6;color:#1A1A1A;border-radius:14px;padding:14px 16px;text-decoration:none;border-left:6px solid #E85D04;box-shadow:0 4px 14px rgba(0,0,0,.25);transition:transform .15s}
+.dl-card:hover,.dl-card:focus-visible{transform:translateY(-2px);outline:0}
+.dl-ic{flex:none;width:46px;height:56px;border-radius:6px;background:#E85D04;color:#fff;font-family:var(--cond);font-size:.95rem;letter-spacing:.04em;display:flex;align-items:center;justify-content:center}
+.dl-t{font-family:var(--cond);text-transform:uppercase;letter-spacing:.03em;font-size:1.15rem;line-height:1.15;margin-bottom:3px}
+.dl-d{font-size:.9rem;line-height:1.4;color:#3A2A18}
+.dl-m{font-size:.78rem;font-weight:700;color:#9A3F00;margin-top:6px;letter-spacing:.04em}
+.dl-all{margin-top:14px}.dl-all a{color:#B6F23C;font-weight:700}
+.note-pdf{margin-top:16px;font-size:.9rem;opacity:.85}
+@media print{.dl-band{display:none}}
+.dl-band .eyebrow{color:#B6F23C}.dl-band .eyebrow:before,.dl-band .eyebrow::before{background:#B6F23C}.dl-band h2.cond{color:#fff;margin-bottom:4px}
