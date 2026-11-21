@@ -1106,3 +1106,10 @@ body.chat-open .wa-float,body.chat-open .cart-float{visibility:hidden}
 @media(max-width:700px){.chat-float{right:17px;width:54px;height:54px;bottom:calc(14px + 60px + 12px + 54px + 12px + env(safe-area-inset-bottom,0px))}
 .chat-box{right:0;left:0;bottom:0;width:100%;max-width:100%;height:82vh;max-height:none;border-radius:16px 16px 0 0}}
 @media print{.chat-float,.chat-box{display:none!important}}
+
+/* Carrito: equivalente en dólares */
+.cart .usd{display:block;font-size:.8rem;font-weight:400;color:#4A4036;letter-spacing:0;font-family:inherit;line-height:1.25}
+.li-s .usd,.tot b .usd{font-size:.78rem}
+.tot b .usd{text-align:right}
+.cart .nota.fxn{font-size:.8rem}
+.li-t .usd{display:inline;margin:0 4px}

@@ -131,12 +131,16 @@
     doc.rect(W-M-200,y,200,32,C.carbon);
     doc.text(L('TOTAL ESTIMADO','ESTIMATED TOTAL'),W-M-190,y+21,10,{bold:true,color:C.crema});
     doc.text(money(total),tx,y+22,14,{bold:true,color:C.brasa,right:true});
-    y+=60;
+    var fx=d.fx&&d.fx.r?d.fx.r:7.65;
+    doc.text(L('Equivalente aprox. en US$','Approx. equivalent in US$'),W-M-190,y+48,9.5,{color:C.gris});
+    doc.text('US$'+(Math.round(total/fx*100)/100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','),tx,y+48,10.5,{bold:true,right:true});
+    y+=74;
     // Condiciones
     doc.text(L('CONDICIONES','TERMS'),M,y,10,{bold:true,color:C.bosque});
     doc.line(M,y+6,W-M,y+6,C.bosque,1);y+=24;
     var T=[L('Precio a consumidor final.','End-consumer price.')];
     if(d.bulto)T.push(L('En bultos de 25 kg hay precio especial según el volumen, que se confirma por WhatsApp.','For 25 kg sacks there is a special volume price, confirmed on WhatsApp.'));
+    T.push(L('Tipo de cambio de referencia: Q'+fx.toFixed(2)+' por US$1'+(d.fx&&d.fx.d?' ('+d.fx.d+')':'')+'. El monto en dólares es aproximado; el cobro es en quetzales.','Reference exchange rate: Q'+fx.toFixed(2)+' per US$1'+(d.fx&&d.fx.d?' ('+d.fx.d+')':'')+'. USD amounts are approximate; payment is in quetzales.'));
     T.push(L('El flete, la entrega y la forma de pago se coordinan con GEA Carbón antes de concretar el pedido.','Shipping, delivery and payment are arranged with GEA Carbón before the order is confirmed.'));
     T.push(L('Este documento es una orden de pedido o cotización informativa y no constituye una factura. Los precios y la disponibilidad se confirman al momento del pedido.','This document is an informational order or quote and is not an invoice. Prices and availability are confirmed when the order is placed.'));
     T.forEach(function(t){

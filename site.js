@@ -333,6 +333,10 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   Object.keys(cart).forEach(function(k){if(!PROD[k]||!(cart[k]>0))delete cart[k]});
   function save(){try{localStorage.setItem('carrito-ecococo',JSON.stringify(cart))}catch(e){}}
   function Q(n){return 'Q'+n.toLocaleString(GEA_LOC)}
+  function fxR(){var f=window.geaFX?window.geaFX():null;return f&&f.r?f.r:(Number((window.GEA_CONFIG||{}).usdRate)||7.65)}
+  function Us(n){return 'US$'+(n/fxR()).toLocaleString(GEA_EN?'en-US':'es-GT',{minimumFractionDigits:2,maximumFractionDigits:2})}
+  function QU(n){return Q(n)+'<span class="usd" data-q="'+n+'">(≈ '+Us(n)+')</span>'}
+  function fxNote(){var f=window.geaFX?window.geaFX():{r:fxR(),d:''};return gL('Tipo de cambio de referencia: Q'+f.r.toFixed(2)+' por US$1'+(f.d?' ('+f.d+')':'')+'. El monto en dólares es aproximado; el cobro es en quetzales.','Reference exchange rate: Q'+f.r.toFixed(2)+' per US$1'+(f.d?' ('+f.d+')':'')+'. USD amounts are approximate; payment is in quetzales.')}
   /* ---- DOM ---- */
   var wrap=document.createElement('div');
   wrap.innerHTML=
@@ -367,7 +371,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     document.querySelectorAll('.cart-n').forEach(function(b){b.textContent=n;b.hidden=!n});
     var ks=Object.keys(cart);
     if(!ks.length){cb.innerHTML='<p class="vacio">'+gL('Tu carrito está vacío. Agrega tu carbón ECOCOCO para armar tu pedido.','Your cart is empty. Add your ECOCOCO charcoal to build your order.')+'</p><p><button type="button" class="btn pill add" data-add="k1">'+gL('Agregar bolsa 1 kg','Add 1 kg bag')+' · Q'+PROD.k1.p+'</button></p><p><button type="button" class="btn pill add" data-add="k25">'+gL('Agregar bulto 25 kg','Add 25 kg sack')+' · Q'+PROD.k25.p+'</button></p>';cf.innerHTML='';return}
-    cb.innerHTML=ks.map(function(k){var p=PROD[k];return '<div class="li"><div class="li-t"><b>'+pn(k)+'</b><span>'+Q(p.p)+' '+gL('c/u','each')+'</span></div><div class="li-q"><button type="button" data-q="-1" data-k="'+k+'" aria-label="'+gL('Quitar uno','Remove one')+'">−</button><span>'+cart[k]+'</span><button type="button" data-q="1" data-k="'+k+'" aria-label="'+gL('Agregar uno','Add one')+'">+</button></div><div class="li-s">'+Q(cart[k]*p.p)+'</div><button type="button" class="li-x" data-del="'+k+'" aria-label="'+gL('Eliminar','Remove')+'">✕</button></div>'}).join('');
+    cb.innerHTML=ks.map(function(k){var p=PROD[k];return '<div class="li"><div class="li-t"><b>'+pn(k)+'</b><span>'+QU(p.p)+' '+gL('c/u','each')+'</span></div><div class="li-q"><button type="button" data-q="-1" data-k="'+k+'" aria-label="'+gL('Quitar uno','Remove one')+'">−</button><span>'+cart[k]+'</span><button type="button" data-q="1" data-k="'+k+'" aria-label="'+gL('Agregar uno','Add one')+'">+</button></div><div class="li-s">'+QU(cart[k]*p.p)+'</div><button type="button" class="li-x" data-del="'+k+'" aria-label="'+gL('Eliminar','Remove')+'">✕</button></div>'}).join('');
     var ordNo='';
     function msgWA(){
       var L=[gL('Hola, quiero hacer este pedido de ECOCOCO:','Hi, I\'d like to place this ECOCOCO order:')];
@@ -382,13 +386,14 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       if(cD.nit)L.push('NIT: '+cD.nit);
       if(cD.nota)L.push(gL('Notas: ','Notes: ')+cD.nota);
       L.push('');L.push(gL('PEDIDO','ORDER')+(ordNo?' '+ordNo:''));
-      ks.forEach(function(k){var p=PROD[k];L.push('• '+pn(k)+': '+cart[k]+' × '+Q(p.p)+' = '+Q(cart[k]*p.p))});
-      L.push('');L.push(gL('Total del pedido: ','Order total: ')+Q(total()));
+      ks.forEach(function(k){var p=PROD[k];L.push('• '+pn(k)+': '+cart[k]+' × '+Q(p.p)+' = '+Q(cart[k]*p.p)+' (≈ '+Us(cart[k]*p.p)+')')});
+      L.push('');L.push(gL('Total del pedido: ','Order total: ')+Q(total())+' (≈ '+Us(total())+')');
+      L.push(gL('Tipo de cambio: Q','Exchange rate: Q')+fxR().toFixed(2)+gL(' por US$1 (aproximado; el pago es en quetzales).',' per US$1 (approximate; payment is in quetzales).'));
       L.push(gL('Entrega y forma de pago: por coordinar.','Delivery and payment: to be arranged.'));
       return 'https://wa.me/'+WA+'?text='+encodeURIComponent(L.join('\n'));
     }
     var bulto=cart.k25>0;
-    cf.innerHTML='<div class="tot"><span>'+gL('Total estimado','Estimated total')+'</span><b>'+Q(total())+'</b></div><p class="nota">'+gL('Precio a consumidor final. ','End-consumer price. ')+(bulto?gL('En bultos de 25 kg hay precio especial según volumen, lo confirmamos por WhatsApp. ','For 25 kg sacks there is a special volume price, which we confirm on WhatsApp. '):'')+gL('Entrega y forma de pago se acuerdan por WhatsApp. Aún no cobramos en línea.','Delivery and payment are arranged on WhatsApp. We do not charge online yet.')+'</p><p class="nota exp-l">'+gL('¿Envío fuera de Guatemala? ','Shipping outside Guatemala? ')+'<button type="button" class="lnk" data-exp>'+gL('Solicita una cotización de exportación','Request an export quote')+'</button></p><div class="cdat"><p class="cdat-h">'+gL('Datos para la entrega','Delivery details')+'</p>'+
+    cf.innerHTML='<div class="tot"><span>'+gL('Total estimado','Estimated total')+'</span><b>'+QU(total())+'</b></div><p class="nota fxn">'+fxNote()+'</p><p class="nota">'+gL('Precio a consumidor final. ','End-consumer price. ')+(bulto?gL('En bultos de 25 kg hay precio especial según volumen, lo confirmamos por WhatsApp. ','For 25 kg sacks there is a special volume price, which we confirm on WhatsApp. '):'')+gL('Entrega y forma de pago se acuerdan por WhatsApp. Aún no cobramos en línea.','Delivery and payment are arranged on WhatsApp. We do not charge online yet.')+'</p><p class="nota exp-l">'+gL('¿Envío fuera de Guatemala? ','Shipping outside Guatemala? ')+'<button type="button" class="lnk" data-exp>'+gL('Solicita una cotización de exportación','Request an export quote')+'</button></p><div class="cdat"><p class="cdat-h">'+gL('Datos para la entrega','Delivery details')+'</p>'+
       cfield('nom',gL('Nombre completo *','Full name *'),'text','name',80)+cfield('tel',gL('Teléfono (WhatsApp) *','Phone (WhatsApp) *'),'tel','tel',20)+
       '<div class="cf"><label for="c-dep">'+gL('Departamento *','Department *')+'</label><select id="c-dep" data-c="dep"><option value="">'+gL('Selecciona','Select')+'</option>'+DEPS.map(function(x){return '<option>'+x+'</option>'}).join('')+'</select><span class="ce"></span></div>'+
       cfield('mun',gL('Municipio *','Town *'),'text','address-level2',60)+cfield('zon',gL('Colonia, lotificación, sección o zona *','Neighborhood, subdivision, section or zone *'),'text','off',80)+
@@ -415,7 +420,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       if(typeof window.geaOrdenPDF!=='function'){alert(gL('El generador de PDF aún no cargó. Intenta de nuevo en unos segundos.','The PDF generator has not loaded yet. Please try again in a few seconds.'));return}
       ordNo=window.geaOrdenNo();aW.href=msgWA();
       var items=Object.keys(cart).map(function(k){return {cod:PROD[k].c,nom:pn(k),cant:cart[k],p:PROD[k].p}});
-      var blob=window.geaOrdenPDF({en:GEA_EN,no:ordNo,fecha:window.geaOrdenFecha(GEA_EN),cli:cD,items:items,bulto:cart.k25>0});
+      var blob=window.geaOrdenPDF({en:GEA_EN,no:ordNo,fecha:window.geaOrdenFecha(GEA_EN),cli:cD,items:items,bulto:cart.k25>0,fx:window.geaFX?window.geaFX():{r:fxR(),d:''}});
       var url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ECOCOCO-'+ordNo+'.pdf';document.body.appendChild(a);a.click();
       setTimeout(function(){URL.revokeObjectURL(url);a.remove()},1500);
       if(window.geaTrack)geaTrack('download_order_pdf',{destino:'carrito'});
@@ -687,7 +692,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       if(last){frag.appendChild(document.createTextNode(str.slice(last)));t.parentNode.replaceChild(frag,t)}});
     return any;
   }
-  function refresh(){document.querySelectorAll('.usd').forEach(function(s){s.textContent='(≈ '+usd(Number(s.getAttribute('data-q')))+')'});note()}
+  function refresh(){document.querySelectorAll('.fxn').forEach(function(e){e.textContent=GEA_EN?'Reference exchange rate: Q'+R.toFixed(2)+' per US$1 ('+(live?when:FBD)+'). USD amounts are approximate; payment is in quetzales.':'Tipo de cambio de referencia: Q'+R.toFixed(2)+' por US$1 ('+(live?when:FBD)+'). El monto en dólares es aproximado; el cobro es en quetzales.'});document.querySelectorAll('.usd').forEach(function(s){s.textContent='(≈ '+usd(Number(s.getAttribute('data-q')))+')'});note()}
   function note(){
     if(!document.querySelector('.usd'))return;
     var f=document.querySelector('.pie-dat');if(!f)return;
