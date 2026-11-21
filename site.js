@@ -407,7 +407,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       });
       return bad;
     }
-    aW.addEventListener('click',function(e){var bad=valida();if(bad){e.preventDefault();e.stopPropagation();bad.focus();return}aW.href=msgWA();if(window.geaTrack)geaTrack('click_whatsapp',{pagina:location.pathname,destino:'carrito'})});
+    aW.addEventListener('click',function(e){var bad=valida();if(bad){e.preventDefault();e.stopPropagation();bad.focus();return}aW.href=msgWA();if(window.geaTrack)geaTrack('click_whatsapp',{destino:'carrito'})});
   }
   var last=null;
   function abrirC(){sb.hidden=true;last=document.activeElement;cd.setAttribute('aria-hidden','false');cbg.hidden=false;body.classList.add('noscroll');cd.classList.add('on');paint();q('.ovl-x',cd).focus()}
@@ -482,6 +482,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       saludo:['Hola, quiero más información sobre el carbón ECOCOCO.','Hi, I would like more information about ECOCOCO charcoal.'],
       f:['nom','esp'],preg:1}
   ];
+  var OPT_ES=['Consumidor final','Tienda o abarrotes','Restaurante o parrillada','Distribuidor o mayorista','Más información'];
   function X(a){return gL(a[0],a[1])}
   function esc(t){return String(t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
   function Qf(n){return 'Q'+n.toLocaleString(GEA_LOC)}
@@ -542,7 +543,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       if(el.name==='esp'&&o.preg&&v.esp&&v.esp.length<5)err(el,gL('Cuéntanos un poco más.','Tell us a little more.'));
     });
     if(bad){bad.focus();return}
-    if(window.geaTrack)geaTrack('click_whatsapp',{pagina:location.pathname,destino:'formulario: '+X(o.t)});
+    if(window.geaTrack){geaTrack('click_whatsapp',{destino:'formulario: '+OPT_ES[cur]});if(cur>=1&&cur<=3)geaTrack('generate_lead',{tipo:OPT_ES[cur],via:'whatsapp'})}
     window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(mensaje(o,v)),'_blank','noopener');
     cerrar();
   }
