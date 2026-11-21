@@ -624,26 +624,50 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   inp.addEventListener('input',upd);
 })();
 
-// Equivalencia aproximada en USD junto a los precios en quetzales (solo versión en inglés)
+// Equivalencia aproximada en USD junto a los precios en quetzales (solo versión en inglés).
+// Usa el tipo de cambio del día (open.er-api.com, se guarda 6 h en el dispositivo). Si falla, usa el de config.js.
 (function(){
   if(!GEA_EN)return;
-  var R=Number((window.GEA_CONFIG||{}).usdRate)||7.65;
+  var CFG=window.GEA_CONFIG||{},FB=Number(CFG.usdRate)||7.65,FBD=CFG.usdDate||'Nov 20, 2026';
+  var R=FB,live=false,when='';
   var re=/Q\s?(\d{1,3}(?:,\d{3})*|\d+)(\.\d{1,2})?(?![\d,])/g;
   function usd(q){return 'US$'+(q/R).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
-  function run(){
+  function mark(){
     var main=document.querySelector('main')||document.body,w=document.createTreeWalker(main,NodeFilter.SHOW_TEXT,{acceptNode:function(n){
       var p=n.parentNode;if(!p||/^(SCRIPT|STYLE|NOSCRIPT|TEXTAREA|INPUT|OPTION)$/.test(p.nodeName))return NodeFilter.FILTER_REJECT;
-      if(p.closest('.cart,#carrito,.wch,#ord-ok,.consent,.sheet,.ovl,[data-usd="no"],#tot,#b-tot,.total,.tot,.li-s,.res'))return NodeFilter.FILTER_REJECT;
-      return re.test(n.nodeValue)?(re.lastIndex=0,NodeFilter.FILTER_ACCEPT):(re.lastIndex=0,NodeFilter.FILTER_REJECT)}}),L=[],n;
+      if(p.closest('.cart,#carrito,.wch,#ord-ok,.consent,.sheet,.ovl,[data-usd="no"],#tot,#b-tot,.total,.tot,.li-s,.res,.usd'))return NodeFilter.FILTER_REJECT;
+      re.lastIndex=0;return re.test(n.nodeValue)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT}}),L=[],n,any=false;
     while((n=w.nextNode()))L.push(n);
-    var any=false;
     L.forEach(function(t){
-      var v=t.nodeValue.replace(re,function(m,i,d,off,str){var pre=str.slice(0,off);if(pre.lastIndexOf('(')>pre.lastIndexOf(')'))return m;var q=parseFloat(String(i).replace(/,/g,'')+(d||''));if(!isFinite(q)||q<=0)return m;any=true;return m+' (≈ '+usd(q)+')'});
-      t.nodeValue=v});
-    if(any){
-      var f=document.querySelector('.pie-dat');
-      if(f&&!document.getElementById('usd-note')){var p=document.createElement('p');p.id='usd-note';p.className='usd-note';p.textContent='USD amounts are approximate, based on the Banco de Guatemala reference rate (about Q'+R.toFixed(2)+' per US$1). Prices are charged in quetzales (Q).';f.parentNode.insertBefore(p,f.nextSibling)}
-    }
+      var str=t.nodeValue,frag=document.createDocumentFragment(),last=0,m;re.lastIndex=0;
+      while((m=re.exec(str))){
+        var pre=str.slice(0,m.index);if(pre.lastIndexOf('(')>pre.lastIndexOf(')'))continue;
+        var q=parseFloat(String(m[1]).replace(/,/g,'')+(m[2]||''));if(!isFinite(q)||q<=0)continue;
+        var end=m.index+m[0].length;frag.appendChild(document.createTextNode(str.slice(last,end)+' '));
+        var sp=document.createElement('span');sp.className='usd';sp.setAttribute('data-q',q);sp.textContent='(≈ '+usd(q)+')';frag.appendChild(sp);
+        last=end;any=true}
+      if(last){frag.appendChild(document.createTextNode(str.slice(last)));t.parentNode.replaceChild(frag,t)}});
+    return any;
   }
+  function refresh(){document.querySelectorAll('.usd').forEach(function(s){s.textContent='(≈ '+usd(Number(s.getAttribute('data-q')))+')'});note()}
+  function note(){
+    if(!document.querySelector('.usd'))return;
+    var f=document.querySelector('.pie-dat');if(!f)return;
+    var p=document.getElementById('usd-note');if(!p){p=document.createElement('p');p.id='usd-note';p.className='usd-note';f.parentNode.insertBefore(p,f.nextSibling)}
+    p.textContent=(live?'Exchange rate today: Q'+R.toFixed(2)+' per US$1 (updated '+when+'). ':'Reference rate: Q'+R.toFixed(2)+' per US$1 (Banco de Guatemala, '+FBD+'). ')+'USD amounts are approximate. Prices are charged in quetzales (Q). ';
+    if(live){var a=document.createElement('a');a.href='https://www.exchangerate-api.com';a.target='_blank';a.rel='noopener';a.textContent='Rates By Exchange Rate API';p.appendChild(a)}
+  }
+  function apply(r,t){if(!(r>5&&r<12))return false;R=r;live=true;when=t;refresh();return true}
+  function fmt(ms){try{return new Date(ms).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}catch(e){return ''}}
+  function getRate(){
+    var c=null;try{c=JSON.parse(localStorage.getItem('gea-usd')||'null')}catch(e){}
+    if(c&&c.r&&Date.now()-c.t<6*3600e3){apply(c.r,fmt(c.t));return}
+    if(!window.fetch)return;
+    fetch('https://open.er-api.com/v6/latest/USD',{cache:'no-store'}).then(function(r){return r.ok?r.json():Promise.reject()}).then(function(j){
+      var g=j&&j.result==='success'&&j.rates&&Number(j.rates.GTQ),t=Date.now();
+      if(g&&apply(g,fmt(j.time_last_update_unix?j.time_last_update_unix*1000:t)))try{localStorage.setItem('gea-usd',JSON.stringify({r:g,t:t}))}catch(e){}
+    }).catch(function(){});
+  }
+  function run(){if(mark())note();getRate()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
 })();
