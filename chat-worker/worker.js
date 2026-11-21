@@ -1,4 +1,4 @@
-/* ECOCOCO · Asistente de chat (Cloudflare Worker)
+/* ECOCOCO · Asistente de chat (Cloudflare Worker) · v2 reglas prudentes
    Recibe la conversación desde el sitio, la envía a la API de Anthropic con los datos de GEA Carbón
    y devuelve la respuesta. La clave de la API vive SOLO aquí, como secreto: ANTHROPIC_API_KEY.
    Variables opcionales: ALLOWED_ORIGINS (separadas por coma), MODEL, DAILY_CAP, RATE_LIMIT.
