@@ -58,6 +58,7 @@ function answerLocal(txt,wait){
   var r=local(txt);if(wait)wait.remove();
   if(!r)r=L('No tengo ese dato confirmado. Escríbenos por WhatsApp y una persona te responde. [[WA]]','I don\'t have that confirmed. Message us on WhatsApp and a person will answer. [[WA]]');
   hist.push({role:'assistant',content:r});save();add('assistant',r);done()}
+function dbg(m){try{if(location.hash.indexOf('chatdebug')>-1)add('assistant','[diagnóstico] '+m)}catch(e){}}
 function send(txt){
   txt=String(txt||'').trim().slice(0,500);if(!txt||busy)return;
   if(Date.now()-last<1200)return;last=Date.now();
@@ -76,8 +77,8 @@ function send(txt){
     clearTimeout(to);
     if(o.ok&&o.j&&o.j.reply){wait.remove();hist.push({role:'assistant',content:o.j.reply});save();add('assistant',o.j.reply);done()}
     else if(o.s===429){wait.remove();hist.pop();save();fail(true);done()}
-    else{answerLocal(txt,wait)}
-  }).catch(function(){clearTimeout(to);answerLocal(txt,wait)});
+    else{dbg('HTTP '+o.s+' '+JSON.stringify(o.j));answerLocal(txt,wait)}
+  }).catch(function(e){clearTimeout(to);dbg('fetch: '+(e&&e.message||e));answerLocal(txt,wait)});
 }
 function fail(rate){
   var m=add('assistant',rate==='max'?L('Llegaste al límite de preguntas de esta sesión. Para seguir, escríbenos por WhatsApp y te atiende una persona.','You reached this session\'s question limit. To continue, message us on WhatsApp and a person will help you.'):rate?L('Estás enviando muchos mensajes. Espera un momento o escríbenos por WhatsApp.','You are sending many messages. Please wait a moment or message us on WhatsApp.'):L('No pude responder en este momento. Escríbenos por WhatsApp y te atendemos.','I couldn\'t answer right now. Message us on WhatsApp and we\'ll help you.'));
