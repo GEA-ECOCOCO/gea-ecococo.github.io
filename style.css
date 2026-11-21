@@ -1147,3 +1147,7 @@ footer.pie{padding-bottom:calc(236px + env(safe-area-inset-bottom,0px))}
 .pwa-n{margin:10px 0 0;font-size:.9rem;opacity:.9}
 .chat-inst{background:#B6F23C;border-color:#B6F23C;cursor:pointer;font-family:inherit}
 .chat-hp{margin:8px 0 0;font-size:.85rem}
+.pwa-top{background:#B6F23C;color:#04100A;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 8px;padding:6px 40px 6px 12px;position:relative;text-align:center}
+.pwa-tb{background:none;border:0;color:#04100A;font:700 .9rem/1.3 inherit;font-family:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.pwa-tx{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;color:#04100A;font-size:1.5rem;line-height:1;width:32px;height:32px;cursor:pointer}
+.pwa-tn{flex-basis:100%;font-size:.85rem}

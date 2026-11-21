@@ -741,7 +741,20 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     b.onclick=function(){GEA_INSTALL.install(function(r,h){if(r==='manual'){n.textContent=h;n.hidden=false}else if(r==='ok'){d.remove()}})};
     d.appendChild(b);d.appendChild(n);f.appendChild(d);
   }
+  function topbar(){
+    try{var t=+localStorage.getItem('gea-pwa-x')||0;if(Date.now()-t<7*864e5)return}catch(e){}
+    if(document.getElementById('pwa-top')||!document.body)return;
+    var bar=document.createElement('div');bar.id='pwa-top';bar.className='pwa-top';
+    var b=document.createElement('button');b.type='button';b.className='pwa-tb';
+    b.textContent=en?'📲 Install the ECOCOCO app — free, no app store':'📲 Instala la app ECOCOCO — gratis, sin tienda';
+    var x=document.createElement('button');x.type='button';x.className='pwa-tx';x.setAttribute('aria-label',en?'Close':'Cerrar');x.textContent='×';
+    var n=document.createElement('span');n.className='pwa-tn';n.hidden=true;
+    b.onclick=function(){if(window.geaTrack)try{geaTrack('click_instalar_app',{origen:'barra'})}catch(e){}GEA_INSTALL.install(function(r,h){if(r==='manual'){n.textContent=h;n.hidden=false}else if(r==='ok')bar.remove()})};
+    x.onclick=function(){try{localStorage.setItem('gea-pwa-x',Date.now())}catch(e){}bar.remove()};
+    bar.appendChild(b);bar.appendChild(x);bar.appendChild(n);document.body.insertBefore(bar,document.body.firstChild);
+  }
   addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e});
-  addEventListener('appinstalled',function(){var d=document.querySelector('.pwa-box');if(d)d.remove()});
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
+  addEventListener('appinstalled',function(){var d=document.querySelector('.pwa-box,.pwa-top');if(d)d.remove();var t=document.getElementById('pwa-top');if(t)t.remove()});
+  function init(){mount();topbar()}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
