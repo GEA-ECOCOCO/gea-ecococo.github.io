@@ -1214,3 +1214,8 @@ footer.pie{padding-bottom:calc(236px + env(safe-area-inset-bottom,0px))}
 .chat-spw .chat-pb[hidden]{display:none}
 .chat-mu{background:none;border:0;color:#F5F0E6;font-size:1.25rem;line-height:1;cursor:pointer;width:44px;height:44px;margin-left:auto}
 .chat-hd .chat-x{margin-left:0}
+/* Botones Leer/Descargar/Imprimir: caben en una fila; si no, el último ocupa todo el ancho */
+.dl-acts{display:flex;flex-wrap:wrap;gap:6px}
+.dl-a{flex:1 1 auto;text-align:center;white-space:nowrap;padding:9px 8px;font-size:clamp(.7rem,2.9vw,.82rem)}
+.cat-pdf .dl-a{flex:0 0 auto}
+@media(max-width:600px){.cat-pdf .dl-a{flex:1 1 auto}.cat-pdf .dl-acts{width:100%}}
