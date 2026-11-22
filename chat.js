@@ -8,7 +8,7 @@ try{hist=JSON.parse(sessionStorage.getItem(KEY)||'[]').slice(-14)}catch(e){}
 function save(){try{sessionStorage.setItem(KEY,JSON.stringify(hist.slice(-14)))}catch(e){}}
 function track(n,p){try{window.geaTrack&&window.geaTrack(n,p||{})}catch(e){}}
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
-var ICN={
+var ICN={ar:'<path d="M5 12h14M13 6l6 6-6 6"/>',
  mic:'<rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0013 0M12 18v3.2"/>',
  vol:'<path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z"/><path d="M15.5 9a4.2 4.2 0 010 6M18.2 6.5a7.8 7.8 0 010 11"/>',
  volx:'<path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>',
@@ -96,7 +96,7 @@ function waLink(){
   return 'https://wa.me/'+(C.whatsapp||'50242794894')+'?text='+encodeURIComponent(t);
 }
 var LINKS={'producto':['producto.html','Ver producto','View product'],'precios':['precios.html','Ver precios y pedir','See prices & order'],'como-comprar':['como-comprar.html','Cómo comprar','How to buy'],'distribuidores':['distribuidores.html','Ser distribuidor','Become a distributor'],'entregas':['entregas-devoluciones.html','Entregas y devoluciones','Delivery & returns'],'proceso':['proceso.html','Cómo lo producimos','How we make it'],'impacto':['impacto-ambiental.html','Impacto ambiental','Environmental impact'],'contacto':['contacto.html','Contacto','Contact'],'medicion':['medicion.html','Medición','Measurement'],'nosotros':['quienes-somos.html','Quiénes somos','About us'],'descargas':['descargas.html','Guías en PDF','PDF guides']};
-function linkBtns(keys){var d=el('div','chat-links');keys.slice(0,2).forEach(function(k){var x=LINKS[k];if(!x)return;var a=el('a','chat-ln',L(x[1],x[2])+' →');a.href=x[0];a.addEventListener('click',function(){track('click_chat_link',{destino:k})});d.appendChild(a)});return d.childNodes.length?d:null}
+function linkBtns(keys){var d=el('div','chat-links');keys.slice(0,2).forEach(function(k){var x=LINKS[k];if(!x)return;var a=el('a','chat-ln',null);a.innerHTML=L(x[1],x[2])+ic('ar',15);a.href=x[0];a.addEventListener('click',function(){track('click_chat_link',{destino:k})});d.appendChild(a)});return d.childNodes.length?d:null}
 function add(role,text,fk){
   var lk=[];if(role==='assistant'){text=String(text).replace(/\[\[LINK:([a-z-]+)\]\]/g,function(_,k){if(LINKS[k]&&lk.indexOf(k)<0)lk.push(k);return ''});text=text.replace(/\s+$/,'')}
   var inst=false;if(role==='assistant'&&/\[\[INSTALL\]\]/.test(text)){inst=true;text=text.replace(/\s*\[\[INSTALL\]\]\s*/g,' ').trim()}
@@ -114,8 +114,8 @@ function add(role,text,fk){
     sb.addEventListener('click',function(){track('click_escuchar');speak(text,sb)});
     var sw=el('div','chat-spw');sw.appendChild(sb);sw.appendChild(pb);m.appendChild(sw);
     if(speakNext){speakNext=false;if(!muted)speak(text,sb)}}
-  if(shr&&window.GEA_SHARE_APP){var sh=el('button','chat-ln chat-inst',L('Compartir la app →','Share the app →'));sh.type='button';sh.addEventListener('click',function(){window.GEA_SHARE_APP()});m.appendChild(sh)}
-  if(inst&&!(window.GEA_INSTALL&&GEA_INSTALL.standalone())){var ib=el('button','chat-ln chat-inst',L('Instalar la app →','Install the app →'));ib.type='button';var hp=el('p','chat-hp');hp.hidden=true;
+  if(shr&&window.GEA_SHARE_APP){var sh=el('button','chat-ln chat-inst',null);sh.innerHTML=L('Compartir la app','Share the app')+ic('ar',15);sh.type='button';sh.addEventListener('click',function(){window.GEA_SHARE_APP()});m.appendChild(sh)}
+  if(inst&&!(window.GEA_INSTALL&&GEA_INSTALL.standalone())){var ib=el('button','chat-ln chat-inst',null);ib.innerHTML=L('Instalar la app','Install the app')+ic('ar',15);ib.type='button';var hp=el('p','chat-hp');hp.hidden=true;
     ib.addEventListener('click',function(){track('click_instalar_app',{origen:'asistente'});if(!window.GEA_INSTALL)return;GEA_INSTALL.install(function(r,h){if(r==='manual'){hp.textContent=h;hp.hidden=false}else if(r==='ok'){ib.remove()}})});
     m.appendChild(ib);m.appendChild(hp)}
   log.appendChild(m);log.scrollTop=log.scrollHeight;return m;

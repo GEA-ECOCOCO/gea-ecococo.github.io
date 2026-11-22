@@ -1,4 +1,8 @@
 var GEA_EN=document.documentElement.lang==='en',GEA_LOC=GEA_EN?'en-US':GEA_LOC;function gL(a,b){return GEA_EN?b:a}
+
+/* Iconos propios (línea 24x24, mismo trazo que los botones del menú) */
+var GEA_ICO={x:'<path d="M6 6l12 12M18 6L6 18"/>',ar:'<path d="M5 12h14M13 6l6 6-6 6"/>',al:'<path d="M19 12H5M11 6l-6 6 6 6"/>',out:'<path d="M7 17L17 7M9 7h8v8"/>',link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',doc:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',app:'<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M12 7.5v6M9.5 11l2.5 2.5 2.5-2.5M11 18.5h2"/>',mail:'<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 7.5l8.5 6 8.5-6"/>',clip:'<path d="M20 11.5l-8.2 8.2a5 5 0 0 1-7.1-7.1l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7l-8.5 8.5a1.7 1.7 0 0 1-2.4-2.4l7.8-7.8"/>',home:'<path d="M4 11l8-7 8 7M6 9.5V20h12V9.5M10 20v-5h4v5"/>',store:'<path d="M4 9l1.5-5h13L20 9M4 9a3 3 0 0 0 5.3 1.8 3 3 0 0 0 5.4 0A3 3 0 0 0 20 9M5 12.5V20h14v-7.5M10 20v-4h4v4"/>',fire:'<path d="M12 3c1 3.5 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5.2 2 1 2.5 1.5 2.5C10.5 8 11 5 12 3z"/>',truck:'<path d="M2 6.5h11V16H2zM13 9.5h4l4 3.5v3h-8"/><circle cx="7" cy="17.5" r="2"/><circle cx="17" cy="17.5" r="2"/>',globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/>',chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/>'};
+function gI(n,z){z=z||20;return '<svg class="ico" viewBox="0 0 24 24" width="'+z+'" height="'+z+'" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+GEA_ICO[n]+'</svg>'}
 // Transición entre páginas: barrido verde al salir
 document.addEventListener('click', function (e) {
   var a = e.target.closest('a[href]');
@@ -169,7 +173,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       ['Reddit', 'R', '#FF4500', 'https://www.reddit.com/submit?url=' + e(u) + '&title=' + e(t)],
       ['Threads', '@', '#111', 'https://www.threads.net/intent/post?text=' + e(ut)],
       ['Bluesky', 'B', '#1185FE', 'https://bsky.app/intent/compose?text=' + e(ut)],
-      [gL('Correo','Email'), '✉', '#5A6A7A', 'mailto:?subject=' + e(modoApp ? gL('Instala la app ECOCOCO','Install the ECOCOCO app') : gL('ECOCOCO | Briquetas de carbón de cáscara de coco','ECOCOCO | Coconut shell charcoal briquettes')) + '&body=' + e(ut)]
+      [gL('Correo','Email'), gI('mail',20), '#5A6A7A', 'mailto:?subject=' + e(modoApp ? gL('Instala la app ECOCOCO','Install the ECOCOCO app') : gL('ECOCOCO | Briquetas de carbón de cáscara de coco','ECOCOCO | Coconut shell charcoal briquettes')) + '&body=' + e(ut)]
     ];
     if (movil) {
       l.splice(2, 0, ['Messenger', 'm', '#0084FF', 'fb-messenger://share?link=' + e(u)]);
@@ -194,15 +198,15 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   }
   function abrir(app) {
     modoApp = app === true;
-    var h = '<div class="panel"><button type="button" class="cerrar" aria-label="'+gL('Cerrar','Close')+'">✕</button>' +
+    var h = '<div class="panel"><button type="button" class="cerrar" aria-label="'+gL('Cerrar','Close')+'">'+gI('x',18)+'</button>' +
       '<h3>'+(modoApp ? gL('Compartir la app ECOCOCO','Share the ECOCOCO app') : gL('Compartir ECOCOCO','Share ECOCOCO'))+'</h3><p class="sub">'+(modoApp ? gL('Comparte el enlace de la app para que otras personas la instalen en su celular.','Share the app link so other people can install it on their phone.') : gL('Elige dónde quieres compartir esta página.','Choose where you want to share this page.'))+'</p><div class="redes">';
-    if (navigator.share) h += '<button type="button" data-nativo><i style="background:linear-gradient(135deg,#8BE000,#1FA23A);color:#04100A">↗</i>'+gL('Más opciones','More options')+'</button>';
+    if (navigator.share) h += '<button type="button" data-nativo><i style="background:linear-gradient(135deg,#8BE000,#1FA23A);color:#04100A">'+gI('out',20)+'</i>'+gL('Más opciones','More options')+'</button>';
     redes().forEach(function (r) {
       h += '<a href="' + r[3] + '" target="_blank" rel="noopener"><i style="background:' + r[2] + '">' + r[1] + '</i>' + r[0] + '</a>';
     });
-    h += '<button type="button" data-copiar><i style="background:#2f4a3a">🔗</i>'+gL('Copiar enlace','Copy link')+'</button>' +
-      (modoApp && enApp() ? '<button type="button" data-pag-modo><i style="background:#2f4a3a">📄</i>'+gL('Compartir esta página','Share this page')+'</button>' : '') +
-      (modoApp ? '' : '<button type="button" data-app-modo><i style="background:#B6F23C;color:#04100A">📲</i>'+gL('Compartir la app','Share the app')+'</button>') + '</div>' +
+    h += '<button type="button" data-copiar><i style="background:#2f4a3a">'+gI('link',20)+'</i>'+gL('Copiar enlace','Copy link')+'</button>' +
+      (modoApp && enApp() ? '<button type="button" data-pag-modo><i style="background:#2f4a3a">'+gI('doc',20)+'</i>'+gL('Compartir esta página','Share this page')+'</button>' : '') +
+      (modoApp ? '' : '<button type="button" data-app-modo><i style="background:#B6F23C;color:#04100A">'+gI('app',20)+'</i>'+gL('Compartir la app','Share the app')+'</button>') + '</div>' +
       (modoApp ? '<p class="nota">'+gL('Quien abra el enlace puede instalarla: en Android con el aviso del navegador y en iPhone con Compartir → Añadir a pantalla de inicio.','Anyone who opens the link can install it: on Android with the browser prompt and on iPhone with Share → Add to Home Screen.')+'</p>' : '') +
       '<p class="nota">'+gL('Para Instagram y TikTok no existe un botón directo: usa «Más opciones» en tu teléfono o copia el enlace y pégalo en tu publicación o historia.','There is no direct button for Instagram and TikTok: use “More options” on your phone or copy the link and paste it into your post or story.')+'</p></div>';
     sheet.innerHTML = h; sheet.hidden = false; document.body.style.overflow = 'hidden';
@@ -355,9 +359,9 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   /* ---- DOM ---- */
   var wrap=document.createElement('div');
   wrap.innerHTML=
-   '<div id="buscar" class="ovl" role="dialog" aria-modal="true" aria-label="'+gL('Buscar','Search')+'" hidden><div class="ovl-in"><div class="ovl-top"><h2>'+gL('¿Qué estás buscando?','What are you looking for?')+'</h2><button type="button" class="ovl-x" aria-label="'+gL('Cerrar','Close')+'">✕</button></div><form data-buscar-form2 role="search" class="bx"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" placeholder="'+gL('Busca precios, proceso, distribuidores…','Search prices, process, distributors…')+'" aria-label="'+gL('Buscar','Search')+'"><button type="submit" class="go" aria-label="'+gL('Buscar','Search')+'">→</button></form><ul class="res"></ul></div></div>'+
+   '<div id="buscar" class="ovl" role="dialog" aria-modal="true" aria-label="'+gL('Buscar','Search')+'" hidden><div class="ovl-in"><div class="ovl-top"><h2>'+gL('¿Qué estás buscando?','What are you looking for?')+'</h2><button type="button" class="ovl-x" aria-label="'+gL('Cerrar','Close')+'">'+gI('x',18)+'</button></div><form data-buscar-form2 role="search" class="bx"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" placeholder="'+gL('Busca precios, proceso, distribuidores…','Search prices, process, distributors…')+'" aria-label="'+gL('Buscar','Search')+'"><button type="submit" class="go" aria-label="'+gL('Buscar','Search')+'">'+gI('ar',20)+'</button></form><ul class="res"></ul></div></div>'+
    '<div id="cart-bg" class="cart-bg" hidden></div>'+
-   '<aside id="carrito" class="cart" role="dialog" aria-modal="true" aria-label="'+gL('Tu carrito','Your cart')+'" aria-hidden="true"><div class="cart-h"><h2>'+gL('Tu carrito','Your cart')+'</h2><button type="button" class="ovl-x" aria-label="'+gL('Cerrar carrito','Close cart')+'">✕</button></div><div class="cart-b"></div><div class="cart-f"></div></aside>';
+   '<aside id="carrito" class="cart" role="dialog" aria-modal="true" aria-label="'+gL('Tu carrito','Your cart')+'" aria-hidden="true"><div class="cart-h"><h2>'+gL('Tu carrito','Your cart')+'</h2><button type="button" class="ovl-x" aria-label="'+gL('Cerrar carrito','Close cart')+'">'+gI('x',18)+'</button></div><div class="cart-b"></div><div class="cart-f"></div></aside>';
   while(wrap.firstChild)body.appendChild(wrap.firstChild);
   var sb=q('#buscar'),sin=q('input',sb),sres=q('.res',sb),cd=q('#carrito'),cbg=q('#cart-bg'),cb=q('.cart-b',cd),cf=q('.cart-f',cd);
   /* ---- buscador ---- */
@@ -386,7 +390,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     document.querySelectorAll('.cart-n').forEach(function(b){b.textContent=n;b.hidden=!n});
     var ks=Object.keys(cart);
     if(!ks.length){cb.innerHTML='<p class="vacio">'+gL('Tu carrito está vacío. Agrega tu carbón ECOCOCO para armar tu pedido.','Your cart is empty. Add your ECOCOCO charcoal to build your order.')+'</p><p><button type="button" class="btn pill add" data-add="k1">'+gL('Agregar bolsa 1 kg','Add 1 kg bag')+' · Q'+PROD.k1.p+'</button></p><p><button type="button" class="btn pill add" data-add="k25">'+gL('Agregar bulto 25 kg','Add 25 kg sack')+' · Q'+PROD.k25.p+'</button></p>';cf.innerHTML='';return}
-    cb.innerHTML=ks.map(function(k){var p=PROD[k];return '<div class="li"><div class="li-t"><b>'+pn(k)+'</b><span>'+QU(p.p)+' '+gL('c/u','each')+'</span></div><div class="li-q"><button type="button" data-q="-1" data-k="'+k+'" aria-label="'+gL('Quitar uno','Remove one')+'">−</button><span>'+cart[k]+'</span><button type="button" data-q="1" data-k="'+k+'" aria-label="'+gL('Agregar uno','Add one')+'">+</button></div><div class="li-s">'+QU(cart[k]*p.p)+'</div><button type="button" class="li-x" data-del="'+k+'" aria-label="'+gL('Eliminar','Remove')+'">✕</button></div>'}).join('');
+    cb.innerHTML=ks.map(function(k){var p=PROD[k];return '<div class="li"><div class="li-t"><b>'+pn(k)+'</b><span>'+QU(p.p)+' '+gL('c/u','each')+'</span></div><div class="li-q"><button type="button" data-q="-1" data-k="'+k+'" aria-label="'+gL('Quitar uno','Remove one')+'">−</button><span>'+cart[k]+'</span><button type="button" data-q="1" data-k="'+k+'" aria-label="'+gL('Agregar uno','Add one')+'">+</button></div><div class="li-s">'+QU(cart[k]*p.p)+'</div><button type="button" class="li-x" data-del="'+k+'" aria-label="'+gL('Eliminar','Remove')+'">'+gI('x',18)+'</button></div>'}).join('');
     var ordNo='';
     function msgWA(){
       var L=[gL('Hola, quiero hacer este pedido de ECOCOCO:','Hi, I\'d like to place this ECOCOCO order:')];
@@ -448,10 +452,10 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     var m=document.createElement('div');m.className='wch';m.id='ord-ok';m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.setAttribute('aria-label',gL('Tu orden está lista','Your order is ready'));
     var canShare=false;
     try{var f=new File([blob],name,{type:'application/pdf'});canShare=!!(navigator.canShare&&navigator.canShare({files:[f]}))}catch(e){}
-    m.innerHTML='<div class="wch-in"><div class="wch-h"><h2>'+gL('Tu orden está lista','Your order is ready')+'</h2><button type="button" class="wch-b" aria-label="'+gL('Cerrar','Close')+'" data-x>✕</button></div>'+
+    m.innerHTML='<div class="wch-in"><div class="wch-h"><h2>'+gL('Tu orden está lista','Your order is ready')+'</h2><button type="button" class="wch-b" aria-label="'+gL('Cerrar','Close')+'" data-x>'+gI('x',18)+'</button></div>'+
       '<p class="wch-s">'+gL('Se descargó el PDF <b>'+name+'</b>. Para que GEA Carbón lo reciba, sigue estos pasos:','The PDF <b>'+name+'</b> was downloaded. To send it to GEA Carbón, follow these steps:')+'</p>'+
       '<ol class="ord-p"><li>'+gL('Toca <b>Abrir WhatsApp</b>. Se abre el chat con tu pedido ya escrito. Envíalo.','Tap <b>Open WhatsApp</b>. The chat opens with your order already written. Send it.')+'</li>'+
-      '<li>'+gL('En el chat toca el clip <b>📎</b>, elige <b>Documento</b> y selecciona el PDF <b>'+name+'</b> (está en tus Descargas). Envíalo.','In the chat tap the paperclip <b>📎</b>, choose <b>Document</b> and select the PDF <b>'+name+'</b> (it is in your Downloads). Send it.')+'</li></ol>'+
+      '<li>'+gL('En el chat toca el clip <b class="ic-in">'+gI('clip',16)+'</b>, elige <b>Documento</b> y selecciona el PDF <b>'+name+'</b> (está en tus Descargas). Envíalo.','In the chat tap the paperclip <b class="ic-in">'+gI('clip',16)+'</b>, choose <b>Document</b> and select the PDF <b>'+name+'</b> (it is in your Downloads). Send it.')+'</li></ol>'+
       '<a class="btn wa" data-direct target="_blank" rel="noopener" href="'+href+'">'+gL('Abrir WhatsApp','Open WhatsApp')+'</a>'+
       (canShare?'<button type="button" class="btn pdf" data-share>'+gL('Compartir el PDF desde mi teléfono','Share the PDF from my phone')+'</button><p class="ord-n">'+gL('Al compartir, elige WhatsApp y luego el chat de GEA Carbón (+502 4279-4894).','When sharing, choose WhatsApp and then the GEA Carbón chat (+502 4279-4894).')+'</p>':'')+
       '<button type="button" class="vaciar" data-again>'+gL('Descargar el PDF otra vez','Download the PDF again')+'</button></div>';
@@ -528,24 +532,24 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   };
   var INC=[['FOB (puerto de salida en Guatemala)','FOB (Guatemalan port of departure)'],['CIF (hasta el puerto de destino)','CIF (to the destination port)'],['EXW (en la planta, Retalhuleu)','EXW (at the plant, Retalhuleu)'],['No estoy seguro; necesito asesoría','Not sure; I need guidance']];
   var OPT=[
-    {i:'🛒',t:['Consumidor final','End consumer'],d:['Quiero comprar carbón para mi casa','I want to buy charcoal for home'],
+    {i:'home',t:['Consumidor final','End consumer'],d:['Quiero comprar carbón para mi casa','I want to buy charcoal for home'],
       saludo:['Hola, soy consumidor final y quiero comprar carbón ECOCOCO.','Hi, I am an end consumer and I want to buy ECOCOCO charcoal.'],
       f:['nom','cant','dep','mun','esp'],unidades:[['bolsa','bolsas de 1 kg','1 kg bags',1]],
       lug:'Ubicación de entrega'},
-    {i:'🏪',t:['Tienda o abarrotes','Shop or grocery store'],d:['Quiero surtir mi negocio','I want to stock my shop'],
+    {i:'store',t:['Tienda o abarrotes','Shop or grocery store'],d:['Quiero surtir mi negocio','I want to stock my shop'],
       saludo:['Hola, tengo una tienda o abarrotería y quiero información para vender ECOCOCO.','Hi, I have a shop or grocery store and I want information to sell ECOCOCO.'],
       f:['neg','nom','cant','dep','mun','esp'],unidades:[['kg','kg','kg',1],['bulto','bultos de 25 kg','25 kg sacks',25]]},
-    {i:'🍖',t:['Restaurante o parrillada','Restaurant or grill'],d:['Uso el carbón en mi cocina o asador','I use charcoal in my kitchen or grill'],
+    {i:'fire',t:['Restaurante o parrillada','Restaurant or grill'],d:['Uso el carbón en mi cocina o asador','I use charcoal in my kitchen or grill'],
       saludo:['Hola, tengo un restaurante o parrillada y quiero cotizar carbón ECOCOCO.','Hi, I have a restaurant or grill and I would like a quote for ECOCOCO charcoal.'],
       f:['neg','nom','cant','dep','mun','esp'],unidades:[['kg','kg por semana','kg per week',1],['kgm','kg por mes','kg per month',1]]},
-    {i:'🚚',t:['Distribuidor o mayorista','Distributor or wholesaler'],d:['Bultos de 25 kg y precio por volumen','25 kg sacks and volume price'],
+    {i:'truck',t:['Distribuidor o mayorista','Distributor or wholesaler'],d:['Bultos de 25 kg y precio por volumen','25 kg sacks and volume price'],
       saludo:['Hola, quiero ser distribuidor o comprar al por mayor ECOCOCO.','Hi, I want to become a distributor or buy ECOCOCO wholesale.'],
       f:['neg','nom','cant','dep','mun','esp'],unidades:[['bulto','bultos de 25 kg','25 kg sacks',25],['kg','kg','kg',1]]},
-    {i:'🌎',t:['Exportación (fuera de Guatemala)','Export (outside Guatemala)'],d:['Quiero comprar para otro país','I want to buy for another country'],
+    {i:'globe',t:['Exportación (fuera de Guatemala)','Export (outside Guatemala)'],d:['Quiero comprar para otro país','I want to buy for another country'],
       saludo:['Hola, quiero una cotización de exportación de carbón ECOCOCO.','Hi, I would like an export quote for ECOCOCO charcoal.'],
       nota:['Los precios en dólares son de referencia, en base EXW (en planta, Retalhuleu): no incluyen flete internacional, seguro ni trámites de exportación. El flete se cotiza según el volumen y el país de destino; FOB y CIF se cotizan aparte. Confirmamos disponibilidad, empaque y documentos en la cotización.','USD prices are for reference, on an EXW basis (at the plant, Retalhuleu): they do not include international freight, insurance or export procedures. Freight is quoted by volume and destination country; FOB and CIF are quoted separately. We confirm availability, packaging and documents in the quote.'],
       f:['neg','nom','mail','pais','dest','cant','inc','esp'],unidades:[['kg','kg','kg',1],['bulto','bultos de 25 kg','25 kg sacks',25],['ton','toneladas','metric tons',1000]],exp:1},
-    {i:'💬',t:['Quiero más información','I want more information'],d:['Tengo preguntas sobre el producto','I have questions about the product'],
+    {i:'chat',t:['Quiero más información','I want more information'],d:['Tengo preguntas sobre el producto','I have questions about the product'],
       saludo:['Hola, quiero más información sobre el carbón ECOCOCO.','Hi, I would like more information about ECOCOCO charcoal.'],
       f:['nom','esp'],preg:1}
   ];
@@ -556,8 +560,8 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   function cerrar(){if(!dlg)return;dlg.hidden=true;document.body.classList.remove('noscroll');if(last&&last.focus)last.focus()}
   function lista(){
     cur=null;
-    dlg.querySelector('.wch-in').innerHTML='<div class="wch-h"><h2>'+gL('¿Qué necesitas?','What do you need?')+'</h2><button type="button" class="ovl-x" aria-label="'+gL('Cerrar','Close')+'">✕</button></div><p class="wch-s">'+gL('Elige una opción, completa los datos y abrimos WhatsApp con el mensaje listo.','Choose an option, fill in the details and we open WhatsApp with the message ready.')+'</p><div class="wch-l">'+
-      OPT.map(function(o,i){return '<button type="button" data-o="'+i+'"><span class="wch-i" aria-hidden="true">'+o.i+'</span><span><b>'+X(o.t)+'</b><small>'+X(o.d)+'</small></span></button>'}).join('')+'</div>';
+    dlg.querySelector('.wch-in').innerHTML='<div class="wch-h"><h2>'+gL('¿Qué necesitas?','What do you need?')+'</h2><button type="button" class="ovl-x" aria-label="'+gL('Cerrar','Close')+'">'+gI('x',18)+'</button></div><p class="wch-s">'+gL('Elige una opción, completa los datos y abrimos WhatsApp con el mensaje listo.','Choose an option, fill in the details and we open WhatsApp with the message ready.')+'</p><div class="wch-l">'+
+      OPT.map(function(o,i){return '<button type="button" data-o="'+i+'"><span class="wch-i" aria-hidden="true">'+gI(o.i,24)+'</span><span><b>'+X(o.t)+'</b><small>'+X(o.d)+'</small></span></button>'}).join('')+'</div>';
     var f=dlg.querySelector('[data-o]');if(f)f.focus();
   }
   function campo(o,k){
@@ -581,7 +585,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   }
   function formulario(n){
     var o=OPT[n];cur=n;
-    dlg.querySelector('.wch-in').innerHTML='<div class="wch-h"><button type="button" class="wch-b" data-back aria-label="'+gL('Volver','Back')+'">←</button><h2>'+X(o.t)+'</h2><button type="button" class="ovl-x" aria-label="'+gL('Cerrar','Close')+'">✕</button></div><p class="wch-s">'+gL('Completa los datos. Los campos con * son obligatorios.','Fill in the details. Fields with * are required.')+'</p>'+(o.nota?'<p class="wch-s wf-x">'+X(o.nota)+'</p>':'')+'<form class="wf" novalidate>'+o.f.map(function(k){return campo(o,k)}).join('')+'<button type="submit" class="btn wa wf-go">'+gL('Enviar por WhatsApp','Send on WhatsApp')+'</button><p class="wf-n">'+gL('Se abrirá WhatsApp con tu mensaje ya escrito. Puedes revisarlo antes de enviarlo.','WhatsApp will open with your message ready. You can review it before sending.')+'</p></form>';
+    dlg.querySelector('.wch-in').innerHTML='<div class="wch-h"><button type="button" class="wch-b" data-back aria-label="'+gL('Volver','Back')+'">'+gI('al',18)+'</button><h2>'+X(o.t)+'</h2><button type="button" class="ovl-x" aria-label="'+gL('Cerrar','Close')+'">'+gI('x',18)+'</button></div><p class="wch-s">'+gL('Completa los datos. Los campos con * son obligatorios.','Fill in the details. Fields with * are required.')+'</p>'+(o.nota?'<p class="wch-s wf-x">'+X(o.nota)+'</p>':'')+'<form class="wf" novalidate>'+o.f.map(function(k){return campo(o,k)}).join('')+'<button type="submit" class="btn wa wf-go">'+gL('Enviar por WhatsApp','Send on WhatsApp')+'</button><p class="wf-n">'+gL('Se abrirá WhatsApp con tu mensaje ya escrito. Puedes revisarlo antes de enviarlo.','WhatsApp will open with your message ready. You can review it before sending.')+'</p></form>';
     var f=dlg.querySelector('input,select,textarea');if(f)f.focus();
   }
   function mensaje(o,v){
