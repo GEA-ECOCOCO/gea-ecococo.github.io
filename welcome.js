@@ -1,8 +1,7 @@
-/* Bienvenida sonora de ECOCOCO: un destello musical de tecnología y naturaleza + voz femenina pausada.
+/* Bienvenida sonora de ECOCOCO: un sonido de marca futurista (sin voz).
    - Se oye al abrir la app instalada (junto con la pantalla de la G) y, si el navegador lo permite, al entrar al inicio del sitio.
    - Una sola vez por sesión; se puede apagar en el botón del pie de página o en la pantalla de inicio.
-   - El sonido se genera en el dispositivo (Web Audio): no pesa y funciona sin conexión.
-   - La voz usa audio/bienvenida-es.mp3 (o -en.mp3) si existe; si no, la voz del dispositivo. */
+   - El sonido se genera en el dispositivo (Web Audio): no pesa y funciona sin conexión. */
 (function () {
   'use strict';
   var EN = document.documentElement.lang === 'en', L = function (a, b) { return EN ? b : a };
@@ -124,7 +123,6 @@
     if (!ctx || parado) return;
     var t0 = ctx.currentTime + 0.05;
     try { chime(ctx, ctx.destination, t0) } catch (e) {}
-    vozTimer = setTimeout(voz, vozEn * 1000);
     try { window.geaTrack && geaTrack('sonido_bienvenida', {}) } catch (e) {}
   }
   function iniciar(esperaChime, vozEn, ventana) {
