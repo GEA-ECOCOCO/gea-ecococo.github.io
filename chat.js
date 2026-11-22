@@ -132,6 +132,7 @@ function render(){
  [L('Envíos y exportación','Shipping & export'),L('¿Hacen envíos y cotizan exportación?','Do you ship and quote exports?')],
  [L('Instalar la app','Install the app'),L('¿Cómo instalo la app en mi celular?','How do I install the app on my phone?')]].forEach(function(s){
   var b=el('button','',s[0]);b.type='button';b.addEventListener('click',function(){send(s[1])});sug.appendChild(b)});
+var vta=el('a','chat-sug-v',null);vta.href='ventas.html';vta.innerHTML=L('Ir a ventas','Go to sales')+ic('ar',14);vta.addEventListener('click',function(){track('click_chat_link',{destino:'ventas'})});sug.appendChild(vta);
 
 function norm(x){return String(x).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,' ')}
 function local(txt){
