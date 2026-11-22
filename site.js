@@ -751,3 +751,19 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   function init(){mount()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+
+/* Imprimir PDF: en computador abre el diálogo de impresión; en celular abre el visor */
+(function(){
+  document.addEventListener('click',function(e){
+    var b=e.target.closest&&e.target.closest('[data-print]');if(!b)return;
+    e.preventDefault();var u=b.getAttribute('data-print');
+    try{window.geaTrack&&geaTrack('imprimir_pdf',{archivo:u.split('/').pop()})}catch(x){}
+    var touch=false;try{touch=matchMedia('(pointer:coarse)').matches}catch(x){}
+    if(touch){window.open(u,'_blank','noopener');return}
+    try{
+      var f=document.createElement('iframe');f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';f.src=u;
+      f.onload=function(){try{f.contentWindow.focus();f.contentWindow.print()}catch(x){window.open(u,'_blank','noopener')}setTimeout(function(){if(f.parentNode)f.parentNode.removeChild(f)},60000)};
+      document.body.appendChild(f);
+    }catch(x){window.open(u,'_blank','noopener')}
+  });
+})();
