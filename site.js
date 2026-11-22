@@ -96,14 +96,24 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   try { visto = sessionStorage.getItem('intro-ecococo') === '1'; sessionStorage.setItem('intro-ecococo', '1'); } catch (e) {}
   if (visto) document.documentElement.classList.add('rapido');
   if (reduce || visto) { l.textContent = texto; return; }
-  l.innerHTML = '<span class="caret"></span>';
+  /* La frase completa se reserva invisible y la escritura va encima: la caja no cambia de tamaño ni empuja el contenido */
+  l.classList.add('typing');
+  var g = document.createElement('span'); g.className = 'lm-g'; g.textContent = texto;
+  var v = document.createElement('span'); v.className = 'lm-t';
+  l.textContent = ''; l.appendChild(g); l.appendChild(v);
+  v.innerHTML = '<span class="caret"></span>';
   var i = 0;
   setTimeout(function escribir() {
     if (i <= texto.length) {
-      l.innerHTML = texto.slice(0, i) + '<span class="caret"></span>';
+      v.innerHTML = '';
+      v.appendChild(document.createTextNode(texto.slice(0, i)));
+      var c = document.createElement('span'); c.className = 'caret'; v.appendChild(c);
       i++; setTimeout(escribir, 42);
     } else {
-      setTimeout(function () { l.textContent = texto; }, 900);
+      setTimeout(function () {
+        v.classList.add('fin');
+        setTimeout(function () { l.classList.remove('typing'); l.textContent = texto; }, 700);
+      }, 900);
     }
   }, 2100 + (document.documentElement.classList.contains('splash-on') ? 1800 : 0));
 })();

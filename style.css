@@ -1304,3 +1304,11 @@ html.splash-on main{animation-delay:2.9s}
 @media(prefers-reduced-motion:reduce){.barrido{display:none}main{animation:none}}
 .barrido.quiet{display:block;animation:none;opacity:0}
 body.saliendo .barrido.quiet{animation:veloIn .45s ease both}
+
+/* Escritura del lema sin saltos de diseño */
+.lema.typing{display:grid}
+.lema.typing .lm-g,.lema.typing .lm-t{grid-area:1/1;display:block}
+.lema.typing .lm-g{visibility:hidden}
+.lema.typing .lm-t .caret{transition:opacity .7s ease}
+.lema.typing .lm-t.fin .caret{animation:none;opacity:0}
+#lema span{font-size:inherit;font-weight:inherit;margin:0;letter-spacing:inherit}
