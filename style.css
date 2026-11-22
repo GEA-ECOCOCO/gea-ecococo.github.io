@@ -1325,3 +1325,21 @@ html.splash-on .logo-card{animation-delay:4.7s,4.7s}
 html.splash-on .in1{animation-delay:3.9s}html.splash-on .in2{animation-delay:4.15s}html.splash-on .in3{animation-delay:4.4s}
 html.splash-on.splash-done{overflow:visible}
 html.splash-on .barrido:not(.quiet){display:none}
+
+/* Factura electrónica FEL */
+.fac-emisor dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px 22px;margin-top:10px}
+.fac-emisor dt{font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;opacity:.65}
+.fac-emisor dd{margin:2px 0 0;font-weight:700}
+.tipo-cli{border:0;padding:0;margin:0 0 14px}
+.tipo-cli legend{font-weight:700;margin-bottom:8px;padding:0}
+.tipo-cli .rad{display:inline-flex;align-items:center;gap:8px;margin:0 18px 8px 0;cursor:pointer;font-weight:600}
+.tipo-cli input{width:20px;height:20px;accent-color:#1F7A3A}
+.fac-tot{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:16px 18px;border-radius:16px;background:#0B2415;color:#F5F0E6;margin:6px 0 8px}
+.fac-tot span{font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:.82rem}
+.fac-tot small{display:block;opacity:.75;font-size:.8rem;margin-top:2px}
+.fac-tot-n{text-align:right}.fac-tot strong{font-size:1.7rem;color:#B6F23C;font-family:var(--cond,inherit)}
+.fac-nota,.nota-fac{font-size:.86rem;opacity:.8;margin:0 0 14px}
+.fac-acc{display:flex;flex-wrap:wrap;gap:10px}
+.fac-acc .btn{flex:1 1 200px;text-align:center;justify-content:center}
+.fac-cta{display:flex;flex-wrap:wrap;gap:18px 26px;align-items:center;justify-content:space-between}
+.fac-cta h2{margin:4px 0 6px}.fac-cta p{margin:0;max-width:520px}

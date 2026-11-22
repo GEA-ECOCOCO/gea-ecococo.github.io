@@ -70,6 +70,16 @@
      "sizes": "192x192"
     }
    ]
+  },
+  {
+   "name": "Factura FEL",
+   "url": "/factura.html",
+   "icons": [
+    {
+     "src": "/img/icon-192.png",
+     "sizes": "192x192"
+    }
+   ]
   }
  ]
 }

@@ -167,4 +167,59 @@
     var n=new Date(),m=en?['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']:['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
     return pad(n.getDate())+' '+m[n.getMonth()]+' '+n.getFullYear();
   };
+
+  // Solicitud de factura FEL / proforma. d: {en,no,fecha,emisor:{nom,nit,dir,tel,mail},cli:{tipo,nom,nit,dir,mail,tel,dep,mun,ref,nota},items:[{cod,nom,cant,p}],fx}
+  window.geaFacturaPDF=function(d){
+    var L=function(es,en){return d.en?en:es};
+    var doc=new Doc(),y,e=d.emisor||{},c=d.cli||{};
+    doc.rect(0,0,W,96,C.carbon);doc.rect(0,96,W,4,C.brasa);
+    doc.text('GEA CARBÓN',M,46,26,{bold:true,color:C.crema});
+    doc.text('ECOCOCO · GEA Grupo Empresarial Armas',M,64,10,{color:[.85,.8,.72]});
+    doc.text('Retalhuleu, Guatemala',M,78,10,{color:[.85,.8,.72]});
+    doc.text(L('SOLICITUD DE FACTURA FEL · PROFORMA','FEL INVOICE REQUEST · PROFORMA'),W-M,40,12,{bold:true,color:C.brasa,right:true});
+    doc.text(L('N.º ','No. ')+d.no,W-M,58,11,{bold:true,color:C.crema,right:true});
+    doc.text(L('Fecha: ','Date: ')+d.fecha,W-M,74,10,{color:[.85,.8,.72],right:true});
+    y=124;
+    function sec(t){doc.text(t,M,y,10,{bold:true,color:C.bosque});doc.line(M,y+6,W-M,y+6,C.bosque,1);y+=22}
+    function row(k,v){if(!v)return;doc.text(k,M,y,8.5,{color:C.gris});var ls=wrap(v,10.5,W-M-210);ls.forEach(function(l,i){doc.text(l,210,y+i*13,10.5,{bold:true})});y+=Math.max(1,ls.length)*13+5}
+    sec(L('EMISOR','ISSUER'));
+    row(L('Razón social','Company'),e.nom);row(L('NIT del emisor','Issuer tax ID (NIT)'),e.nit);row(L('Ubicación','Location'),e.dir);
+    row(L('Contacto','Contact'),[e.tel,e.mail].filter(Boolean).join('  ·  '));
+    y+=8;sec(L('DATOS PARA LA FACTURA (RECEPTOR)','INVOICE DETAILS (RECIPIENT)'));
+    row(L('Nombre o razón social','Name or company'),c.nom);
+    row(L('NIT del cliente','Customer tax ID (NIT)'),c.tipo==='cf'?L('CF (consumidor final)','CF (end consumer)'):c.nit);
+    row(L('Dirección fiscal','Tax address'),c.dir);row(L('Correo para recibir la factura','Email to receive the invoice'),c.mail);
+    row(L('Teléfono','Phone'),c.tel);row(L('Entrega (departamento / municipio)','Delivery (department / town)'),[c.dep,c.mun].filter(Boolean).join(' / '));
+    row(L('Referencia de pedido o pago','Order or payment reference'),c.ref);row(L('Observaciones','Notes'),c.nota);
+    y+=8;
+    var x1=M,x2=M+78,x3=W-M-190,x4=W-M-110,x5=W-M;
+    doc.rect(M,y,W-2*M,24,C.carbon);
+    doc.text(L('CÓDIGO','CODE'),x1+8,y+16,9,{bold:true,color:C.crema});doc.text(L('DESCRIPCIÓN','DESCRIPTION'),x2,y+16,9,{bold:true,color:C.crema});
+    doc.text(L('CANT.','QTY'),x3,y+16,9,{bold:true,color:C.crema,right:true});doc.text(L('PRECIO UNIT.','UNIT PRICE'),x4,y+16,9,{bold:true,color:C.crema,right:true});
+    doc.text('SUBTOTAL',x5-8,y+16,9,{bold:true,color:C.crema,right:true});y+=24;
+    var total=0;
+    d.items.forEach(function(it,i){var sub=it.cant*it.p;total+=sub;doc.rect(M,y,W-2*M,28,i%2?C.blanco:C.crema);
+      doc.text(it.cod||'',x1+8,y+18,9.5,{color:C.gris});doc.text(it.nom,x2,y+18,10.5,{bold:true});doc.text(String(it.cant),x3,y+18,10.5,{right:true});
+      doc.text(money(it.p),x4,y+18,10.5,{right:true});doc.text(money(sub),x5-8,y+18,10.5,{bold:true,right:true});y+=28});
+    doc.line(M,y,W-M,y,C.carbon,1);y+=20;
+    var tx=W-M-8;
+    doc.text(L('Flete / envío','Shipping'),W-M-190,y,10.5,{color:C.gris});doc.text(L('Por confirmar','To be confirmed'),tx,y,10.5,{right:true});y+=10;
+    doc.rect(W-M-200,y,200,32,C.carbon);doc.text(L('TOTAL ESTIMADO','ESTIMATED TOTAL'),W-M-190,y+21,10,{bold:true,color:C.crema});
+    doc.text(money(total),tx,y+22,14,{bold:true,color:C.brasa,right:true});
+    var fx=d.fx&&d.fx.r?d.fx.r:7.65;
+    if(d.en){doc.text('Approx. equivalent in US$',W-M-190,y+48,9.5,{color:C.gris});doc.text('US$'+(Math.round(total/fx*100)/100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','),tx,y+48,10.5,{bold:true,right:true});y+=18}
+    y+=56;sec(L('IMPORTANTE','IMPORTANT'));
+    var T=[L('Este documento es una proforma informativa con tus datos fiscales y el detalle del pedido. No es la factura.','This document is an informational proforma with your tax details and the order breakdown. It is not the invoice.'),
+      L('La factura electrónica FEL se emite al confirmar el pedido y el pago, y se envía al correo indicado. El desglose de impuestos aparece en la factura.','The FEL electronic invoice is issued once the order and payment are confirmed, and is sent to the email provided. The tax breakdown appears on the invoice.'),
+      L('Revisa que tu nombre y NIT coincidan con tu registro tributario: una vez emitida, la factura no puede modificarse.','Check that your name and NIT match your tax registration: once issued, the invoice cannot be edited.'),
+      L('Precios en quetzales; el flete, la entrega y la forma de pago se coordinan con GEA Carbón antes de concretar el pedido.','Prices in quetzales; shipping, delivery and payment are arranged with GEA Carbón before the order is final.')];
+    if(d.en)T.push('Reference exchange rate: Q'+fx.toFixed(2)+' per US$1'+(d.fx&&d.fx.d?' ('+d.fx.d+')':'')+'. The US$ amount is approximate.');
+    T.forEach(function(t){wrap(t,9.5,W-2*M-14).forEach(function(l,i){if(i===0)doc.text('•',M+2,y,9.5,{color:C.brasa,bold:true});doc.text(l,M+14,y,9.5,{color:C.carbon});y+=13});y+=3});
+    doc.rect(0,H-70,W,70,C.carbon);doc.rect(0,H-70,W,3,C.brasa);
+    doc.text(L('Para enviar esta solicitud: WhatsApp +502 4279-4894','To send this request: WhatsApp +502 4279-4894'),M,H-44,10,{bold:true,color:C.crema});
+    doc.text('geaecococo.ventas@gmail.com  ·  gea-ecococo.github.io',M,H-28,9.5,{color:[.85,.8,.72]});
+    doc.text('ECOCOCO · GEA Carbón',W-M,H-28,9.5,{color:[.85,.8,.72],right:true});
+    return build(doc);
+  };
+  window.geaFacturaNo=function(){var n=new Date();return 'PF-'+n.getFullYear()+pad(n.getMonth()+1)+pad(n.getDate())+'-'+pad(n.getHours())+pad(n.getMinutes())+pad(n.getSeconds())};
 })();
