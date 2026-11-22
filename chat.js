@@ -37,8 +37,16 @@ function ttsText(t){
     .replace(/[→≈·•]/g,' ').replace(/\b1\s?kg\b/gi,L('1 kilo','1 kilogram')).replace(/(\d[\d.,]*)\s?kg\b/gi,'$1 '+L('kilos','kilograms')).replace(/\bkg\b/gi,L('kilo','kilogram')).replace(/\s+/g,' ').trim();
   return t}
 function pickVoice(){
-  var vs=TTS.getVoices()||[],pre=EN?['en-US','en-GB','en']:['es-GT','es-MX','es-US','es-419','es-CO','es'];
-  for(var i=0;i<pre.length;i++){for(var j=0;j<vs.length;j++){if((vs[j].lang||'').replace('_','-').indexOf(pre[i])===0)return vs[j]}}return null}
+  var vs=(TTS.getVoices()||[]).filter(function(v){return(v.lang||'').toLowerCase().indexOf(EN?'en':'es')===0});
+  if(!vs.length)return null;
+  var pre=EN?['en-us','en-gb','en']:['es-gt','es-mx','es-us','es-419','es-co','es-ar','es-es','es'];
+  function sc(v){var n=(v.name||'').toLowerCase(),l=(v.lang||'').toLowerCase().replace('_','-'),s=0;
+    if(/natural|neural|premium|enhanced|mejorad|wavenet|studio/.test(n))s+=60;
+    if(/online|google|microsoft|siri/.test(n))s+=25;
+    if(/compact|espeak|robot|novelty|bad news|whisper|zarvox|trinoids|bubbles|boing|cellos|hysterical/.test(n))s-=80;
+    for(var k=0;k<pre.length;k++){if(l===pre[k]||l.indexOf(pre[k]+'-')===0){s+=(pre.length-k)*4;break}}
+    if(v.default)s+=3;return s}
+  vs.sort(function(a,b){return sc(b)-sc(a)});return vs[0]}
 function stopSpeak(){if(TTS){try{TTS.cancel()}catch(e){}}if(spBtn){spBtn.classList.remove('on');spBtn.textContent=spBtn.getAttribute('data-l1');spBtn=null}}
 function speak(text,btn){
   if(!TTS)return;var same=btn&&btn===spBtn;stopSpeak();if(same)return;
@@ -46,9 +54,10 @@ function speak(text,btn){
   var parts=t.match(/.+?(?:[.!?]+(?=\s|$)|$)/g)||[t],v=pickVoice();
   if(btn){spBtn=btn;btn.classList.add('on');btn.textContent=btn.getAttribute('data-l2')}
   parts.forEach(function(p,i){
-    var u=new SpeechSynthesisUtterance(p.trim());u.lang=v?v.lang:(EN?'en-US':'es-MX');if(v)u.voice=v;u.rate=1;
+    var u=new SpeechSynthesisUtterance(p.trim());u.lang=v?v.lang:(EN?'en-US':'es-MX');if(v)u.voice=v;u.rate=.97;u.pitch=1;
     if(i===parts.length-1){u.onend=u.onerror=function(){if(spBtn===btn&&btn){btn.classList.remove('on');btn.textContent=btn.getAttribute('data-l1');spBtn=null}}}
     TTS.speak(u)})}
+if(TTS){try{TTS.getVoices();if(TTS.addEventListener)TTS.addEventListener('voiceschanged',function(){})}catch(e){}}
 function stopMic(){if(rec){try{rec.stop()}catch(e){}}}
 function startMic(){
   if(!SR||busy)return;stopSpeak();
