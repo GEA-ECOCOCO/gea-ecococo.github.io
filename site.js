@@ -150,6 +150,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   var TEXTO = gL('ECOCOCO: briquetas de carbón de cáscara de coco hechas en Retalhuleu, Guatemala.','ECOCOCO: coconut shell charcoal briquettes made in Retalhuleu, Guatemala.');
   var IMG = 'https://gea-ecococo.github.io/img/og.jpg';
   var modoApp = false;
+  function enApp() { try { return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; } catch (x) { return false; } }
   function appUrl() { return location.origin + (gL('', '/en') + '/') + '?utm_source=compartir_app&utm_medium=referral'; }
   var TEXTO_APP = gL('Instala la app de ECOCOCO en tu celular: briquetas de carbón de cáscara de coco hechas en Retalhuleu. Es gratis y se instala desde el enlace.','Install the ECOCOCO app on your phone: coconut shell charcoal briquettes made in Retalhuleu. It is free and installs from the link.');
   function url() { return modoApp ? appUrl() : location.href.split('#')[0]; }
@@ -200,6 +201,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       h += '<a href="' + r[3] + '" target="_blank" rel="noopener"><i style="background:' + r[2] + '">' + r[1] + '</i>' + r[0] + '</a>';
     });
     h += '<button type="button" data-copiar><i style="background:#2f4a3a">🔗</i>'+gL('Copiar enlace','Copy link')+'</button>' +
+      (modoApp && enApp() ? '<button type="button" data-pag-modo><i style="background:#2f4a3a">📄</i>'+gL('Compartir esta página','Share this page')+'</button>' : '') +
       (modoApp ? '' : '<button type="button" data-app-modo><i style="background:#B6F23C;color:#04100A">📲</i>'+gL('Compartir la app','Share the app')+'</button>') + '</div>' +
       (modoApp ? '<p class="nota">'+gL('Quien abra el enlace puede instalarla: en Android con el aviso del navegador y en iPhone con Compartir → Añadir a pantalla de inicio.','Anyone who opens the link can install it: on Android with the browser prompt and on iPhone with Share → Add to Home Screen.')+'</p>' : '') +
       '<p class="nota">'+gL('Para Instagram y TikTok no existe un botón directo: usa «Más opciones» en tu teléfono o copia el enlace y pégalo en tu publicación o historia.','There is no direct button for Instagram and TikTok: use “More options” on your phone or copy the link and paste it into your post or story.')+'</p></div>';
@@ -209,8 +211,9 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   function cerrar() { sheet.hidden = true; document.body.style.overflow = ''; }
   document.addEventListener('click', function (ev) {
     var cb = ev.target.closest('[data-compartir]');
-    if (cb) { var ap = cb.getAttribute('data-compartir') === 'app'; if (ap) { try { if (window.geaTrack) geaTrack('compartir_app'); } catch (x) {} } abrir(ap); return; }
+    if (cb) { var vv = cb.getAttribute('data-compartir'); var ap = vv === 'app' || (vv === '' && enApp()); if (ap) { try { if (window.geaTrack) geaTrack('compartir_app'); } catch (x) {} } abrir(ap); return; }
     if (!sheet.hidden && ev.target.closest('[data-app-modo]')) { abrir(true); return; }
+    if (!sheet.hidden && ev.target.closest('[data-pag-modo]')) { abrir(false); return; }
     if (sheet.hidden) return;
     if (ev.target === sheet || ev.target.closest('.cerrar')) { cerrar(); return; }
     if (ev.target.closest('[data-copiar]')) { copiar(); return; }
