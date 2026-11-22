@@ -1369,3 +1369,19 @@ a.card.vt-q{display:flex;flex-direction:column;gap:4px;text-decoration:none;colo
 
 .chat-sug a.chat-sug-v{display:inline-flex;align-items:center;gap:6px;border:1px solid #04100A;background:#04100A;color:#B6F23C;border-radius:999px;padding:9px 14px;font-size:.88rem;font-weight:700;text-decoration:none;min-height:40px}
 .chat-sug a.chat-sug-v:hover{background:#0B4D1F}
+
+/* ===== Emblema corporativo (portada) ===== */
+.logo-card.emb{background:none;box-shadow:none;border-radius:0;padding:0;animation:flota 6s 2.2s ease-in-out infinite;filter:drop-shadow(0 18px 34px rgba(0,0,0,.45))}
+.logo-card.emb svg{width:min(430px,74vw);height:auto;display:block;overflow:visible}
+.emb .e-ring{stroke-dasharray:1;stroke-dashoffset:1;animation:eDraw 1.7s .85s cubic-bezier(.4,0,.2,1) forwards}
+.emb .e-leaf{transform-box:fill-box;transform-origin:8% 92%;animation:eLeaf 1s 1.9s cubic-bezier(.2,.9,.3,1.25) both}
+@keyframes eDraw{to{stroke-dashoffset:0}}
+@keyframes eLeaf{0%{transform:scale(0) rotate(-14deg);opacity:0}100%{transform:none;opacity:1}}
+html.splash-on .emb .e-ring{animation-delay:3.3s}
+html.splash-on .emb .e-leaf{animation-delay:4.35s}
+html.splash-on .logo-card.emb{animation-delay:4.7s}
+.rapido .emb .e-ring,.rapido .emb .e-leaf{animation-delay:0s!important;animation-duration:.01s!important}
+@media(max-width:600px){.logo-card.emb svg{width:min(430px,70vw)}}
+@media(prefers-reduced-motion:reduce){.emb .e-ring{animation:none;stroke-dashoffset:0}.emb .e-leaf{animation:none}.logo-card.emb{animation:none}}
+.logo-card.emb{position:relative;isolation:isolate}
+.logo-card.emb::before{content:"";position:absolute;inset:-34px -46px;z-index:-1;border-radius:50%;background:radial-gradient(closest-side,rgba(4,16,10,.82),rgba(4,16,10,.6) 62%,rgba(4,16,10,0) 100%);pointer-events:none}
