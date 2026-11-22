@@ -21,53 +21,8 @@
     for (var ch = 0; ch < 2; ch++) { var d = b.getChannelData(ch); for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2.6) }
     return b;
   }
-  function chime(c, dest, t0) {
-    var master = c.createGain(); master.gain.value = 1.5;
-    var seco = c.createGain(), humedo = c.createGain(), rev = c.createConvolver();
-    rev.buffer = impulso(c, 2.2); seco.gain.value = 0.8; humedo.gain.value = 0.38;
-    master.connect(seco); master.connect(rev); rev.connect(humedo); seco.connect(dest); humedo.connect(dest);
-    function env(g, t, a, v, dur) {
-      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    }
-    /* 1) Barrido ascendente: energía que se carga (sierra filtrada + aire) */
-    var so = c.createOscillator(), sf = c.createBiquadFilter(), sg = c.createGain();
-    so.type = 'sawtooth'; so.frequency.setValueAtTime(110, t0); so.frequency.exponentialRampToValueAtTime(880, t0 + 1.0);
-    sf.type = 'lowpass'; sf.Q.value = 6; sf.frequency.setValueAtTime(250, t0); sf.frequency.exponentialRampToValueAtTime(7000, t0 + 1.0);
-    sg.gain.setValueAtTime(0.0001, t0); sg.gain.exponentialRampToValueAtTime(0.11, t0 + 0.85); sg.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.12);
-    so.connect(sf); sf.connect(sg); sg.connect(master); so.start(t0); so.stop(t0 + 1.2);
-    var nb = c.createBuffer(1, Math.floor(c.sampleRate * 1.2), c.sampleRate), nd = nb.getChannelData(0);
-    for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
-    var ns = c.createBufferSource(), nf = c.createBiquadFilter(), ng = c.createGain();
-    ns.buffer = nb; nf.type = 'bandpass'; nf.Q.value = 2.2;
-    nf.frequency.setValueAtTime(400, t0); nf.frequency.exponentialRampToValueAtTime(9000, t0 + 1.0);
-    ng.gain.setValueAtTime(0.0001, t0); ng.gain.exponentialRampToValueAtTime(0.16, t0 + 0.9); ng.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.15);
-    ns.connect(nf); nf.connect(ng); ng.connect(master); ns.start(t0); ns.stop(t0 + 1.2);
-    /* 2) Pulsos de datos: microtonos digitales mientras se carga */
-    [[1760, .18], [2093, .30], [2637, .42], [2093, .54], [3136, .66], [3520, .78]].forEach(function (x, i) {
-      var o = c.createOscillator(), g = c.createGain(); o.type = 'square'; o.frequency.value = x[0];
-      env(g, t0 + x[1], 0.004, 0.018 + i * 0.002, 0.06); o.connect(g); g.connect(master); o.start(t0 + x[1]); o.stop(t0 + x[1] + 0.08);
-    });
-    /* 3) Impacto: golpe grave digital que cae de tono */
-    var T = t0 + 1.0, bo = c.createOscillator(), bg = c.createGain();
-    bo.type = 'sine'; bo.frequency.setValueAtTime(140, T); bo.frequency.exponentialRampToValueAtTime(42, T + 0.7);
-    env(bg, T, 0.01, 0.5, 1.0); bo.connect(bg); bg.connect(master); bo.start(T); bo.stop(T + 1.05);
-    /* 4) Campanas de cristal FM: acorde lidio que se abre (E–B–F#–E) */
-    [[659.25, 0], [987.77, .08], [1479.98, .16], [1318.51, .26], [1975.53, .38]].forEach(function (x, i) {
-      var t = T + x[1], f = x[0], o = c.createOscillator(), m = c.createOscillator(), mg = c.createGain(), g = c.createGain();
-      o.type = 'sine'; o.frequency.value = f; m.type = 'sine'; m.frequency.value = f * 3.5;
-      mg.gain.setValueAtTime(f * 1.8, t); mg.gain.exponentialRampToValueAtTime(1, t + 0.9);
-      m.connect(mg); mg.connect(o.frequency); env(g, t, 0.006, 0.17 - i * 0.015, 1.7);
-      o.connect(g); g.connect(master); o.start(t); m.start(t); o.stop(t + 1.75); m.stop(t + 1.75);
-    });
-    /* 5) Brillo final: destello agudo tipo circuito */
-    [[3951.07, .55], [5274.0, .68]].forEach(function (x) {
-      var t = T + x[1], o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.value = x[0];
-      env(g, t, 0.004, 0.03, 0.5); o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.55);
-    });
-  }
-  window.geaChime = chime;
 
-  /* ---------- Variantes de sonido de marca (A marimba, B brasa, C pulso, D = el anterior) ---------- */
+  /* ---------- Sonido de marca: marimba del futuro ---------- */
   function rng(s) { return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296 } }
   function bus(c, dest, wet, sec, gain) {
     var m = c.createGain(), s = c.createGain(), h = c.createGain(), r = c.createConvolver();
@@ -100,7 +55,7 @@
     });
   }
 
-  /* A: Marimba del futuro: tok-tok de coco + frase de marimba (pentatónica) con eco + pad y brillo digital */
+  /* Marimba del futuro: tok-tok de coco + frase de marimba (pentatónica) con eco + pad y brillo digital */
   function sonA(c, dest, t0) {
     var m = bus(c, dest, 0.34, 2.4, 1.2), v = c.createGain(); v.gain.value = 1; v.connect(m); eco(c, v, m, 0.19, 0.34, 0.42);
     tok(c, v, t0, 0.5, 210); tok(c, v, t0 + 0.17, 0.4, 260);
@@ -110,42 +65,7 @@
     tono(c, m, 'sine', 82.41, t0 + 0.9, 0.5, 0.2, 2.4);
     [[2637.0, 1.35], [3951.07, 1.5], [3322.4, 1.66], [5274.0, 1.85]].forEach(function (x) { tono(c, m, 'sine', x[0], t0 + x[1], 0.004, 0.03, 0.9) });
   }
-  /* B: Brasa y chispa: crepitar de brasas que crece, bordón grave, ignición y acorde luminoso */
-  function sonB(c, dest, t0) {
-    var m = bus(c, dest, 0.4, 2.6, 2.3), r = rng(7);
-    for (var i = 0; i < 46; i++) {
-      var t = t0 + Math.pow(r(), 0.7) * 1.4, n = ruido(c, 0.05), hp = c.createBiquadFilter(), g = c.createGain();
-      hp.type = 'highpass'; hp.frequency.value = 2500 + r() * 4500; eg(c, g, t, 0.001, 0.05 + 0.1 * (t - t0) / 1.4 * r() + 0.02, 0.025 + r() * 0.03); n.connect(hp); hp.connect(g); g.connect(m); n.start(t); n.stop(t + 0.05);
-    }
-    var bo = c.createOscillator(), bl = c.createBiquadFilter(), bg = c.createGain(); bo.type = 'sawtooth'; bo.frequency.setValueAtTime(41.2, t0); bo.frequency.exponentialRampToValueAtTime(82.4, t0 + 1.4);
-    bl.type = 'lowpass'; bl.frequency.setValueAtTime(120, t0); bl.frequency.exponentialRampToValueAtTime(900, t0 + 1.4); bg.gain.setValueAtTime(0.0001, t0); bg.gain.exponentialRampToValueAtTime(0.2, t0 + 1.35); bg.gain.exponentialRampToValueAtTime(0.0001, t0 + 2.6);
-    bo.connect(bl); bl.connect(bg); bg.connect(m); bo.start(t0); bo.stop(t0 + 2.7);
-    var T = t0 + 1.4, ig = ruido(c, 0.8), ib = c.createBiquadFilter(), ig2 = c.createGain(); ib.type = 'bandpass'; ib.Q.value = 1.5; ib.frequency.setValueAtTime(1200, T - 0.25); ib.frequency.exponentialRampToValueAtTime(8000, T + 0.1);
-    eg(c, ig2, T - 0.25, 0.22, 0.1, 0.6); ig.connect(ib); ib.connect(ig2); ig2.connect(m); ig.start(T - 0.25); ig.stop(T + 0.55);
-    [164.81, 246.94, 369.99, 415.30, 493.88, 739.99].forEach(function (f, i) { tono(c, m, i % 2 ? 'triangle' : 'sine', f, T, 0.12, 0.13 - i * 0.012, 2.0) });
-    [[1975.5, .15], [2959.96, .3], [2489.0, .42], [3951.07, .6], [1479.98, .75]].forEach(function (x) { tono(c, m, 'sine', x[0], T + x[1], 0.003, 0.035, 0.6) });
-  }
-  /* C: Pulso de energía: latido grave que acelera, secuenciador que se abre y acorde final */
-  function sonC(c, dest, t0) {
-    var m = bus(c, dest, 0.3, 2.0, 1.5);
-    [0, .38, .7, .98].forEach(function (x, i) {
-      var o = c.createOscillator(), g = c.createGain(); o.frequency.setValueAtTime(130, t0 + x); o.frequency.exponentialRampToValueAtTime(40, t0 + x + 0.2); eg(c, g, t0 + x, 0.005, 0.42 + i * 0.04, 0.32); o.connect(g); g.connect(m); o.start(t0 + x); o.stop(t0 + x + 0.35);
-    });
-    var N = [164.81, 246.94, 329.63, 493.88, 659.25, 493.88, 739.99, 987.77, 1318.5, 987.77, 1479.98, 1975.53];
-    var so = c.createOscillator(), sf = c.createBiquadFilter(), sg = c.createGain(); so.type = 'sawtooth'; sf.type = 'lowpass'; sf.Q.value = 5;
-    sf.frequency.setValueAtTime(400, t0 + 0.3); sf.frequency.exponentialRampToValueAtTime(7000, t0 + 1.4);
-    N.forEach(function (f, i) { so.frequency.setValueAtTime(f, t0 + 0.3 + i * 0.095) });
-    sg.gain.setValueAtTime(0.0001, t0 + 0.3); sg.gain.exponentialRampToValueAtTime(0.09, t0 + 0.4); sg.gain.setValueAtTime(0.09, t0 + 1.38); sg.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.5);
-    so.connect(sf); sf.connect(sg); sg.connect(m); so.start(t0 + 0.3); so.stop(t0 + 1.55);
-    var T = t0 + 1.45; [164.81, 329.63, 493.88, 659.25, 830.61, 987.77].forEach(function (f, i) { tono(c, m, i % 2 ? 'sawtooth' : 'triangle', f, T, 0.01, 0.07, 1.6) });
-    tono(c, m, 'sine', 82.41, T, 0.01, 0.34, 1.7); tono(c, m, 'sine', 2637.0, T + 0.1, 0.004, 0.03, 1.0);
-  }
-  var SON = { a: sonA, b: sonB, c: sonC, d: chime };
-  window.geaSonidos = SON;
-  function varianteSonido() {
-    var q = (location.search.match(/[?&]snd=([abcd])/) || [])[1];
-    try { return q || localStorage.getItem('gea-snd') || 'a' } catch (e) { return q || 'a' }
-  }
+  window.geaSonidoMarca = sonA;
 
   /* ---------- Voz femenina, lenta y cálida ---------- */
   var TXT = EN ? 'Welcome to... Jea... Eco Coco.' : 'Bienvenido a... Jea... Eco Coco.';
@@ -202,7 +122,7 @@
   function tocar(vozEn) {
     if (!ctx || parado) return;
     var t0 = ctx.currentTime + 0.05;
-    try { (SON[varianteSonido()] || sonA)(ctx, ctx.destination, t0) } catch (e) {}
+    try { sonA(ctx, ctx.destination, t0) } catch (e) {}
     try { window.geaTrack && geaTrack('sonido_bienvenida', {}) } catch (e) {}
   }
   function iniciar(esperaChime, vozEn, ventana) {
