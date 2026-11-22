@@ -825,3 +825,30 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
 (function(){var h=document.documentElement;if(!h.classList.contains('splash-on'))return;
   setTimeout(function(){var bq=document.querySelector('.barrido');if(bq)bq.classList.add('quiet');h.classList.add('splash-done');var e=document.querySelector('.splash');if(e&&e.parentNode)e.parentNode.removeChild(e)},4400);
   try{window.geaTrack&&geaTrack('inicio_app',{})}catch(x){}})();
+
+// Simulador de margen del distribuidor
+(function () {
+  var pv = document.getElementById('mg-pv'), nb = document.getElementById('mg-b');
+  if (!pv || !nb) return;
+  function f(n) { return n.toLocaleString(GEA_LOC, { maximumFractionDigits: 2 }); }
+  function act() {
+    var p = parseFloat(pv.value), b = parseInt(nb.value, 10);
+    if (!(p > 0)) p = 0;
+    if (!(b > 0)) b = 0;
+    b = Math.min(b, 500);
+    var costo = ((window.GEA_PRODUCTS || { k25: { p: 350 } }).k25.p) / 25;
+    var g = p - costo, kg = b * 25;
+    document.getElementById('mg-c').textContent = 'Q' + f(costo);
+    document.getElementById('mg-g').textContent = (g < 0 ? '−Q' : 'Q') + f(Math.abs(g));
+    document.getElementById('mg-p').textContent = p > 0 ? f(Math.round(g / p * 1000) / 10) + '%' : '—';
+    document.getElementById('mg-m').textContent = (g < 0 ? '−Q' : 'Q') + f(Math.abs(Math.round(g * kg)));
+    document.getElementById('mg-n').textContent = g < 0
+      ? gL('A ese precio de venta pierdes dinero: súbelo por encima del costo.', 'At that selling price you lose money: raise it above cost.')
+      : gL('Con ' + b + (b === 1 ? ' bulto' : ' bultos') + ' al mes (' + f(kg) + ' kg).', 'With ' + b + (b === 1 ? ' sack' : ' sacks') + ' per month (' + f(kg) + ' kg).');
+    var msg = GEA_EN
+      ? 'Hi, I am a distributor. I would sell at Q' + f(p) + '/kg and move about ' + b + ' sacks of 25 kg per month. I would like to know the special volume price.\nBusiness: \nLocation: '
+      : 'Hola, soy distribuidor. Venderia a Q' + f(p) + '/kg y moveria unos ' + b + ' bultos de 25 kg al mes. Quiero conocer el precio especial por volumen.\nNegocio: \nUbicacion: ';
+    document.getElementById('mg-wa').href = 'https://wa.me/50242794894?text=' + encodeURIComponent(msg);
+  }
+  pv.addEventListener('input', act); nb.addEventListener('input', act); act();
+})();
