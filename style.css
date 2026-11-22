@@ -1208,3 +1208,9 @@ footer.pie{padding-bottom:calc(236px + env(safe-area-inset-bottom,0px))}
 .pie-sh{background:transparent;color:#B6F23C;border:2px solid #B6F23C;border-radius:999px;padding:9px 18px;font-family:var(--cond);text-transform:uppercase;letter-spacing:.05em;font-size:.95rem;cursor:pointer}
 .pie-sh:before{content:'📲 '}
 .pie-sh:hover,.pie-sh:focus-visible{background:#B6F23C;color:#04100A;outline:0}
+
+.chat-spw{display:flex;gap:14px;flex-wrap:wrap}
+.chat-spw .chat-sp{margin-top:6px}
+.chat-spw .chat-pb[hidden]{display:none}
+.chat-mu{background:none;border:0;color:#F5F0E6;font-size:1.25rem;line-height:1;cursor:pointer;width:44px;height:44px;margin-left:auto}
+.chat-hd .chat-x{margin-left:0}

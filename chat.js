@@ -13,7 +13,8 @@ var btn=el('button','chat-float');btn.type='button';btn.setAttribute('aria-label
 btn.innerHTML='<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14a2 2 0 012 2v9a2 2 0 01-2 2h-8l-4.5 3.6V17H5a2 2 0 01-2-2V6a2 2 0 012-2z"/><path d="M12 7.2l1 2.4 2.4 1-2.4 1-1 2.4-1-2.4-2.4-1 2.4-1z" fill="currentColor" stroke="none"/></svg><span class="cf-t"><b>'+L('Asistente IA','AI assistant')+'</b><small>'+L('Pregúntame','Ask me')+'</small></span><i class="cf-ia" aria-hidden="true">'+L('IA','AI')+'</i>';
 var box=el('div','chat-box');box.setAttribute('role','dialog');box.setAttribute('aria-label',L('Asistente ECOCOCO','ECOCOCO assistant'));box.hidden=true;
 var hd=el('div','chat-hd');var tt=el('div','chat-tt');tt.appendChild(el('b','',L('Asistente ECOCOCO','ECOCOCO assistant')));tt.appendChild(el('small','',AI?L('Respuestas con IA · no sustituye a un asesor','AI answers · not a substitute for an advisor'):L('Respuestas automáticas · un asesor te atiende por WhatsApp','Automatic answers · an advisor helps you on WhatsApp')));
-var x=el('button','chat-x','×');x.type='button';x.setAttribute('aria-label',L('Cerrar','Close'));hd.appendChild(tt);hd.appendChild(x);
+var x=el('button','chat-x','×');x.type='button';x.setAttribute('aria-label',L('Cerrar','Close'));hd.appendChild(tt);
+hd.appendChild(x);
 var log=el('div','chat-log');log.setAttribute('aria-live','polite');
 var sug=el('div','chat-sug');
 var fm=el('form','chat-fm');var inp=el('input');inp.type='text';inp.maxLength=500;inp.autocomplete='off';inp.placeholder=L('Escribe tu pregunta…','Type your question…');inp.setAttribute('aria-label',inp.placeholder);
@@ -22,6 +23,12 @@ var SR=window.SpeechRecognition||window.webkitSpeechRecognition,TTS=('speechSynt
 var speakNext=false,rec=null,listening=false,vTimer=null,spBtn=null;
 var vn=el('div','chat-vn');vn.hidden=true;vn.setAttribute('role','status');
 function note(t){vn.textContent=t;vn.hidden=!t;clearTimeout(vTimer);if(t)vTimer=setTimeout(function(){vn.hidden=true},5000)}
+var muted=false;try{muted=localStorage.getItem('gea-chat-mute')==='1'}catch(e){}
+var mu=null;
+if(TTS){mu=el('button','chat-mu');mu.type='button';
+  var paintMu=function(){mu.textContent=muted?'🔇':'🔊';mu.title=muted?L('Voz silenciada: toca para activar','Voice muted: tap to turn on'):L('Voz activada: toca para silenciar','Voice on: tap to mute');mu.setAttribute('aria-label',mu.title);mu.setAttribute('aria-pressed',muted?'true':'false')};
+  paintMu();hd.insertBefore(mu,x);
+  mu.addEventListener('click',function(){muted=!muted;try{localStorage.setItem('gea-chat-mute',muted?'1':'0')}catch(e){}paintMu();if(muted)stopSpeak();note(muted?L('Voz silenciada. Las respuestas no se leerán solas.','Voice muted. Answers will not be read aloud automatically.'):L('Voz activada: si preguntas por voz, la respuesta se leerá.','Voice on: if you ask by voice, the answer will be read aloud.'))})}
 var mic=null;
 if(SR){mic=el('button','chat-mic');mic.type='button';mic.setAttribute('aria-label',L('Hablar con el asistente (micrófono)','Speak to the assistant (microphone)'));mic.title=L('Hablar','Speak');
   mic.innerHTML='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3M9 21h6"/></svg>';
@@ -47,15 +54,15 @@ function pickVoice(){
     for(var k=0;k<pre.length;k++){if(l===pre[k]||l.indexOf(pre[k]+'-')===0){s+=(pre.length-k)*4;break}}
     if(v.default)s+=3;return s}
   vs.sort(function(a,b){return sc(b)-sc(a)});return vs[0]}
-function stopSpeak(){if(TTS){try{TTS.cancel()}catch(e){}}if(spBtn){spBtn.classList.remove('on');spBtn.textContent=spBtn.getAttribute('data-l1');spBtn=null}}
+function stopSpeak(){if(TTS){try{TTS.resume();TTS.cancel()}catch(e){}}if(spBtn){spBtn.classList.remove('on');spBtn.textContent=spBtn.getAttribute('data-l1');if(spBtn._pb){spBtn._pb.hidden=true;spBtn._pb.textContent=spBtn._pb.getAttribute('data-l1')}spBtn=null}}
 function speak(text,btn){
   if(!TTS)return;var same=btn&&btn===spBtn;stopSpeak();if(same)return;
   var t=ttsText(text);if(!t)return;
   var parts=t.match(/.+?(?:[.!?]+(?=\s|$)|$)/g)||[t],v=pickVoice();
-  if(btn){spBtn=btn;btn.classList.add('on');btn.textContent=btn.getAttribute('data-l2')}
+  if(btn){spBtn=btn;btn.classList.add('on');btn.textContent=btn.getAttribute('data-l2');if(btn._pb){btn._pb.hidden=false;btn._pb.textContent=btn._pb.getAttribute('data-l1')}}
   parts.forEach(function(p,i){
     var u=new SpeechSynthesisUtterance(p.trim());u.lang=v?v.lang:(EN?'en-US':'es-MX');if(v)u.voice=v;u.rate=.97;u.pitch=1;
-    if(i===parts.length-1){u.onend=u.onerror=function(){if(spBtn===btn&&btn){btn.classList.remove('on');btn.textContent=btn.getAttribute('data-l1');spBtn=null}}}
+    if(i===parts.length-1){u.onend=u.onerror=function(){if(spBtn===btn&&btn){btn.classList.remove('on');btn.textContent=btn.getAttribute('data-l1');if(btn._pb)btn._pb.hidden=true;spBtn=null}}}
     TTS.speak(u)})}
 if(TTS){try{TTS.getVoices();if(TTS.addEventListener)TTS.addEventListener('voiceschanged',function(){})}catch(e){}}
 function stopMic(){if(rec){try{rec.stop()}catch(e){}}}
@@ -93,8 +100,11 @@ function add(role,text,fk){
   if(lk.length){var lb=linkBtns(lk);if(lb)m.appendChild(lb)}
   if(role==='assistant'&&text!=='…'&&TTS&&!/^\[diagn/.test(text)){
     var sb=el('button','chat-sp','🔊 '+L('Escuchar','Listen'));sb.type='button';sb.setAttribute('data-l1','🔊 '+L('Escuchar','Listen'));sb.setAttribute('data-l2','⏹ '+L('Detener','Stop'));
-    sb.addEventListener('click',function(){track('click_escuchar');speak(text,sb)});m.appendChild(sb);
-    if(speakNext){speakNext=false;speak(text,sb)}}
+    var pb=el('button','chat-sp chat-pb','⏸ '+L('Pausar','Pause'));pb.type='button';pb.hidden=true;pb.setAttribute('data-l1','⏸ '+L('Pausar','Pause'));pb.setAttribute('data-l2','▶ '+L('Reanudar','Resume'));sb._pb=pb;
+    pb.addEventListener('click',function(){try{if(TTS.paused){TTS.resume();pb.textContent=pb.getAttribute('data-l1')}else{TTS.pause();pb.textContent=pb.getAttribute('data-l2')}}catch(e){}});
+    sb.addEventListener('click',function(){track('click_escuchar');speak(text,sb)});
+    var sw=el('div','chat-spw');sw.appendChild(sb);sw.appendChild(pb);m.appendChild(sw);
+    if(speakNext){speakNext=false;if(!muted)speak(text,sb)}}
   if(shr&&window.GEA_SHARE_APP){var sh=el('button','chat-ln chat-inst',L('Compartir la app →','Share the app →'));sh.type='button';sh.addEventListener('click',function(){window.GEA_SHARE_APP()});m.appendChild(sh)}
   if(inst&&!(window.GEA_INSTALL&&GEA_INSTALL.standalone())){var ib=el('button','chat-ln chat-inst',L('Instalar la app →','Install the app →'));ib.type='button';var hp=el('p','chat-hp');hp.hidden=true;
     ib.addEventListener('click',function(){track('click_instalar_app',{origen:'asistente'});if(!window.GEA_INSTALL)return;GEA_INSTALL.install(function(r,h){if(r==='manual'){hp.textContent=h;hp.hidden=false}else if(r==='ok'){ib.remove()}})});
