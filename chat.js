@@ -33,7 +33,7 @@ document.body.appendChild(btn);document.body.appendChild(box);
 (function(){var t=setTimeout(function(){btn.classList.add('mini')},8000);function ex(){btn.classList.remove('mini')}btn.addEventListener('mouseenter',ex);btn.addEventListener('focus',ex);btn.addEventListener('mouseleave',function(){clearTimeout(t);t=setTimeout(function(){btn.classList.add('mini')},3000)});btn.addEventListener('blur',function(){btn.classList.add('mini')})})();
 
 function ttsText(t){
-  t=String(t).replace(/https?:\/\/\S+/g,'').replace(/\s*\(\s*ECO-\d+KG\s*\)/gi,'').replace(/\bECO-\d+KG\b/gi,'').replace(/US\$\s?(\d[\d.,]*)/g,'$1 '+L('dólares','dollars')).replace(/Q\s?(\d[\d.,]*)/g,'$1 '+L('quetzales','quetzales'))
+  t=String(t).replace(/https?:\/\/\S+/g,'').replace(/\bECOCOCO/gi,'Eco Coco').replace(/\s*\(\s*ECO-\d+KG\s*\)/gi,'').replace(/\bECO-\d+KG\b/gi,'').replace(/US\$\s?(\d[\d.,]*)/g,'$1 '+L('dólares','dollars')).replace(/Q\s?(\d[\d.,]*)/g,'$1 '+L('quetzales','quetzales'))
     .replace(/[→≈·•]/g,' ').replace(/\b1\s?kg\b/gi,L('1 kilo','1 kilogram')).replace(/(\d[\d.,]*)\s?kg\b/gi,'$1 '+L('kilos','kilograms')).replace(/\bkg\b/gi,L('kilo','kilogram')).replace(/\s+/g,' ').trim();
   return t}
 function pickVoice(){
