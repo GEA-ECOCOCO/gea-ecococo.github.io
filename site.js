@@ -806,5 +806,5 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
 
 /* Pantalla de inicio de la app: se retira al terminar la animación */
 (function(){var h=document.documentElement;if(!h.classList.contains('splash-on'))return;
-  setTimeout(function(){h.classList.remove('splash-on');var e=document.querySelector('.splash');if(e&&e.parentNode)e.parentNode.removeChild(e)},4400);
+  setTimeout(function(){var bq=document.querySelector('.barrido');if(bq)bq.classList.add('quiet');h.classList.remove('splash-on');var e=document.querySelector('.splash');if(e&&e.parentNode)e.parentNode.removeChild(e)},4400);
   try{window.geaTrack&&geaTrack('inicio_app',{})}catch(x){}})();

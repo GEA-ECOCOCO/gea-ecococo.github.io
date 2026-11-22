@@ -1261,8 +1261,8 @@ svg.ar{width:1.05em;height:1.05em;margin-left:.35em;vertical-align:-.16em;stroke
 html.splash-on .splash{display:flex;position:fixed;inset:0;z-index:3000;background:#04100A;align-items:center;justify-content:center;overflow:hidden;animation:spFade 1.2s 2.7s cubic-bezier(.4,0,.2,1) both;pointer-events:none}
 html.splash-on{overflow:hidden}
 @keyframes spFade{0%{opacity:1;transform:none}100%{opacity:0;transform:scale(1.035);visibility:hidden}}
-.sp-glow{position:absolute;width:140vmin;height:140vmin;border-radius:50%;background:radial-gradient(circle,rgba(139,224,0,.28),rgba(11,77,31,.15) 45%,transparent 70%);opacity:0;animation:spGlow 2.6s .1s ease-out forwards}
-@keyframes spGlow{0%{opacity:0;transform:scale(.4)}60%{opacity:1}100%{opacity:.75;transform:scale(1)}}
+.sp-glow{position:absolute;width:140vmin;height:140vmin;border-radius:50%;background:radial-gradient(circle,rgba(139,224,0,.28),rgba(11,77,31,.15) 45%,transparent 70%);opacity:.45;animation:spGlow 2.6s ease-out forwards}
+@keyframes spGlow{0%{opacity:.45;transform:scale(.7)}60%{opacity:1}100%{opacity:.75;transform:scale(1)}}
 .sp-box{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center}
 .sp-g{overflow:visible;filter:drop-shadow(0 0 16px rgba(139,224,0,.35))}
 .sp-gp{fill:#F5F0E6;fill-opacity:0;stroke:#B6F23C;stroke-width:90;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:spDraw 1.3s .25s cubic-bezier(.65,0,.35,1) forwards,spFill .7s 1.25s ease forwards}
@@ -1302,3 +1302,5 @@ main{animation:entra2 1.3s .15s cubic-bezier(.22,.61,.36,1) both}
 html.splash-on .barrido{display:none}
 html.splash-on main{animation-delay:2.9s}
 @media(prefers-reduced-motion:reduce){.barrido{display:none}main{animation:none}}
+.barrido.quiet{display:block;animation:none;opacity:0}
+body.saliendo .barrido.quiet{animation:veloIn .45s ease both}
