@@ -23,12 +23,12 @@
 <meta content="https://gea-ecococo.github.io/img/og.jpg" name="twitter:image"/>
 <link href="../img/favicon.svg" rel="icon" type="image/svg+xml"/><link href="../img/favicon-32.png" rel="icon" sizes="32x32" type="image/png"/><link href="../img/apple-touch-icon.png" rel="apple-touch-icon"/>
 <link href="../manifest-en.webmanifest" rel="manifest"/>
-<link href="../style.css?v=202611220133" rel="stylesheet"/>
+<link href="../style.css?v=202611220137" rel="stylesheet"/>
 <link as="font" crossorigin="" href="../fonts/Anton-Regular.ttf" rel="preload" type="font/ttf"/>
 <meta content="strict-origin-when-cross-origin" name="referrer"/>
 <meta content="object-src 'none'; base-uri 'self'; form-action 'self' https://wa.me https://api.web3forms.com https://formspree.io" http-equiv="Content-Security-Policy"/>
 <script>try{var _s=sessionStorage;if((matchMedia("(display-mode: standalone)").matches||navigator.standalone===true||/[?&]splash=1/.test(location.search))&&!_s.getItem("gea-splash")){_s.setItem("gea-splash","1");document.documentElement.className+=" splash-on"}}catch(e){}</script>
-<script defer="" src="../forms.js?v=202611220133"></script>
+<script defer="" src="../forms.js?v=202611220137"></script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://gea-ecococo.github.io/en/index.html"}, {"@type": "ListItem", "position": 2, "name": "ECOCOCO charcoal briquette distributors", "item": "https://gea-ecococo.github.io/en/distribuidores.html"}]}</script>
 </head>
 <body>
@@ -61,6 +61,7 @@
 <tbody>
 <tr><td>Minimum order in Retalhuleu and the South Coast</td><td><strong>20 kg</strong>: reach it with 1 kg bags or buy full 25 kg sacks</td></tr>
 <tr><td>Minimum order to other departments</td><td><strong>50 kg</strong>, by carrier: 2 full 25 kg sacks, or 1 kg bags until you reach it</td></tr>
+<tr><td>Wholesale by the kilo</td><td><strong>Q15 per kg</strong> from 20 kg per order</td></tr>
 <tr><td>25 kg sack (wholesalers only)</td><td><strong>Q350</strong> · special price by volume</td></tr>
 <tr><td>Delivery areas</td><td>Retalhuleu (our own delivery) and the South Coast (to be arranged). Other departments, via WhatsApp</td></tr>
 <tr><td>Payment</td><td>Cash. Outside the area, advance transfer and freight paid by the customer</td></tr>
@@ -131,14 +132,23 @@
 <a class="btn wa" href="https://wa.me/50242794894?text=Hi%2C%20I%27d%20like%20to%20become%20an%20ECOCOCO%20distributor.%0ABusiness%3A%20%0AQuantity%20%28kg%29%3A%20%0ALocation%3A" id="b-wa" style="margin:0">Request a wholesale quote</a>
 </div>
 <div class="eyebrow" id="margen">Your business</div>
-<h2>Calculate your margin as a distributor</h2>
-<p class="lead">Enter the price at which you would sell a kilo and how many 25 kg sacks you would move per month. We use the list price of the sack (Q350, Q14 per kg); there is a special price for volume.</p>
+<h2>Price scale and your margin</h2>
+<p class="lead">The more you buy per order, the less you pay per kilo. Choose how you buy and simulate how much you would earn when selling.</p>
+<div class="tabla-w" style="margin-bottom:22px"><table class="tabla grid-t dist">
+<thead><tr><th>How you buy</th><th>From</th><th>Price</th></tr></thead>
+<tbody>
+<tr><td>Wholesale by the kilo</td><td>20 kg per order</td><td><strong>Q15 per kg</strong></td></tr>
+<tr><td>25 kg sack</td><td>25 kg (1 sack)</td><td><strong>Q350</strong> (Q14 per kg)</td></tr>
+<tr><td>High volume</td><td>250 kg per order (10 sacks) or recurring monthly purchase</td><td><strong>Special price</strong>, quoted according to quantity</td></tr>
+</tbody></table></div>
 <div class="card calc" style="margin:0 0 12px;max-width:560px">
 <h3>Margin simulator</h3>
+<label for="mg-t" style="color:var(--muted);display:block;margin-bottom:8px">How you buy</label>
+<div class="kgrow"><select id="mg-t" style="flex:1;font-size:1rem;padding:12px;border-radius:12px"><option value="15">Wholesale by the kilo: Q15 per kg</option><option selected="" value="14">25 kg sack: Q14 per kg</option></select></div>
 <label for="mg-pv" style="color:var(--muted);display:block;margin-bottom:8px">Selling price per kg (Q)</label>
 <div class="kgrow"><input id="mg-pv" inputmode="decimal" max="500" min="1" step="0.5" type="number" value="20"/></div>
-<label for="mg-b" style="color:var(--muted);display:block;margin-bottom:8px">25 kg sacks per month</label>
-<div class="kgrow"><input id="mg-b" inputmode="numeric" max="500" min="1" type="number" value="4"/></div>
+<label for="mg-b" style="color:var(--muted);display:block;margin-bottom:8px">Kilos you would sell per month</label>
+<div class="kgrow"><input id="mg-b" inputmode="numeric" max="20000" min="1" type="number" value="100"/></div>
 <div class="total"><span>Cost per kg</span><strong id="mg-c">Q14</strong></div>
 <div class="total"><span>Profit per kg</span><strong id="mg-g">Q6</strong></div>
 <div class="total"><span>Margin on sales</span><strong id="mg-p">30%</strong></div>
@@ -231,13 +241,13 @@
 <a aria-label="Order on WhatsApp" class="wa-float" href="https://wa.me/50242794894?text=Hi%2C%20I%27d%20like%20information%20about%20becoming%20a%20GEA%20distributor." rel="noopener" target="_blank"><svg aria-hidden="true" fill="currentColor" height="34" viewbox="0 0 24 24" width="34"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"></path></svg><span>Order on WhatsApp</span></a>
 <button aria-label="Open cart" class="cart-float" data-carrito="" title="Cart" type="button"><svg aria-hidden="true" fill="none" height="28" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="28"><circle cx="9" cy="20" r="1.5"></circle><circle cx="18" cy="20" r="1.5"></circle><path d="M2 3h3l2.6 12.4a1 1 0 001 .8h9.4a1 1 0 001-.8L21 7H6"></path></svg><b class="cart-n" hidden="">0</b></button>
 <div aria-label="Share" aria-modal="true" class="sheet" hidden="" id="compartir" role="dialog"></div>
-<script src="../config.js?v=202611220133"></script>
-<script src="../prices.js?v=202611220133"></script>
-<script src="../site.js?v=202611220133"></script>
-<script defer="" src="../welcome.js?v=202611220133"></script>
-<script defer="" src="../pdf.js?v=202611220133"></script>
-<script defer="" src="../analytics.js?v=202611220133"></script>
-<script defer="" src="../chat-data.js?v=202611220133"></script>
-<script defer="" src="../chat.js?v=202611220133"></script>
+<script src="../config.js?v=202611220137"></script>
+<script src="../prices.js?v=202611220137"></script>
+<script src="../site.js?v=202611220137"></script>
+<script defer="" src="../welcome.js?v=202611220137"></script>
+<script defer="" src="../pdf.js?v=202611220137"></script>
+<script defer="" src="../analytics.js?v=202611220137"></script>
+<script defer="" src="../chat-data.js?v=202611220137"></script>
+<script defer="" src="../chat.js?v=202611220137"></script>
 </body>
 </html>

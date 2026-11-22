@@ -828,27 +828,30 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
 
 // Simulador de margen del distribuidor
 (function () {
-  var pv = document.getElementById('mg-pv'), nb = document.getElementById('mg-b');
-  if (!pv || !nb) return;
+  var pv = document.getElementById('mg-pv'), nb = document.getElementById('mg-b'), tp = document.getElementById('mg-t');
+  if (!pv || !nb || !tp) return;
   function f(n) { return n.toLocaleString(GEA_LOC, { maximumFractionDigits: 2 }); }
   function act() {
-    var p = parseFloat(pv.value), b = parseInt(nb.value, 10);
+    var p = parseFloat(pv.value), kg = parseInt(nb.value, 10), costo = parseFloat(tp.value) || 14;
     if (!(p > 0)) p = 0;
-    if (!(b > 0)) b = 0;
-    b = Math.min(b, 500);
-    var costo = ((window.GEA_PRODUCTS || { k25: { p: 350 } }).k25.p) / 25;
-    var g = p - costo, kg = b * 25;
+    if (!(kg > 0)) kg = 0;
+    kg = Math.min(kg, 20000);
+    var g = p - costo, sg = g < 0 ? '−Q' : 'Q';
     document.getElementById('mg-c').textContent = 'Q' + f(costo);
-    document.getElementById('mg-g').textContent = (g < 0 ? '−Q' : 'Q') + f(Math.abs(g));
+    document.getElementById('mg-g').textContent = sg + f(Math.abs(g));
     document.getElementById('mg-p').textContent = p > 0 ? f(Math.round(g / p * 1000) / 10) + '%' : '—';
-    document.getElementById('mg-m').textContent = (g < 0 ? '−Q' : 'Q') + f(Math.abs(Math.round(g * kg)));
-    document.getElementById('mg-n').textContent = g < 0
-      ? gL('A ese precio de venta pierdes dinero: súbelo por encima del costo.', 'At that selling price you lose money: raise it above cost.')
-      : gL('Con ' + b + (b === 1 ? ' bulto' : ' bultos') + ' al mes (' + f(kg) + ' kg).', 'With ' + b + (b === 1 ? ' sack' : ' sacks') + ' per month (' + f(kg) + ' kg).');
+    document.getElementById('mg-m').textContent = sg + f(Math.abs(Math.round(g * kg)));
+    var bulto = costo === 14, nt;
+    if (g < 0) nt = gL('A ese precio de venta pierdes dinero: súbelo por encima del costo.', 'At that selling price you lose money: raise it above cost.');
+    else if (kg >= 250) nt = gL('Con ' + f(kg) + ' kg al mes ya puedes pedir precio especial por volumen.', 'With ' + f(kg) + ' kg per month you can already ask for a special volume price.');
+    else if (!bulto && kg < 20) nt = gL('El pedido mínimo por kilo es de 20 kg.', 'The minimum order by the kilo is 20 kg.');
+    else if (bulto && kg < 25) nt = gL('El bulto es de 25 kg: ese es el mínimo para este precio.', 'The sack is 25 kg: that is the minimum for this price.');
+    else nt = gL('Con ' + f(kg) + ' kg al mes. Si compras más de 250 kg por pedido, cotizamos precio especial.', 'With ' + f(kg) + ' kg per month. If you buy over 250 kg per order, we quote a special price.');
+    document.getElementById('mg-n').textContent = nt;
     var msg = GEA_EN
-      ? 'Hi, I am a distributor. I would sell at Q' + f(p) + '/kg and move about ' + b + ' sacks of 25 kg per month. I would like to know the special volume price.\nBusiness: \nLocation: '
-      : 'Hola, soy distribuidor. Venderia a Q' + f(p) + '/kg y moveria unos ' + b + ' bultos de 25 kg al mes. Quiero conocer el precio especial por volumen.\nNegocio: \nUbicacion: ';
+      ? 'Hi, I am a distributor. I would buy ' + (bulto ? 'by the 25 kg sack (Q14/kg)' : 'by the kilo (Q15/kg)') + ', sell at Q' + f(p) + '/kg and move about ' + f(kg) + ' kg per month. I would like to know the special volume price.\nBusiness: \nLocation: '
+      : 'Hola, soy distribuidor. Compraria ' + (bulto ? 'por bulto de 25 kg (Q14/kg)' : 'por kilo (Q15/kg)') + ', venderia a Q' + f(p) + '/kg y moveria unos ' + f(kg) + ' kg al mes. Quiero conocer el precio especial por volumen.\nNegocio: \nUbicacion: ';
     document.getElementById('mg-wa').href = 'https://wa.me/50242794894?text=' + encodeURIComponent(msg);
   }
-  pv.addEventListener('input', act); nb.addEventListener('input', act); act();
+  pv.addEventListener('input', act); nb.addEventListener('input', act); tp.addEventListener('change', act); act();
 })();
