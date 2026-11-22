@@ -8,6 +8,15 @@ try{hist=JSON.parse(sessionStorage.getItem(KEY)||'[]').slice(-14)}catch(e){}
 function save(){try{sessionStorage.setItem(KEY,JSON.stringify(hist.slice(-14)))}catch(e){}}
 function track(n,p){try{window.geaTrack&&window.geaTrack(n,p||{})}catch(e){}}
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+var ICN={
+ mic:'<rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0013 0M12 18v3.2"/>',
+ vol:'<path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z"/><path d="M15.5 9a4.2 4.2 0 010 6M18.2 6.5a7.8 7.8 0 010 11"/>',
+ volx:'<path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>',
+ pause:'<rect x="6.5" y="5" width="3.8" height="14" rx="1.2" fill="currentColor"/><rect x="13.7" y="5" width="3.8" height="14" rx="1.2" fill="currentColor"/>',
+ play:'<path d="M8.2 5.6v12.8L18.6 12z" fill="currentColor"/>',
+ stop:'<rect x="6.2" y="6.2" width="11.6" height="11.6" rx="2.6" fill="currentColor"/>'};
+function ic(n,s){return '<svg viewBox="0 0 24 24" width="'+(s||16)+'" height="'+(s||16)+'" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICN[n]+'</svg>'}
+function lab(b,n){b.innerHTML=ic(b.getAttribute('data-i'+n))+'<span>'+b.getAttribute('data-t'+n)+'</span>'}
 
 var btn=el('button','chat-float');btn.type='button';btn.setAttribute('aria-label',L('Abrir asistente','Open assistant'));btn.title=L('Asistente ECOCOCO','ECOCOCO assistant');
 btn.innerHTML='<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14a2 2 0 012 2v9a2 2 0 01-2 2h-8l-4.5 3.6V17H5a2 2 0 01-2-2V6a2 2 0 012-2z"/><path d="M12 7.2l1 2.4 2.4 1-2.4 1-1 2.4-1-2.4-2.4-1 2.4-1z" fill="currentColor" stroke="none"/></svg><span class="cf-t"><b>'+L('Asistente IA','AI assistant')+'</b><small>'+L('Pregúntame','Ask me')+'</small></span><i class="cf-ia" aria-hidden="true">'+L('IA','AI')+'</i>';
@@ -26,12 +35,12 @@ function note(t){vn.textContent=t;vn.hidden=!t;clearTimeout(vTimer);if(t)vTimer=
 var muted=false;try{muted=localStorage.getItem('gea-chat-mute')==='1'}catch(e){}
 var mu=null;
 if(TTS){mu=el('button','chat-mu');mu.type='button';
-  var paintMu=function(){mu.textContent=muted?'🔇':'🔊';mu.title=muted?L('Voz silenciada: toca para activar','Voice muted: tap to turn on'):L('Voz activada: toca para silenciar','Voice on: tap to mute');mu.setAttribute('aria-label',mu.title);mu.setAttribute('aria-pressed',muted?'true':'false')};
+  var paintMu=function(){mu.innerHTML=ic(muted?'volx':'vol',20);mu.title=muted?L('Voz silenciada: toca para activar','Voice muted: tap to turn on'):L('Voz activada: toca para silenciar','Voice on: tap to mute');mu.setAttribute('aria-label',mu.title);mu.setAttribute('aria-pressed',muted?'true':'false')};
   paintMu();hd.insertBefore(mu,x);
   mu.addEventListener('click',function(){muted=!muted;try{localStorage.setItem('gea-chat-mute',muted?'1':'0')}catch(e){}paintMu();if(muted)stopSpeak();note(muted?L('Voz silenciada. Las respuestas no se leerán solas.','Voice muted. Answers will not be read aloud automatically.'):L('Voz activada: si preguntas por voz, la respuesta se leerá.','Voice on: if you ask by voice, the answer will be read aloud.'))})}
 var mic=null;
 if(SR){mic=el('button','chat-mic');mic.type='button';mic.setAttribute('aria-label',L('Hablar con el asistente (micrófono)','Speak to the assistant (microphone)'));mic.title=L('Hablar','Speak');
-  mic.innerHTML='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3M9 21h6"/></svg>';
+  mic.innerHTML=ic('mic',22);
   fm.insertBefore(mic,go)}
 var ft=el('div','chat-ft',AI?L('Las respuestas las genera una IA con los datos de este sitio. Para pedidos y precios finales confirma por WhatsApp. No escribas datos personales sensibles.','Answers are AI-generated from this site\'s data. For orders and final prices confirm via WhatsApp. Do not type sensitive personal data.'):L('Respuestas automáticas con los datos de este sitio. Para pedidos y precios finales confirma por WhatsApp.','Automatic answers based on this site\'s data. For orders and final prices confirm via WhatsApp.'));
 if(SR)ft.textContent+=' '+L('Si usas el micrófono, el reconocimiento de voz lo hace tu navegador y no guardamos el audio.','If you use the microphone, voice recognition is done by your browser and we do not store the audio.');
@@ -54,15 +63,15 @@ function pickVoice(){
     for(var k=0;k<pre.length;k++){if(l===pre[k]||l.indexOf(pre[k]+'-')===0){s+=(pre.length-k)*4;break}}
     if(v.default)s+=3;return s}
   vs.sort(function(a,b){return sc(b)-sc(a)});return vs[0]}
-function stopSpeak(){if(TTS){try{TTS.resume();TTS.cancel()}catch(e){}}if(spBtn){spBtn.classList.remove('on');spBtn.textContent=spBtn.getAttribute('data-l1');if(spBtn._pb){spBtn._pb.hidden=true;spBtn._pb.textContent=spBtn._pb.getAttribute('data-l1')}spBtn=null}}
+function stopSpeak(){if(TTS){try{TTS.resume();TTS.cancel()}catch(e){}}if(spBtn){spBtn.classList.remove('on');lab(spBtn,1);if(spBtn._pb){spBtn._pb.hidden=true;lab(spBtn._pb,1)}spBtn=null}}
 function speak(text,btn){
   if(!TTS)return;var same=btn&&btn===spBtn;stopSpeak();if(same)return;
   var t=ttsText(text);if(!t)return;
   var parts=t.match(/.+?(?:[.!?]+(?=\s|$)|$)/g)||[t],v=pickVoice();
-  if(btn){spBtn=btn;btn.classList.add('on');btn.textContent=btn.getAttribute('data-l2');if(btn._pb){btn._pb.hidden=false;btn._pb.textContent=btn._pb.getAttribute('data-l1')}}
+  if(btn){spBtn=btn;btn.classList.add('on');lab(btn,2);if(btn._pb){btn._pb.hidden=false;lab(btn._pb,1)}}
   parts.forEach(function(p,i){
     var u=new SpeechSynthesisUtterance(p.trim());u.lang=v?v.lang:(EN?'en-US':'es-MX');if(v)u.voice=v;u.rate=.97;u.pitch=1;
-    if(i===parts.length-1){u.onend=u.onerror=function(){if(spBtn===btn&&btn){btn.classList.remove('on');btn.textContent=btn.getAttribute('data-l1');if(btn._pb)btn._pb.hidden=true;spBtn=null}}}
+    if(i===parts.length-1){u.onend=u.onerror=function(){if(spBtn===btn&&btn){btn.classList.remove('on');lab(btn,1);if(btn._pb)btn._pb.hidden=true;spBtn=null}}}
     TTS.speak(u)})}
 if(TTS){try{TTS.getVoices();if(TTS.addEventListener)TTS.addEventListener('voiceschanged',function(){})}catch(e){}}
 function stopMic(){if(rec){try{rec.stop()}catch(e){}}}
@@ -99,9 +108,9 @@ function add(role,text,fk){
   if(wa){var a=el('a','chat-wa',L('Continuar por WhatsApp','Continue on WhatsApp'));a.href=waLink();a.target='_blank';a.rel='noopener';a.addEventListener('click',function(){track('click_whatsapp',{destino:'asistente'})});m.appendChild(a)}
   if(lk.length){var lb=linkBtns(lk);if(lb)m.appendChild(lb)}
   if(role==='assistant'&&text!=='…'&&TTS&&!/^\[diagn/.test(text)){
-    var sb=el('button','chat-sp','🔊 '+L('Escuchar','Listen'));sb.type='button';sb.setAttribute('data-l1','🔊 '+L('Escuchar','Listen'));sb.setAttribute('data-l2','⏹ '+L('Detener','Stop'));
-    var pb=el('button','chat-sp chat-pb','⏸ '+L('Pausar','Pause'));pb.type='button';pb.hidden=true;pb.setAttribute('data-l1','⏸ '+L('Pausar','Pause'));pb.setAttribute('data-l2','▶ '+L('Reanudar','Resume'));sb._pb=pb;
-    pb.addEventListener('click',function(){try{if(TTS.paused){TTS.resume();pb.textContent=pb.getAttribute('data-l1')}else{TTS.pause();pb.textContent=pb.getAttribute('data-l2')}}catch(e){}});
+    var sb=el('button','chat-sp');sb.type='button';sb.setAttribute('data-i1','vol');sb.setAttribute('data-t1',L('Escuchar','Listen'));sb.setAttribute('data-i2','stop');sb.setAttribute('data-t2',L('Detener','Stop'));lab(sb,1);
+    var pb=el('button','chat-sp chat-pb');pb.type='button';pb.hidden=true;pb.setAttribute('data-i1','pause');pb.setAttribute('data-t1',L('Pausar','Pause'));pb.setAttribute('data-i2','play');pb.setAttribute('data-t2',L('Reanudar','Resume'));lab(pb,1);sb._pb=pb;
+    pb.addEventListener('click',function(){try{if(TTS.paused){TTS.resume();lab(pb,1)}else{TTS.pause();lab(pb,2)}}catch(e){}});
     sb.addEventListener('click',function(){track('click_escuchar');speak(text,sb)});
     var sw=el('div','chat-spw');sw.appendChild(sb);sw.appendChild(pb);m.appendChild(sw);
     if(speakNext){speakNext=false;if(!muted)speak(text,sb)}}
