@@ -6,7 +6,7 @@ function gI(n,z){z=z||20;return '<svg class="ico" viewBox="0 0 24 24" width="'+z
 // Transición entre páginas: barrido verde al salir
 document.addEventListener('click', function (e) {
   var a = e.target.closest('a[href]');
-  if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || a.target === '_blank') return;
+  if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || a.target === '_blank' || a.hasAttribute('download') || /\.pdf(\?|#|$)/i.test(a.getAttribute('href') || '')) return;
   var href = a.getAttribute('href');
   if (!href || href.charAt(0) === '#' || /^[a-z][a-z0-9+.-]*:/i.test(href)) return;
   e.preventDefault();
@@ -769,18 +769,37 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 
-/* Imprimir PDF: en computador abre el diálogo de impresión; en celular abre el visor */
+/* PDF: Descargar guarda el archivo; Imprimir abre el diálogo de impresión (en celular, el menú Compartir/Imprimir) */
 (function(){
+  function aviso(m){var d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.remove()},3500)}
+  function nombre(u){return decodeURIComponent(String(u).split('?')[0].split('/').pop())}
+  function bajar(blob,n){var o=URL.createObjectURL(blob),a=document.createElement('a');a.href=o;a.download=n;a.style.display='none';document.body.appendChild(a);a.click();setTimeout(function(){a.remove();URL.revokeObjectURL(o)},4000)}
+  function traer(u){return fetch(u,{credentials:'same-origin'}).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(b){return new Blob([b],{type:'application/pdf'})})}
   document.addEventListener('click',function(e){
+    var d=e.target.closest&&e.target.closest('a[download]');
+    if(d&&/\.pdf(\?|#|$)/i.test(d.getAttribute('href')||'')){
+      e.preventDefault();var u=d.href,n=nombre(u);
+      traer(u).then(function(b){bajar(b,n);aviso(gL('Descargando: ','Downloading: ')+n)},function(){window.open(u,'_blank','noopener')});
+      return;
+    }
     var b=e.target.closest&&e.target.closest('[data-print]');if(!b)return;
-    e.preventDefault();var u=b.getAttribute('data-print');
-    try{window.geaTrack&&geaTrack('imprimir_pdf',{archivo:u.split('/').pop()})}catch(x){}
+    e.preventDefault();var u2=new URL(b.getAttribute('data-print'),location.href).href,n2=nombre(u2);
+    try{window.geaTrack&&geaTrack('imprimir_pdf',{archivo:n2})}catch(x){}
     var touch=false;try{touch=matchMedia('(pointer:coarse)').matches}catch(x){}
-    if(touch){window.open(u,'_blank','noopener');return}
-    try{
-      var f=document.createElement('iframe');f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';f.src=u;
-      f.onload=function(){try{f.contentWindow.focus();f.contentWindow.print()}catch(x){window.open(u,'_blank','noopener')}setTimeout(function(){if(f.parentNode)f.parentNode.removeChild(f)},60000)};
-      document.body.appendChild(f);
-    }catch(x){window.open(u,'_blank','noopener')}
+    traer(u2).then(function(blob){
+      if(touch){
+        var f=new File([blob],n2,{type:'application/pdf'});
+        if(navigator.canShare&&navigator.canShare({files:[f]})){
+          aviso(gL('Elige «Imprimir» en el menú','Choose “Print” in the menu'));
+          return navigator.share({files:[f],title:n2}).catch(function(){});
+        }
+        window.open(URL.createObjectURL(blob),'_blank');aviso(gL('En el visor, abre el menú ⋮ y elige Imprimir','In the viewer, open the ⋮ menu and choose Print'));return;
+      }
+      var o=URL.createObjectURL(blob),fr=document.createElement('iframe');
+      fr.style.cssText='position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0';
+      fr.onload=function(){setTimeout(function(){try{fr.contentWindow.focus();fr.contentWindow.print()}catch(x){window.open(o,'_blank')}},400)};
+      fr.src=o;document.body.appendChild(fr);
+      setTimeout(function(){if(fr.parentNode)fr.parentNode.removeChild(fr);URL.revokeObjectURL(o)},120000);
+    },function(){window.open(u2,'_blank','noopener')});
   });
 })();
