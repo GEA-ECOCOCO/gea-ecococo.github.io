@@ -149,10 +149,14 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   if (!sheet) return;
   var TEXTO = gL('ECOCOCO: briquetas de carbón de cáscara de coco hechas en Retalhuleu, Guatemala.','ECOCOCO: coconut shell charcoal briquettes made in Retalhuleu, Guatemala.');
   var IMG = 'https://gea-ecococo.github.io/img/og.jpg';
-  function url() { return location.href.split('#')[0]; }
+  var modoApp = false;
+  function appUrl() { return location.origin + (gL('', '/en') + '/') + '?utm_source=compartir_app&utm_medium=referral'; }
+  var TEXTO_APP = gL('Instala la app de ECOCOCO en tu celular: briquetas de carbón de cáscara de coco hechas en Retalhuleu. Es gratis y se instala desde el enlace.','Install the ECOCOCO app on your phone: coconut shell charcoal briquettes made in Retalhuleu. It is free and installs from the link.');
+  function url() { return modoApp ? appUrl() : location.href.split('#')[0]; }
+  function texto() { return modoApp ? TEXTO_APP : TEXTO; }
   function e(x) { return encodeURIComponent(x); }
   function redes() {
-    var u = url(), t = TEXTO, ut = t + ' ' + u;
+    var u = url(), t = texto(), ut = t + ' ' + u;
     var movil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     var l = [
       ['WhatsApp', 'W', '#25D366', 'https://wa.me/?text=' + e(ut)],
@@ -164,7 +168,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       ['Reddit', 'R', '#FF4500', 'https://www.reddit.com/submit?url=' + e(u) + '&title=' + e(t)],
       ['Threads', '@', '#111', 'https://www.threads.net/intent/post?text=' + e(ut)],
       ['Bluesky', 'B', '#1185FE', 'https://bsky.app/intent/compose?text=' + e(ut)],
-      [gL('Correo','Email'), '✉', '#5A6A7A', 'mailto:?subject=' + e(gL('ECOCOCO | Briquetas de carbón de cáscara de coco','ECOCOCO | Coconut shell charcoal briquettes')) + '&body=' + e(ut)]
+      [gL('Correo','Email'), '✉', '#5A6A7A', 'mailto:?subject=' + e(modoApp ? gL('Instala la app ECOCOCO','Install the ECOCOCO app') : gL('ECOCOCO | Briquetas de carbón de cáscara de coco','ECOCOCO | Coconut shell charcoal briquettes')) + '&body=' + e(ut)]
     ];
     if (movil) {
       l.splice(2, 0, ['Messenger', 'm', '#0084FF', 'fb-messenger://share?link=' + e(u)]);
@@ -187,30 +191,36 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       ta.remove();
     }
   }
-  function abrir() {
+  function abrir(app) {
+    modoApp = app === true;
     var h = '<div class="panel"><button type="button" class="cerrar" aria-label="'+gL('Cerrar','Close')+'">✕</button>' +
-      '<h3>'+gL('Compartir ECOCOCO','Share ECOCOCO')+'</h3><p class="sub">'+gL('Elige dónde quieres compartir esta página.','Choose where you want to share this page.')+'</p><div class="redes">';
+      '<h3>'+(modoApp ? gL('Compartir la app ECOCOCO','Share the ECOCOCO app') : gL('Compartir ECOCOCO','Share ECOCOCO'))+'</h3><p class="sub">'+(modoApp ? gL('Comparte el enlace de la app para que otras personas la instalen en su celular.','Share the app link so other people can install it on their phone.') : gL('Elige dónde quieres compartir esta página.','Choose where you want to share this page.'))+'</p><div class="redes">';
     if (navigator.share) h += '<button type="button" data-nativo><i style="background:linear-gradient(135deg,#8BE000,#1FA23A);color:#04100A">↗</i>'+gL('Más opciones','More options')+'</button>';
     redes().forEach(function (r) {
       h += '<a href="' + r[3] + '" target="_blank" rel="noopener"><i style="background:' + r[2] + '">' + r[1] + '</i>' + r[0] + '</a>';
     });
-    h += '<button type="button" data-copiar><i style="background:#2f4a3a">🔗</i>'+gL('Copiar enlace','Copy link')+'</button></div>' +
+    h += '<button type="button" data-copiar><i style="background:#2f4a3a">🔗</i>'+gL('Copiar enlace','Copy link')+'</button>' +
+      (modoApp ? '' : '<button type="button" data-app-modo><i style="background:#B6F23C;color:#04100A">📲</i>'+gL('Compartir la app','Share the app')+'</button>') + '</div>' +
+      (modoApp ? '<p class="nota">'+gL('Quien abra el enlace puede instalarla: en Android con el aviso del navegador y en iPhone con Compartir → Añadir a pantalla de inicio.','Anyone who opens the link can install it: on Android with the browser prompt and on iPhone with Share → Add to Home Screen.')+'</p>' : '') +
       '<p class="nota">'+gL('Para Instagram y TikTok no existe un botón directo: usa «Más opciones» en tu teléfono o copia el enlace y pégalo en tu publicación o historia.','There is no direct button for Instagram and TikTok: use “More options” on your phone or copy the link and paste it into your post or story.')+'</p></div>';
     sheet.innerHTML = h; sheet.hidden = false; document.body.style.overflow = 'hidden';
     sheet.querySelector('.cerrar').focus();
   }
   function cerrar() { sheet.hidden = true; document.body.style.overflow = ''; }
   document.addEventListener('click', function (ev) {
-    if (ev.target.closest('[data-compartir]')) { abrir(); return; }
+    var cb = ev.target.closest('[data-compartir]');
+    if (cb) { var ap = cb.getAttribute('data-compartir') === 'app'; if (ap) { try { if (window.geaTrack) geaTrack('compartir_app'); } catch (x) {} } abrir(ap); return; }
+    if (!sheet.hidden && ev.target.closest('[data-app-modo]')) { abrir(true); return; }
     if (sheet.hidden) return;
     if (ev.target === sheet || ev.target.closest('.cerrar')) { cerrar(); return; }
     if (ev.target.closest('[data-copiar]')) { copiar(); return; }
     if (ev.target.closest('[data-nativo]')) {
-      navigator.share({ title: 'ECOCOCO', text: TEXTO, url: url() }).catch(function () {}); return;
+      navigator.share({ title: modoApp ? gL('App ECOCOCO','ECOCOCO app') : 'ECOCOCO', text: texto(), url: url() }).catch(function () {}); return;
     }
     if (ev.target.closest('.redes a')) setTimeout(cerrar, 150);
   });
   document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !sheet.hidden) cerrar(); });
+  window.GEA_SHARE_APP = function () { try { if (window.geaTrack) geaTrack('compartir_app'); } catch (x) {} abrir(true); };
 })();
 
 // Pedido mayorista por bultos de 25 kg

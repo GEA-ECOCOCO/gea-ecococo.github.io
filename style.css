@@ -1201,3 +1201,10 @@ footer.pie{padding-bottom:calc(236px + env(safe-area-inset-bottom,0px))}
 .chat-sp.on{color:#C0392B}
 .chat-vn{font-size:.85rem;padding:6px 12px;color:#9A3F00;background:#FFF3E0}
 @media(prefers-reduced-motion:reduce){.chat-mic.on{animation:none}}
+
+/* Compartir la app */
+.sheet{z-index:1100}
+.pie-share{margin:14px 0 0}
+.pie-sh{background:transparent;color:#B6F23C;border:2px solid #B6F23C;border-radius:999px;padding:9px 18px;font-family:var(--cond);text-transform:uppercase;letter-spacing:.05em;font-size:.95rem;cursor:pointer}
+.pie-sh:before{content:'📲 '}
+.pie-sh:hover,.pie-sh:focus-visible{background:#B6F23C;color:#04100A;outline:0}

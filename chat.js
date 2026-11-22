@@ -75,6 +75,7 @@ function linkBtns(keys){var d=el('div','chat-links');keys.slice(0,2).forEach(fun
 function add(role,text,fk){
   var lk=[];if(role==='assistant'){text=String(text).replace(/\[\[LINK:([a-z-]+)\]\]/g,function(_,k){if(LINKS[k]&&lk.indexOf(k)<0)lk.push(k);return ''});text=text.replace(/\s+$/,'')}
   var inst=false;if(role==='assistant'&&/\[\[INSTALL\]\]/.test(text)){inst=true;text=text.replace(/\s*\[\[INSTALL\]\]\s*/g,' ').trim()}
+  var shr=false;if(role==='assistant'&&/\[\[SHARE\]\]/.test(text)){shr=true;text=text.replace(/\s*\[\[SHARE\]\]\s*/g,' ').trim()}
   if(!lk.length&&fk)lk=fk;
   var wa=false;if(role==='assistant'&&/\[\[WA\]\]/.test(text)){wa=true;text=text.replace(/\s*\[\[WA\]\]\s*/g,' ').trim()}
   var m=el('div','chat-m '+(role==='user'?'u':'a'));
@@ -85,6 +86,7 @@ function add(role,text,fk){
     var sb=el('button','chat-sp','🔊 '+L('Escuchar','Listen'));sb.type='button';sb.setAttribute('data-l1','🔊 '+L('Escuchar','Listen'));sb.setAttribute('data-l2','⏹ '+L('Detener','Stop'));
     sb.addEventListener('click',function(){track('click_escuchar');speak(text,sb)});m.appendChild(sb);
     if(speakNext){speakNext=false;speak(text,sb)}}
+  if(shr&&window.GEA_SHARE_APP){var sh=el('button','chat-ln chat-inst',L('Compartir la app →','Share the app →'));sh.type='button';sh.addEventListener('click',function(){window.GEA_SHARE_APP()});m.appendChild(sh)}
   if(inst&&!(window.GEA_INSTALL&&GEA_INSTALL.standalone())){var ib=el('button','chat-ln chat-inst',L('Instalar la app →','Install the app →'));ib.type='button';var hp=el('p','chat-hp');hp.hidden=true;
     ib.addEventListener('click',function(){track('click_instalar_app',{origen:'asistente'});if(!window.GEA_INSTALL)return;GEA_INSTALL.install(function(r,h){if(r==='manual'){hp.textContent=h;hp.hidden=false}else if(r==='ok'){ib.remove()}})});
     m.appendChild(ib);m.appendChild(hp)}
@@ -107,7 +109,7 @@ function norm(x){return String(x).toLowerCase().normalize('NFD').replace(/[\u030
 function local(txt){
   if(!DB)return null;var w=norm(txt).split(/\s+/).filter(Boolean),best=null,bs=0;
   DB.faq.forEach(function(f){var ks=f.k.split(' '),sc=0;w.forEach(function(x){if(x.length>2&&ks.indexOf(x)!==-1)sc++});if(sc>bs){bs=sc;best=f}});
-  if(best)return(EN?best.en:best.es)+(best.inst?' [[INSTALL]]':'')+(best.link||[]).map(function(k){return ' [[LINK:'+k+']]'}).join('')+(best.wa?' [[WA]]':'');
+  if(best)return(EN?best.en:best.es)+(best.inst?' [[INSTALL]]':'')+(best.share?' [[SHARE]]':'')+(best.link||[]).map(function(k){return ' [[LINK:'+k+']]'}).join('')+(best.wa?' [[WA]]':'');
   if(w.some(function(x){return DB.greet.k.split(' ').indexOf(x)!==-1})&&w.length<4)return EN?DB.greet.en:DB.greet.es;
   return null}
 function done(){busy=false;go.disabled=false;inp.focus()}
