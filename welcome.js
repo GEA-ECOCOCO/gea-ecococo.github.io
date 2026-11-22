@@ -1,4 +1,4 @@
-/* Bienvenida sonora de ECOCOCO: un sonido de marca futurista (sin voz).
+/* Bienvenida sonora de ECOCOCO: sonido de marca (sin voz).
    - Se oye al abrir la app instalada (junto con la pantalla de la G) y, si el navegador lo permite, al entrar al inicio del sitio.
    - Una sola vez por sesión; se puede apagar en el botón del pie de página o en la pantalla de inicio.
    - El sonido se genera en el dispositivo (Web Audio): no pesa y funciona sin conexión. */
@@ -67,6 +67,86 @@
   }
   window.geaChime = chime;
 
+  /* ---------- Variantes de sonido de marca (A marimba, B brasa, C pulso, D = el anterior) ---------- */
+  function rng(s) { return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296 } }
+  function bus(c, dest, wet, sec, gain) {
+    var m = c.createGain(), s = c.createGain(), h = c.createGain(), r = c.createConvolver();
+    m.gain.value = gain; r.buffer = impulso(c, sec); s.gain.value = 0.8; h.gain.value = wet;
+    m.connect(s); m.connect(r); r.connect(h); s.connect(dest); h.connect(dest); return m;
+  }
+  function eg(c, g, t, a, v, d) { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + d) }
+  function ruido(c, seg) { var b = c.createBuffer(1, Math.floor(c.sampleRate * seg), c.sampleRate), d = b.getChannelData(0); for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; var s = c.createBufferSource(); s.buffer = b; return s }
+  function tono(c, out, tipo, f, t, a, v, d) {
+    var o = c.createOscillator(), g = c.createGain(); o.type = tipo; o.frequency.value = f; eg(c, g, t, a, v, d); o.connect(g); g.connect(out); o.start(t); o.stop(t + d + 0.05); return o;
+  }
+  function tok(c, out, t, v, f) { /* golpe seco de coco: ruido filtrado + cuerpo que cae de tono */
+    var n = ruido(c, 0.1), bp = c.createBiquadFilter(), g = c.createGain();
+    bp.type = 'bandpass'; bp.frequency.value = f * 4; bp.Q.value = 7; eg(c, g, t, 0.002, v, 0.07); n.connect(bp); bp.connect(g); g.connect(out); n.start(t); n.stop(t + 0.1);
+    var o = c.createOscillator(), g2 = c.createGain(); o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f * 0.6, t + 0.09);
+    eg(c, g2, t, 0.002, v * 1.2, 0.12); o.connect(g2); g2.connect(out); o.start(t); o.stop(t + 0.15);
+  }
+  function marimba(c, out, f, t, v) { /* barra de marimba: fundamental + armónicos 4x y 10x que mueren rápido */
+    tono(c, out, 'sine', f, t, 0.003, v, 1.5); tono(c, out, 'sine', f * 4, t, 0.002, v * 0.3, 0.28); tono(c, out, 'sine', f * 10, t, 0.001, v * 0.08, 0.07);
+  }
+  function eco(c, src, out, seg, fb, nivel) {
+    var d = c.createDelay(1), g = c.createGain(), o = c.createGain(); d.delayTime.value = seg; g.gain.value = fb; o.gain.value = nivel;
+    src.connect(d); d.connect(g); g.connect(d); d.connect(o); o.connect(out);
+  }
+  function pad(c, out, fr, t, a, v, d, corte) {
+    fr.forEach(function (f, i) {
+      var o = c.createOscillator(), lp = c.createBiquadFilter(), g = c.createGain(); o.type = 'sawtooth'; o.frequency.value = f; o.detune.value = (i % 2 ? 7 : -7);
+      lp.type = 'lowpass'; lp.frequency.setValueAtTime(300, t); lp.frequency.linearRampToValueAtTime(corte, t + a); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(v, t + a); g.gain.linearRampToValueAtTime(0.0001, t + d);
+      o.connect(lp); lp.connect(g); g.connect(out); o.start(t); o.stop(t + d + 0.05);
+    });
+  }
+
+  /* A: Marimba del futuro: tok-tok de coco + frase de marimba (pentatónica) con eco + pad y brillo digital */
+  function sonA(c, dest, t0) {
+    var m = bus(c, dest, 0.34, 2.4, 1.2), v = c.createGain(); v.gain.value = 1; v.connect(m); eco(c, v, m, 0.19, 0.34, 0.42);
+    tok(c, v, t0, 0.5, 210); tok(c, v, t0 + 0.17, 0.4, 260);
+    [[246.94, .45], [329.63, .60], [415.30, .75], [493.88, .90]].forEach(function (x, i) { marimba(c, v, x[0], t0 + x[1], 0.34 - i * 0.02) });
+    marimba(c, v, 659.25, t0 + 1.12, 0.42); marimba(c, v, 329.63, t0 + 1.12, 0.26);
+    pad(c, m, [164.81, 246.94, 329.63, 415.30], t0 + 0.6, 1.3, 0.035, 3.0, 1400);
+    tono(c, m, 'sine', 82.41, t0 + 0.9, 0.5, 0.2, 2.4);
+    [[2637.0, 1.35], [3951.07, 1.5], [3322.4, 1.66], [5274.0, 1.85]].forEach(function (x) { tono(c, m, 'sine', x[0], t0 + x[1], 0.004, 0.03, 0.9) });
+  }
+  /* B: Brasa y chispa: crepitar de brasas que crece, bordón grave, ignición y acorde luminoso */
+  function sonB(c, dest, t0) {
+    var m = bus(c, dest, 0.4, 2.6, 2.3), r = rng(7);
+    for (var i = 0; i < 46; i++) {
+      var t = t0 + Math.pow(r(), 0.7) * 1.4, n = ruido(c, 0.05), hp = c.createBiquadFilter(), g = c.createGain();
+      hp.type = 'highpass'; hp.frequency.value = 2500 + r() * 4500; eg(c, g, t, 0.001, 0.05 + 0.1 * (t - t0) / 1.4 * r() + 0.02, 0.025 + r() * 0.03); n.connect(hp); hp.connect(g); g.connect(m); n.start(t); n.stop(t + 0.05);
+    }
+    var bo = c.createOscillator(), bl = c.createBiquadFilter(), bg = c.createGain(); bo.type = 'sawtooth'; bo.frequency.setValueAtTime(41.2, t0); bo.frequency.exponentialRampToValueAtTime(82.4, t0 + 1.4);
+    bl.type = 'lowpass'; bl.frequency.setValueAtTime(120, t0); bl.frequency.exponentialRampToValueAtTime(900, t0 + 1.4); bg.gain.setValueAtTime(0.0001, t0); bg.gain.exponentialRampToValueAtTime(0.2, t0 + 1.35); bg.gain.exponentialRampToValueAtTime(0.0001, t0 + 2.6);
+    bo.connect(bl); bl.connect(bg); bg.connect(m); bo.start(t0); bo.stop(t0 + 2.7);
+    var T = t0 + 1.4, ig = ruido(c, 0.8), ib = c.createBiquadFilter(), ig2 = c.createGain(); ib.type = 'bandpass'; ib.Q.value = 1.5; ib.frequency.setValueAtTime(1200, T - 0.25); ib.frequency.exponentialRampToValueAtTime(8000, T + 0.1);
+    eg(c, ig2, T - 0.25, 0.22, 0.1, 0.6); ig.connect(ib); ib.connect(ig2); ig2.connect(m); ig.start(T - 0.25); ig.stop(T + 0.55);
+    [164.81, 246.94, 369.99, 415.30, 493.88, 739.99].forEach(function (f, i) { tono(c, m, i % 2 ? 'triangle' : 'sine', f, T, 0.12, 0.13 - i * 0.012, 2.0) });
+    [[1975.5, .15], [2959.96, .3], [2489.0, .42], [3951.07, .6], [1479.98, .75]].forEach(function (x) { tono(c, m, 'sine', x[0], T + x[1], 0.003, 0.035, 0.6) });
+  }
+  /* C: Pulso de energía: latido grave que acelera, secuenciador que se abre y acorde final */
+  function sonC(c, dest, t0) {
+    var m = bus(c, dest, 0.3, 2.0, 1.5);
+    [0, .38, .7, .98].forEach(function (x, i) {
+      var o = c.createOscillator(), g = c.createGain(); o.frequency.setValueAtTime(130, t0 + x); o.frequency.exponentialRampToValueAtTime(40, t0 + x + 0.2); eg(c, g, t0 + x, 0.005, 0.42 + i * 0.04, 0.32); o.connect(g); g.connect(m); o.start(t0 + x); o.stop(t0 + x + 0.35);
+    });
+    var N = [164.81, 246.94, 329.63, 493.88, 659.25, 493.88, 739.99, 987.77, 1318.5, 987.77, 1479.98, 1975.53];
+    var so = c.createOscillator(), sf = c.createBiquadFilter(), sg = c.createGain(); so.type = 'sawtooth'; sf.type = 'lowpass'; sf.Q.value = 5;
+    sf.frequency.setValueAtTime(400, t0 + 0.3); sf.frequency.exponentialRampToValueAtTime(7000, t0 + 1.4);
+    N.forEach(function (f, i) { so.frequency.setValueAtTime(f, t0 + 0.3 + i * 0.095) });
+    sg.gain.setValueAtTime(0.0001, t0 + 0.3); sg.gain.exponentialRampToValueAtTime(0.09, t0 + 0.4); sg.gain.setValueAtTime(0.09, t0 + 1.38); sg.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.5);
+    so.connect(sf); sf.connect(sg); sg.connect(m); so.start(t0 + 0.3); so.stop(t0 + 1.55);
+    var T = t0 + 1.45; [164.81, 329.63, 493.88, 659.25, 830.61, 987.77].forEach(function (f, i) { tono(c, m, i % 2 ? 'sawtooth' : 'triangle', f, T, 0.01, 0.07, 1.6) });
+    tono(c, m, 'sine', 82.41, T, 0.01, 0.34, 1.7); tono(c, m, 'sine', 2637.0, T + 0.1, 0.004, 0.03, 1.0);
+  }
+  var SON = { a: sonA, b: sonB, c: sonC, d: chime };
+  window.geaSonidos = SON;
+  function varianteSonido() {
+    var q = (location.search.match(/[?&]snd=([abcd])/) || [])[1];
+    try { return q || localStorage.getItem('gea-snd') || 'a' } catch (e) { return q || 'a' }
+  }
+
   /* ---------- Voz femenina, lenta y cálida ---------- */
   var TXT = EN ? 'Welcome to... Jea... Eco Coco.' : 'Bienvenido a... Jea... Eco Coco.';
   function base() {
@@ -122,7 +202,7 @@
   function tocar(vozEn) {
     if (!ctx || parado) return;
     var t0 = ctx.currentTime + 0.05;
-    try { chime(ctx, ctx.destination, t0) } catch (e) {}
+    try { (SON[varianteSonido()] || sonA)(ctx, ctx.destination, t0) } catch (e) {}
     try { window.geaTrack && geaTrack('sonido_bienvenida', {}) } catch (e) {}
   }
   function iniciar(esperaChime, vozEn, ventana) {

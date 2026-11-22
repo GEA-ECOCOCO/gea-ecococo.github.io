@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>Prueba de sonido · ECOCOCO</title>
+<style>
+body{margin:0;background:#04100A;color:#f1f5ea;font:16px/1.5 system-ui,Segoe UI,Roboto,sans-serif;padding:24px 16px 60px}
+main{max-width:520px;margin:0 auto}h1{font-size:22px;margin:0 0 6px;color:#b6ee3a}p{color:#a9b8a8;margin:0 0 18px}
+button{display:block;width:100%;text-align:left;margin:0 0 12px;padding:16px 18px;border:1.5px solid #b6ee3a;border-radius:16px;background:#0b1f14;color:#f1f5ea;font:inherit;cursor:pointer}
+button b{display:block;color:#b6ee3a;font-size:18px}button span{font-size:14px;color:#a9b8a8}
+button:active,button.on{background:#14331f}small{color:#7f917e}
+</style></head><body><main>
+<h1>Elige el sonido de ECOCOCO</h1>
+<p>Toca cada opción, con el volumen del celular a la mitad. Dime la letra que te guste.</p>
+<button data-k="a"><b>A · Marimba del futuro</b><span>Dos golpes de coco, frase de marimba (instrumento de Guatemala) con eco y brillo digital.</span></button>
+<button data-k="b"><b>B · Brasa y chispa</b><span>Crepitar de brasas que crece, bordón grave, ignición y acorde luminoso. Habla del carbón.</span></button>
+<button data-k="c"><b>C · Pulso de energía</b><span>Latido grave que acelera, secuenciador electrónico y acorde final. El más tecnológico.</span></button>
+<button data-k="d"><b>D · El anterior</b><span>Barrido, pulsos de datos y campanas de cristal (el que te pareció genérico).</span></button>
+<small>Página de prueba, no aparece en el sitio.</small>
+</main>
+<script src="welcome.js"></script>
+<script>
+var AC=window.AudioContext||window.webkitAudioContext,ctx;
+document.querySelectorAll('button').forEach(function(b){b.addEventListener('click',function(){
+ if(!ctx)ctx=new AC(); if(ctx.state==='suspended')ctx.resume();
+ document.querySelectorAll('button').forEach(function(x){x.classList.remove('on')});b.classList.add('on');
+ window.geaSonidos[b.dataset.k](ctx,ctx.destination,ctx.currentTime+0.05);
+ setTimeout(function(){b.classList.remove('on')},3500)})});
+</script></body></html>
