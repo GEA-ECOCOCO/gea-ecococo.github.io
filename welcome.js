@@ -16,35 +16,54 @@
   var AC = window.AudioContext || window.webkitAudioContext, TTS = window.speechSynthesis;
   var ctx = null, vozAudio = null, vozTimer = 0, parado = false;
 
-  /* ---------- Destello musical (arpegio de arpa + brillos + resplandor) ---------- */
+  /* ---------- Sonido de marca futurista (barrido + pulsos de datos + impacto + campanas FM) ---------- */
   function impulso(c, seg) {
     var n = Math.floor(c.sampleRate * seg), b = c.createBuffer(2, n, c.sampleRate);
     for (var ch = 0; ch < 2; ch++) { var d = b.getChannelData(ch); for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2.6) }
     return b;
   }
   function chime(c, dest, t0) {
-    var master = c.createGain(); master.gain.value = 1.7;
+    var master = c.createGain(); master.gain.value = 1.5;
     var seco = c.createGain(), humedo = c.createGain(), rev = c.createConvolver();
-    rev.buffer = impulso(c, 2.6); seco.gain.value = 0.75; humedo.gain.value = 0.55;
+    rev.buffer = impulso(c, 2.2); seco.gain.value = 0.8; humedo.gain.value = 0.38;
     master.connect(seco); master.connect(rev); rev.connect(humedo); seco.connect(dest); humedo.connect(dest);
-    function nota(f, t, v, dur) {
-      var g = c.createGain(), o = c.createOscillator(), o2 = c.createOscillator(), g2 = c.createGain();
-      o.type = 'sine'; o.frequency.value = f; o2.type = 'triangle'; o2.frequency.value = f * 2; g2.gain.value = 0.28;
-      g.gain.setValueAtTime(0.0001, t0 + t); g.gain.exponentialRampToValueAtTime(v, t0 + t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t0 + t + dur);
-      o.connect(g); o2.connect(g2); g2.connect(g); g.connect(master);
-      o.start(t0 + t); o2.start(t0 + t); o.stop(t0 + t + dur + 0.05); o2.stop(t0 + t + dur + 0.05);
+    function env(g, t, a, v, dur) {
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     }
-    /* sol mayor con novena: sube como una hoja que brota */
-    var A = [[392.0, 0.00], [587.33, 0.13], [783.99, 0.26], [987.77, 0.40], [1174.66, 0.55], [1568.0, 0.72]];
-    A.forEach(function (x, i) { nota(x[0], x[1], 0.20 - i * 0.012, 2.1) });
-    /* brillos altos, como destellos de luz */
-    [[2349.3, 0.9], [3135.96, 1.05], [2637.0, 1.2], [3951.07, 1.32], [3135.96, 1.5]].forEach(function (x) { nota(x[0], x[1], 0.045, 0.7) });
-    /* resplandor grave que se abre y se cierra (la "floración") */
-    [196.0, 293.66, 392.0, 493.88].forEach(function (f, i) {
-      var o = c.createOscillator(), g = c.createGain();
-      o.type = 'sine'; o.frequency.value = f; o.detune.value = (i % 2 ? 4 : -4);
-      g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(0.05, t0 + 1.1); g.gain.linearRampToValueAtTime(0.0001, t0 + 3.2);
-      o.connect(g); g.connect(master); o.start(t0); o.stop(t0 + 3.3);
+    /* 1) Barrido ascendente: energía que se carga (sierra filtrada + aire) */
+    var so = c.createOscillator(), sf = c.createBiquadFilter(), sg = c.createGain();
+    so.type = 'sawtooth'; so.frequency.setValueAtTime(110, t0); so.frequency.exponentialRampToValueAtTime(880, t0 + 1.0);
+    sf.type = 'lowpass'; sf.Q.value = 6; sf.frequency.setValueAtTime(250, t0); sf.frequency.exponentialRampToValueAtTime(7000, t0 + 1.0);
+    sg.gain.setValueAtTime(0.0001, t0); sg.gain.exponentialRampToValueAtTime(0.11, t0 + 0.85); sg.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.12);
+    so.connect(sf); sf.connect(sg); sg.connect(master); so.start(t0); so.stop(t0 + 1.2);
+    var nb = c.createBuffer(1, Math.floor(c.sampleRate * 1.2), c.sampleRate), nd = nb.getChannelData(0);
+    for (var i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+    var ns = c.createBufferSource(), nf = c.createBiquadFilter(), ng = c.createGain();
+    ns.buffer = nb; nf.type = 'bandpass'; nf.Q.value = 2.2;
+    nf.frequency.setValueAtTime(400, t0); nf.frequency.exponentialRampToValueAtTime(9000, t0 + 1.0);
+    ng.gain.setValueAtTime(0.0001, t0); ng.gain.exponentialRampToValueAtTime(0.16, t0 + 0.9); ng.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.15);
+    ns.connect(nf); nf.connect(ng); ng.connect(master); ns.start(t0); ns.stop(t0 + 1.2);
+    /* 2) Pulsos de datos: microtonos digitales mientras se carga */
+    [[1760, .18], [2093, .30], [2637, .42], [2093, .54], [3136, .66], [3520, .78]].forEach(function (x, i) {
+      var o = c.createOscillator(), g = c.createGain(); o.type = 'square'; o.frequency.value = x[0];
+      env(g, t0 + x[1], 0.004, 0.018 + i * 0.002, 0.06); o.connect(g); g.connect(master); o.start(t0 + x[1]); o.stop(t0 + x[1] + 0.08);
+    });
+    /* 3) Impacto: golpe grave digital que cae de tono */
+    var T = t0 + 1.0, bo = c.createOscillator(), bg = c.createGain();
+    bo.type = 'sine'; bo.frequency.setValueAtTime(140, T); bo.frequency.exponentialRampToValueAtTime(42, T + 0.7);
+    env(bg, T, 0.01, 0.5, 1.0); bo.connect(bg); bg.connect(master); bo.start(T); bo.stop(T + 1.05);
+    /* 4) Campanas de cristal FM: acorde lidio que se abre (E–B–F#–E) */
+    [[659.25, 0], [987.77, .08], [1479.98, .16], [1318.51, .26], [1975.53, .38]].forEach(function (x, i) {
+      var t = T + x[1], f = x[0], o = c.createOscillator(), m = c.createOscillator(), mg = c.createGain(), g = c.createGain();
+      o.type = 'sine'; o.frequency.value = f; m.type = 'sine'; m.frequency.value = f * 3.5;
+      mg.gain.setValueAtTime(f * 1.8, t); mg.gain.exponentialRampToValueAtTime(1, t + 0.9);
+      m.connect(mg); mg.connect(o.frequency); env(g, t, 0.006, 0.17 - i * 0.015, 1.7);
+      o.connect(g); g.connect(master); o.start(t); m.start(t); o.stop(t + 1.75); m.stop(t + 1.75);
+    });
+    /* 5) Brillo final: destello agudo tipo circuito */
+    [[3951.07, .55], [5274.0, .68]].forEach(function (x) {
+      var t = T + x[1], o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.value = x[0];
+      env(g, t, 0.004, 0.03, 0.5); o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.55);
     });
   }
   window.geaChime = chime;
