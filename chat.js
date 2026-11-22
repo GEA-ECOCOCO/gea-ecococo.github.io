@@ -18,11 +18,53 @@ var log=el('div','chat-log');log.setAttribute('aria-live','polite');
 var sug=el('div','chat-sug');
 var fm=el('form','chat-fm');var inp=el('input');inp.type='text';inp.maxLength=500;inp.autocomplete='off';inp.placeholder=L('Escribe tu pregunta…','Type your question…');inp.setAttribute('aria-label',inp.placeholder);
 var go=el('button','',L('Enviar','Send'));go.type='submit';fm.appendChild(inp);fm.appendChild(go);
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition,TTS=('speechSynthesis' in window&&window.SpeechSynthesisUtterance)?window.speechSynthesis:null;
+var speakNext=false,rec=null,listening=false,vTimer=null,spBtn=null;
+var vn=el('div','chat-vn');vn.hidden=true;vn.setAttribute('role','status');
+function note(t){vn.textContent=t;vn.hidden=!t;clearTimeout(vTimer);if(t)vTimer=setTimeout(function(){vn.hidden=true},5000)}
+var mic=null;
+if(SR){mic=el('button','chat-mic');mic.type='button';mic.setAttribute('aria-label',L('Hablar con el asistente (micrófono)','Speak to the assistant (microphone)'));mic.title=L('Hablar','Speak');
+  mic.innerHTML='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3M9 21h6"/></svg>';
+  fm.insertBefore(mic,go)}
 var ft=el('div','chat-ft',AI?L('Las respuestas las genera una IA con los datos de este sitio. Para pedidos y precios finales confirma por WhatsApp. No escribas datos personales sensibles.','Answers are AI-generated from this site\'s data. For orders and final prices confirm via WhatsApp. Do not type sensitive personal data.'):L('Respuestas automáticas con los datos de este sitio. Para pedidos y precios finales confirma por WhatsApp.','Automatic answers based on this site\'s data. For orders and final prices confirm via WhatsApp.'));
-box.appendChild(hd);box.appendChild(log);box.appendChild(sug);box.appendChild(fm);box.appendChild(ft);
+if(SR)ft.textContent+=' '+L('Si usas el micrófono, el reconocimiento de voz lo hace tu navegador y no guardamos el audio.','If you use the microphone, voice recognition is done by your browser and we do not store the audio.');
+box.appendChild(hd);box.appendChild(log);box.appendChild(sug);box.appendChild(vn);box.appendChild(fm);box.appendChild(ft);
 document.body.appendChild(btn);document.body.appendChild(box);
 (function(){var t=setTimeout(function(){btn.classList.add('mini')},8000);function ex(){btn.classList.remove('mini')}btn.addEventListener('mouseenter',ex);btn.addEventListener('focus',ex);btn.addEventListener('mouseleave',function(){clearTimeout(t);t=setTimeout(function(){btn.classList.add('mini')},3000)});btn.addEventListener('blur',function(){btn.classList.add('mini')})})();
 
+function ttsText(t){
+  t=String(t).replace(/https?:\/\/\S+/g,'').replace(/\s*\(\s*ECO-\d+KG\s*\)/gi,'').replace(/\bECO-\d+KG\b/gi,'').replace(/US\$\s?(\d[\d.,]*)/g,'$1 '+L('dólares','dollars')).replace(/Q\s?(\d[\d.,]*)/g,'$1 '+L('quetzales','quetzales'))
+    .replace(/[→≈·•]/g,' ').replace(/\b1\s?kg\b/gi,L('1 kilo','1 kilogram')).replace(/(\d[\d.,]*)\s?kg\b/gi,'$1 '+L('kilos','kilograms')).replace(/\bkg\b/gi,L('kilo','kilogram')).replace(/\s+/g,' ').trim();
+  return t}
+function pickVoice(){
+  var vs=TTS.getVoices()||[],pre=EN?['en-US','en-GB','en']:['es-GT','es-MX','es-US','es-419','es-CO','es'];
+  for(var i=0;i<pre.length;i++){for(var j=0;j<vs.length;j++){if((vs[j].lang||'').replace('_','-').indexOf(pre[i])===0)return vs[j]}}return null}
+function stopSpeak(){if(TTS){try{TTS.cancel()}catch(e){}}if(spBtn){spBtn.classList.remove('on');spBtn.textContent=spBtn.getAttribute('data-l1');spBtn=null}}
+function speak(text,btn){
+  if(!TTS)return;var same=btn&&btn===spBtn;stopSpeak();if(same)return;
+  var t=ttsText(text);if(!t)return;
+  var parts=t.match(/.+?(?:[.!?]+(?=\s|$)|$)/g)||[t],v=pickVoice();
+  if(btn){spBtn=btn;btn.classList.add('on');btn.textContent=btn.getAttribute('data-l2')}
+  parts.forEach(function(p,i){
+    var u=new SpeechSynthesisUtterance(p.trim());u.lang=v?v.lang:(EN?'en-US':'es-MX');if(v)u.voice=v;u.rate=1;
+    if(i===parts.length-1){u.onend=u.onerror=function(){if(spBtn===btn&&btn){btn.classList.remove('on');btn.textContent=btn.getAttribute('data-l1');spBtn=null}}}
+    TTS.speak(u)})}
+function stopMic(){if(rec){try{rec.stop()}catch(e){}}}
+function startMic(){
+  if(!SR||busy)return;stopSpeak();
+  if(listening){stopMic();return}
+  var r=new SR();rec=r;r.lang=EN?'en-US':'es-GT';r.interimResults=true;r.continuous=false;r.maxAlternatives=1;
+  var fin='',ph=inp.placeholder;
+  r.onstart=function(){listening=true;mic.classList.add('on');inp.placeholder=L('Escuchando… habla ahora','Listening… speak now');track('use_voz',{idioma:EN?'en':'es'})};
+  r.onresult=function(ev){var s='';for(var i=0;i<ev.results.length;i++){s+=ev.results[i][0].transcript;if(ev.results[i].isFinal)fin=s}inp.value=s};
+  r.onerror=function(ev){var e=ev&&ev.error;
+    if(e==='not-allowed'||e==='service-not-allowed')note(L('Permite el uso del micrófono en tu navegador para hablar con el asistente.','Allow microphone access in your browser to talk to the assistant.'));
+    else if(e==='no-speech')note(L('No te escuché. Toca el micrófono e inténtalo de nuevo.','I did not hear you. Tap the microphone and try again.'));
+    else if(e==='network')note(L('Sin conexión para el reconocimiento de voz. Puedes escribir tu pregunta.','No connection for voice recognition. You can type your question.'));
+    else if(e!=='aborted')note(L('No se pudo usar la voz. Puedes escribir tu pregunta.','Voice could not be used. You can type your question.'))};
+  r.onend=function(){listening=false;mic.classList.remove('on');inp.placeholder=ph;rec=null;var t=(fin||inp.value||'').trim();if(t&&fin)send(t,true)};
+  try{r.start()}catch(e){listening=false;mic.classList.remove('on')}}
+if(mic)mic.addEventListener('click',startMic);
 function waLink(){
   var q='';for(var i=hist.length-1;i>=0;i--){if(hist[i].role==='user'){q=hist[i].content;break}}
   var t=L('Hola, vengo del asistente de la página. ','Hello, I come from the website assistant. ')+(q?L('Mi consulta: ','My question: ')+q.slice(0,300):'');
@@ -39,6 +81,10 @@ function add(role,text,fk){
   String(text).split(/\n+/).forEach(function(par){if(par.trim())m.appendChild(el('p','',par))});
   if(wa){var a=el('a','chat-wa',L('Continuar por WhatsApp','Continue on WhatsApp'));a.href=waLink();a.target='_blank';a.rel='noopener';a.addEventListener('click',function(){track('click_whatsapp',{destino:'asistente'})});m.appendChild(a)}
   if(lk.length){var lb=linkBtns(lk);if(lb)m.appendChild(lb)}
+  if(role==='assistant'&&text!=='…'&&TTS&&!/^\[diagn/.test(text)){
+    var sb=el('button','chat-sp','🔊 '+L('Escuchar','Listen'));sb.type='button';sb.setAttribute('data-l1','🔊 '+L('Escuchar','Listen'));sb.setAttribute('data-l2','⏹ '+L('Detener','Stop'));
+    sb.addEventListener('click',function(){track('click_escuchar');speak(text,sb)});m.appendChild(sb);
+    if(speakNext){speakNext=false;speak(text,sb)}}
   if(inst&&!(window.GEA_INSTALL&&GEA_INSTALL.standalone())){var ib=el('button','chat-ln chat-inst',L('Instalar la app →','Install the app →'));ib.type='button';var hp=el('p','chat-hp');hp.hidden=true;
     ib.addEventListener('click',function(){track('click_instalar_app',{origen:'asistente'});if(!window.GEA_INSTALL)return;GEA_INSTALL.install(function(r,h){if(r==='manual'){hp.textContent=h;hp.hidden=false}else if(r==='ok'){ib.remove()}})});
     m.appendChild(ib);m.appendChild(hp)}
@@ -70,8 +116,8 @@ function answerLocal(txt,wait){
   if(!r)r=L('No tengo ese dato confirmado. Escríbenos por WhatsApp y una persona te responde. [[WA]]','I don\'t have that confirmed. Message us on WhatsApp and a person will answer. [[WA]]');
   hist.push({role:'assistant',content:r});save();add('assistant',r);done()}
 function dbg(m){try{if(location.hash.indexOf('chatdebug')>-1)add('assistant','[diagnóstico] '+m)}catch(e){}}
-function send(txt){
-  txt=String(txt||'').trim().slice(0,500);if(!txt||busy)return;
+function send(txt,viaVoice){
+  txt=String(txt||'').trim().slice(0,500);if(!txt||busy)return;stopSpeak();speakNext=!!viaVoice&&!!TTS;
   if(Date.now()-last<1200)return;last=Date.now();
   busy=true;sug.hidden=true;inp.value='';go.disabled=true;
   if(AI){var q=0;try{q=parseInt(sessionStorage.getItem(CK)||'0',10)}catch(e){}
@@ -96,6 +142,7 @@ function fail(rate){
   var a=el('a','chat-wa',L('Escribir por WhatsApp','Message on WhatsApp'));a.href=waLink();a.target='_blank';a.rel='noopener';m.appendChild(a);
 }
 function toggle(v){
+  if(!v){stopSpeak();stopMic()}
   open=v;box.hidden=!v;btn.classList.toggle('on',v);document.body.classList.toggle('chat-open',v);
   if(v){render();track('open_chat');setTimeout(function(){inp.focus()},50)}
 }
