@@ -1353,3 +1353,16 @@ html.splash-on .barrido:not(.quiet){display:none}
 .pie-sn svg{flex:none}
 .sp-snd{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:14px;width:44px;height:44px;border-radius:50%;border:1.5px solid rgba(182,242,60,.55);background:rgba(4,16,10,.55);color:#B6F23C;display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:auto;z-index:2;padding:0}
 .sp-snd:hover,.sp-snd:focus-visible{background:#B6F23C;color:#04100A}
+
+/* ===== Ventas ===== */
+.vt-qg{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:18px 0 6px}
+a.card.vt-q{display:flex;flex-direction:column;gap:4px;text-decoration:none;color:inherit;padding:18px}
+.vt-q b{font-size:1.05rem;color:var(--lime2)}
+.vt-q>span:last-child{color:var(--muted);font-size:.93rem;line-height:1.45}
+.vt-ic{display:inline-grid;place-items:center;width:46px;height:46px;border-radius:14px;background:rgba(139,224,0,.12);border:1px solid var(--panel-b);color:var(--lime2);margin-bottom:8px}
+.vt-prods{max-width:none;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.vt-nota{margin-top:14px;color:var(--muted);font-size:.95rem}
+.vt-alerta{margin:6px 0 4px;padding:14px 18px;border-radius:14px;border:1px solid rgba(255,107,61,.5);background:rgba(255,107,61,.09);color:var(--ink)}
+.vt-alerta b{color:var(--alerta)}
+.vt-fin{display:flex;flex-wrap:wrap;gap:18px 28px;align-items:center;justify-content:space-between;margin-top:42px}
+.vt-fin h2{margin:4px 0 6px}

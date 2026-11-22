@@ -42,8 +42,8 @@
  ],
  "shortcuts": [
   {
-   "name": "Precios",
-   "url": "/precios.html",
+   "name": "Ventas",
+   "url": "/ventas.html",
    "icons": [
     {
      "src": "/img/icon-192.png",
