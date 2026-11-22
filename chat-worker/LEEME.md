@@ -12,3 +12,16 @@ El chat del sitio no se muestra hasta que pongas la dirección de tu Worker en `
 
 Prueba: abre el sitio, toca el botón verde del chat y pregunta "¿cuánto cuesta el bulto?". Si algo falla, el chat ofrece WhatsApp.
 Los precios del asistente se regeneran con el sitio: tras cambiar precios, vuelve a pegar `worker.js` en Cloudflare.
+
+## Correo automático de la proforma de factura (opcional)
+
+La ruta `/factura` de este mismo Worker envía la proforma en PDF al correo que el cliente escribe (con copia a GEA) usando Resend.
+
+1. Crea una cuenta en resend.com y verifica tu dominio (por ejemplo geaecococo.com.gt). Sin dominio verificado, Resend solo permite enviar a tu propio correo.
+2. En Cloudflare, Worker `ecococo-chat` → Settings → Variables and Secrets, agrega:
+   - Secreto `RESEND_API_KEY` (la clave de Resend).
+   - Variable `MAIL_FROM`, por ejemplo `GEA Carbón <facturas@geaecococo.com.gt>`.
+   - Opcional `MAIL_COPY` (copia interna; por defecto geaecococo.ventas@gmail.com) y `FAC_CAP` (tope diario, por defecto 100).
+3. Con el KV `RL` ya conectado, aplica el límite de 4 envíos por visitante cada 10 minutos.
+
+Mientras no estén esos datos, el formulario avisa y deja descargar o enviar por WhatsApp.

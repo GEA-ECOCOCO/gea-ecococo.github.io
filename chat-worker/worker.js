@@ -2,7 +2,9 @@
    Recibe la conversación desde el sitio, la envía a la API de Anthropic con los datos de GEA Carbón
    y devuelve la respuesta. La clave de la API vive SOLO aquí, como secreto: ANTHROPIC_API_KEY.
    Variables opcionales: ALLOWED_ORIGINS (separadas por coma), MODEL, DAILY_CAP, RATE_LIMIT.
-   Opcional: un KV llamado RL para límites por visitante y tope diario. */
+   Opcional: un KV llamado RL para límites por visitante y tope diario.
+   Correo automático de la proforma de factura (ruta /factura): secretos RESEND_API_KEY y MAIL_FROM (remitente verificado en Resend);
+   opcionales MAIL_COPY (copia interna, por defecto geaecococo.ventas@gmail.com) y FAC_CAP (tope diario). */
 
 const KB = `Eres el asesor de ventas virtual de GEA Carbón | ECOCOCO (Grupo Empresarial Armas), de Retalhuleu, Guatemala. Atiendes a visitantes del sitio https://gea-ecococo.github.io como lo haría un buen ejecutivo de ventas: conversas, escuchas, preguntas, orientas y ayudas a cerrar el pedido. Respondes en el idioma del último mensaje del usuario (español o inglés).
 
@@ -63,6 +65,51 @@ function json(obj, status, origin) {
   return new Response(JSON.stringify(obj), { status, headers: Object.assign({ 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }, origin ? cors(origin) : {}) });
 }
 
+
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+async function facturaMail(request, env, origin) {
+  if (!env.RESEND_API_KEY || !env.MAIL_FROM) return json({ error: 'mail-config' }, 501, origin);
+  let b;
+  try { const raw = await request.text(); if (raw.length > 260000) return json({ error: 'size' }, 413, origin); b = JSON.parse(raw); } catch (e) { return json({ error: 'json' }, 400, origin); }
+  const en = b && b.lang === 'en';
+  const correo = String((b && b.correo) || '').trim().slice(0, 120);
+  const nombre = String((b && b.nombre) || '').replace(/[\r\n<>]/g, ' ').trim().slice(0, 80);
+  const no = String((b && b.no) || '').replace(/[^A-Za-z0-9-]/g, '').slice(0, 30);
+  const pdf = String((b && b.pdf) || '');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(correo) || nombre.length < 2 || !no || !/^[A-Za-z0-9+/=]+$/.test(pdf) || pdf.length < 500 || pdf.length > 200000) return json({ error: 'datos' }, 400, origin);
+  if (!(b && b.acepto === true)) return json({ error: 'consent' }, 400, origin);
+  if (env.RL) {
+    try {
+      const ip = request.headers.get('CF-Connecting-IP') || 'x';
+      const k = 'fac:' + ip + ':' + Math.floor(Date.now() / 600000);
+      const n = parseInt(await env.RL.get(k) || '0', 10) + 1;
+      if (n > 4) return json({ error: 'rate' }, 429, origin);
+      await env.RL.put(k, String(n), { expirationTtl: 900 });
+      const d = 'facday:' + new Date().toISOString().slice(0, 10);
+      const t = parseInt(await env.RL.get(d) || '0', 10) + 1;
+      if (t > (parseInt(env.FAC_CAP, 10) || 100)) return json({ error: 'cap' }, 429, origin);
+      await env.RL.put(d, String(t), { expirationTtl: 172800 });
+    } catch (e) { /* si el KV falla, seguimos */ }
+  }
+  const copia = env.MAIL_COPY || 'geaecococo.ventas@gmail.com';
+  const subject = (en ? 'Your ECOCOCO proforma ' : 'Tu proforma ECOCOCO ') + no;
+  const html = '<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#1A1A1A"><div style="background:#04100A;padding:18px 22px;border-bottom:4px solid #E85D04"><b style="color:#F5F0E6;font-size:20px">GEA CARBÓN</b><div style="color:#B6F23C;font-size:12px;letter-spacing:2px">ECOCOCO</div></div><div style="padding:22px">'
+    + '<p>' + (en ? 'Hi ' : 'Hola ') + esc(nombre) + ',</p>'
+    + '<p>' + (en ? 'We received your FEL invoice request <b>' + esc(no) + '</b>. Your proforma is attached as a PDF.' : 'Recibimos tu solicitud de factura FEL <b>' + esc(no) + '</b>. Adjuntamos tu proforma en PDF.') + '</p>'
+    + '<p>' + (en ? 'This is an informational document, not the invoice. We issue the FEL invoice once the order and payment are confirmed, and send it to this email.' : 'Este es un documento informativo, no la factura. Emitimos la factura FEL al confirmar el pedido y el pago, y la enviamos a este correo.') + '</p>'
+    + '<p>' + (en ? 'Questions? WhatsApp +502 4279-4894.' : '¿Dudas? Escríbenos por WhatsApp al +502 4279-4894.') + '</p>'
+    + '<p style="color:#5A4F45;font-size:12px">GEA Grupo Empresarial Armas · Retalhuleu, Guatemala</p></div></div>';
+  try {
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + env.RESEND_API_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: env.MAIL_FROM, to: [correo], bcc: [copia], reply_to: copia, subject, html, attachments: [{ filename: (en ? 'ecococo-invoice-request-' : 'ecococo-solicitud-factura-') + no + '.pdf', content: pdf }] })
+    });
+    if (!r.ok) return json({ error: 'mail-fail' }, 502, origin);
+    return json({ ok: true }, 200, origin);
+  } catch (e) { return json({ error: 'mail-fail' }, 502, origin); }
+}
+
 export default {
   async fetch(request, env) {
     const allowed = (env.ALLOWED_ORIGINS ? String(env.ALLOWED_ORIGINS).split(',').map(s => s.trim()).filter(Boolean) : DEFAULT_ORIGINS);
@@ -71,6 +118,7 @@ export default {
     if (request.method === 'OPTIONS') return okOrigin ? new Response(null, { status: 204, headers: cors(origin) }) : new Response(null, { status: 403 });
     if (request.method !== 'POST') return json({ error: 'method' }, 405, okOrigin ? origin : '');
     if (!okOrigin) return json({ error: 'origin' }, 403, '');
+    if (new URL(request.url).pathname === '/factura') return facturaMail(request, env, origin);
     if (!env.ANTHROPIC_API_KEY) return json({ error: 'config' }, 500, origin);
 
     let body;

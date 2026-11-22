@@ -53,26 +53,43 @@
     return t+l.join('\n');
   }
   function pdf(d){return window.geaFacturaPDF({en:EN,no:d.no,fecha:d.fecha,emisor:EMISOR,cli:{tipo:d.tipo,nom:d.nom,nit:d.nit,dir:d.dir,mail:d.mail,tel:d.tel,dep:d.dep,mun:d.mun,ref:d.ref,nota:d.nota},items:[{cod:d.it.cod,nom:d.it.nom,cant:d.it.cant,p:d.it.p}],fx:{r:C.usdRate||7.65,d:C.usdDate||''}})}
-  function bajar(blob,n){var o=URL.createObjectURL(blob),a=document.createElement('a');a.href=o;a.download=n;a.style.display='none';document.body.appendChild(a);a.click();setTimeout(function(){a.remove();URL.revokeObjectURL(o)},4000)}
+  function bajar(blob,n){if(window.geaPdfBajar)return window.geaPdfBajar(blob,n);var o=URL.createObjectURL(blob),a=document.createElement('a');a.href=o;a.download=n;a.style.display='none';document.body.appendChild(a);a.click();setTimeout(function(){a.remove();URL.revokeObjectURL(o)},4000)}
+  function imprimir(blob,n){if(window.geaPdfImprimir)window.geaPdfImprimir(blob,n);else window.open(URL.createObjectURL(blob),'_blank')}
+  function b64(blob){return new Promise(function(ok,no){var r=new FileReader();r.onload=function(){ok(String(r.result).split(',')[1]||'')};r.onerror=no;r.readAsDataURL(blob)})}
+  function mailAuto(d){
+    var url=(C.chatUrl||'').replace(/\/+$/,'')+'/factura';
+    if(!C.chatUrl)return Promise.reject(new Error('sin-url'));
+    return b64(pdf(d)).then(function(p){
+      var ctl=new AbortController(),to=setTimeout(function(){ctl.abort()},15000);
+      return fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},signal:ctl.signal,body:JSON.stringify({lang:EN?'en':'es',correo:d.mail,nombre:d.nom,no:d.no,pdf:p,acepto:true})})
+        .then(function(r){clearTimeout(to);if(!r.ok)throw new Error('http '+r.status);return r.json()}).then(function(j){if(!j||!j.ok)throw new Error('fail')});
+    });
+  }
   function track(via,d){try{window.geaTrack&&geaTrack('solicitud_factura',{via:via,tipo:d.tipo})}catch(x){}}
-  function fin(d,via){
+  function fin(d,via,auto){
     var wa='https://wa.me/'+(C.whatsapp||'50242794894')+'?text='+encodeURIComponent(texto(d));
     var mail='mailto:geaecococo.ventas@gmail.com?subject='+encodeURIComponent((EN?'FEL invoice request ':'Solicitud de factura FEL ')+d.no)+'&body='+encodeURIComponent(texto(d));
     f.hidden=true;ok.hidden=false;
     var fn=(EN?'ecococo-invoice-request-':'ecococo-solicitud-factura-')+d.no+'.pdf';
-    ok.innerHTML='<h3>'+(via==='pdf'?L('Tu proforma se descargó','Your proforma was downloaded'):L('Tu solicitud está lista','Your request is ready'))+'</h3>'
+    ok.innerHTML='<h3>'+(auto==='ok'?L('¡Proforma enviada!','Proforma sent!'):via==='pdf'?L('Tu proforma se descargó','Your proforma was downloaded'):via==='print'?L('Tu proforma está lista para imprimir','Your proforma is ready to print'):L('Tu solicitud está lista','Your request is ready'))+'</h3>'
       +'<p>'+L('Número de solicitud','Request number')+': <strong>'+d.no+'</strong></p>'
+      +(auto==='ok'?'<p class="fac-sent">'+L('Enviamos la proforma a <strong>','We sent the proforma to <strong>')+d.mail.replace(/[<>&"]/g,'')+L('</strong>. Si no la ves, revisa la carpeta de spam. GEA también recibió tu solicitud.','</strong>. If you do not see it, check your spam folder. GEA also received your request.')+'</p>':'')
+      +(auto==='fail'?'<p class="fac-warn">'+L('No pudimos enviarla automáticamente en este momento. Descarga la proforma y envíala por WhatsApp o correo.','We could not send it automatically right now. Download the proforma and send it by WhatsApp or email.')+'</p>':'')
       +'<p>'+L('Para que emitamos la factura FEL, envíanos la solicitud. Tus datos no se guardan en este sitio: solo se envían si tú los mandas.','So that we can issue the FEL invoice, send us the request. Your data is not stored on this site: it is only sent if you send it.')+'</p>'
       +'<p><a class="btn wa" target="_blank" rel="noopener" href="'+wa+'" data-via="wa">'+L('Enviar por WhatsApp','Send on WhatsApp')+'</a> '
-      +'<a class="btn sec" href="'+mail+'" data-via="mail">'+L('Enviar por correo','Send by email')+'</a> '
-      +'<button type="button" class="btn sec" data-pdf>'+L('Descargar proforma otra vez','Download proforma again')+'</button></p>'
+      +'<a class="btn sec" href="'+mail+'" data-via="mail">'+L('Abrir mi correo','Open my email app')+'</a> '
+      +'<button type="button" class="btn sec" data-pdf>'+L('Descargar proforma otra vez','Download proforma again')+'</button> '
+      +'<button type="button" class="btn sec" data-print>'+L('Imprimir proforma','Print proforma')+'</button></p>'
       +'<p class="nota-fac">'+L('Si envías por WhatsApp o correo, adjunta la proforma PDF para agilizar el proceso.','If you send by WhatsApp or email, attach the PDF proforma to speed things up.')+'</p>'
       +'<p><button type="button" class="link" data-otra>'+L('Hacer otra solicitud','Make another request')+'</button></p>';
     ok.focus();
     ok.querySelectorAll('[data-via]').forEach(function(a){a.addEventListener('click',function(){track(a.getAttribute('data-via'),d)})});
     ok.querySelector('[data-pdf]').addEventListener('click',function(){bajar(pdf(d),fn);track('pdf',d)});
+    ok.querySelector('[data-print]').addEventListener('click',function(){imprimir(pdf(d),fn);track('imprimir',d)});
     ok.querySelector('[data-otra]').addEventListener('click',function(){ok.hidden=true;f.hidden=false;f.scrollIntoView({behavior:'smooth',block:'start'})});
-    if(via==='pdf'){bajar(pdf(d),fn);track('pdf',d)}
+    if(via==='auto'){}
+    else if(via==='pdf'){bajar(pdf(d),fn);track('pdf',d)}
+    else if(via==='print'){imprimir(pdf(d),fn);track('imprimir',d)}
     else if(via==='wa'){window.open(wa,'_blank','noopener');track('wa',d)}
     else if(via==='mail'){location.href=mail;track('mail',d)}
   }
@@ -86,7 +103,11 @@
     e.preventDefault();if(val('web'))return;
     var bad=validar();
     if(bad){msg.className='fd-msg bad';msg.textContent=L('Revisa los campos marcados.','Please check the highlighted fields.');bad.focus();return}
-    fin(datos(),(e.submitter&&e.submitter.getAttribute('data-acc'))||via);
+    var acc=(e.submitter&&e.submitter.getAttribute('data-acc'))||via,d=datos();
+    if(acc!=='auto'){fin(d,acc);return}
+    var btn=e.submitter,txt=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent=L('Enviando…','Sending…')}
+    mailAuto(d).then(function(){track('auto',d);fin(d,'auto','ok')},function(){fin(d,'auto','fail')})
+      .then(function(){if(btn){btn.disabled=false;btn.textContent=txt}});
   });
   nitUI();total();
 })();

@@ -787,6 +787,23 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   function nombre(u){return decodeURIComponent(String(u).split('?')[0].split('/').pop())}
   function bajar(blob,n){var o=URL.createObjectURL(blob),a=document.createElement('a');a.href=o;a.download=n;a.style.display='none';document.body.appendChild(a);a.click();setTimeout(function(){a.remove();URL.revokeObjectURL(o)},4000)}
   function traer(u){return fetch(u,{credentials:'same-origin'}).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(b){return new Blob([b],{type:'application/pdf'})})}
+  function imprimir(blob,n2){
+    var touch=false;try{touch=matchMedia('(pointer:coarse)').matches}catch(x){}
+    if(touch){
+      var f=new File([blob],n2,{type:'application/pdf'});
+      if(navigator.canShare&&navigator.canShare({files:[f]})){
+        aviso(gL('Elige «Imprimir» en el menú','Choose “Print” in the menu'));
+        return navigator.share({files:[f],title:n2}).catch(function(){});
+      }
+      window.open(URL.createObjectURL(blob),'_blank');aviso(gL('En el visor, abre el menú ⋮ y elige Imprimir','In the viewer, open the ⋮ menu and choose Print'));return;
+    }
+    var o=URL.createObjectURL(blob),fr=document.createElement('iframe');
+    fr.style.cssText='position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0';
+    fr.onload=function(){setTimeout(function(){try{fr.contentWindow.focus();fr.contentWindow.print()}catch(x){window.open(o,'_blank')}},400)};
+    fr.src=o;document.body.appendChild(fr);
+    setTimeout(function(){if(fr.parentNode)fr.parentNode.removeChild(fr);URL.revokeObjectURL(o)},120000);
+  }
+  window.geaPdfBajar=bajar;window.geaPdfImprimir=imprimir;
   document.addEventListener('click',function(e){
     var d=e.target.closest&&e.target.closest('a[download]');
     if(d&&/\.pdf(\?|#|$)/i.test(d.getAttribute('href')||'')){
@@ -798,21 +815,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     e.preventDefault();var u2=new URL(b.getAttribute('data-print'),location.href).href,n2=nombre(u2);
     try{window.geaTrack&&geaTrack('imprimir_pdf',{archivo:n2})}catch(x){}
     var touch=false;try{touch=matchMedia('(pointer:coarse)').matches}catch(x){}
-    traer(u2).then(function(blob){
-      if(touch){
-        var f=new File([blob],n2,{type:'application/pdf'});
-        if(navigator.canShare&&navigator.canShare({files:[f]})){
-          aviso(gL('Elige «Imprimir» en el menú','Choose “Print” in the menu'));
-          return navigator.share({files:[f],title:n2}).catch(function(){});
-        }
-        window.open(URL.createObjectURL(blob),'_blank');aviso(gL('En el visor, abre el menú ⋮ y elige Imprimir','In the viewer, open the ⋮ menu and choose Print'));return;
-      }
-      var o=URL.createObjectURL(blob),fr=document.createElement('iframe');
-      fr.style.cssText='position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0';
-      fr.onload=function(){setTimeout(function(){try{fr.contentWindow.focus();fr.contentWindow.print()}catch(x){window.open(o,'_blank')}},400)};
-      fr.src=o;document.body.appendChild(fr);
-      setTimeout(function(){if(fr.parentNode)fr.parentNode.removeChild(fr);URL.revokeObjectURL(o)},120000);
-    },function(){window.open(u2,'_blank','noopener')});
+    traer(u2).then(function(blob){imprimir(blob,n2)    },function(){window.open(u2,'_blank','noopener')});
   });
 })();
 
