@@ -105,7 +105,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     } else {
       setTimeout(function () { l.textContent = texto; }, 900);
     }
-  }, 2100);
+  }, 2100 + (document.documentElement.classList.contains('splash-on') ? 1800 : 0));
 })();
 
 // Calculadora de pedido
@@ -806,5 +806,5 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
 
 /* Pantalla de inicio de la app: se retira al terminar la animación */
 (function(){var h=document.documentElement;if(!h.classList.contains('splash-on'))return;
-  setTimeout(function(){h.classList.remove('splash-on');var e=document.querySelector('.splash');if(e&&e.parentNode)e.parentNode.removeChild(e)},3600);
+  setTimeout(function(){h.classList.remove('splash-on');var e=document.querySelector('.splash');if(e&&e.parentNode)e.parentNode.removeChild(e)},4400);
   try{window.geaTrack&&geaTrack('inicio_app',{})}catch(x){}})();

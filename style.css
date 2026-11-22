@@ -1258,9 +1258,9 @@ svg.ar{width:1.05em;height:1.05em;margin-left:.35em;vertical-align:-.16em;stroke
 
 /* Pantalla de inicio de la app: la G se dibuja y brota la hoja */
 .splash{display:none}
-html.splash-on .splash{display:flex;position:fixed;inset:0;z-index:3000;background:#04100A;align-items:center;justify-content:center;overflow:hidden;animation:spOut .7s 2.7s cubic-bezier(.77,0,.18,1) forwards}
+html.splash-on .splash{display:flex;position:fixed;inset:0;z-index:3000;background:#04100A;align-items:center;justify-content:center;overflow:hidden;animation:spFade 1.2s 2.7s cubic-bezier(.4,0,.2,1) both;pointer-events:none}
 html.splash-on{overflow:hidden}
-@keyframes spOut{to{transform:translateY(-101%)}}
+@keyframes spFade{0%{opacity:1;transform:none}100%{opacity:0;transform:scale(1.035);visibility:hidden}}
 .sp-glow{position:absolute;width:140vmin;height:140vmin;border-radius:50%;background:radial-gradient(circle,rgba(139,224,0,.28),rgba(11,77,31,.15) 45%,transparent 70%);opacity:0;animation:spGlow 2.6s .1s ease-out forwards}
 @keyframes spGlow{0%{opacity:0;transform:scale(.4)}60%{opacity:1}100%{opacity:.75;transform:scale(1)}}
 .sp-box{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center}
@@ -1281,7 +1281,7 @@ html.splash-on{overflow:hidden}
 .sp-e{position:absolute;bottom:-10px;width:6px;height:6px;border-radius:50%;background:#E85D04;box-shadow:0 0 10px #E85D04;opacity:0;animation:spEm 2.6s ease-in infinite}
 .sp-e.e1{left:12%;animation-delay:.1s}.sp-e.e2{left:30%;animation-delay:.7s;width:4px;height:4px}.sp-e.e3{left:52%;animation-delay:.3s}.sp-e.e4{left:71%;animation-delay:1s;width:4px;height:4px}.sp-e.e5{left:88%;animation-delay:.5s}
 @keyframes spEm{0%{opacity:0;transform:translateY(0)}15%{opacity:.9}100%{opacity:0;transform:translateY(-70vh) translateX(18px)}}
-@media(prefers-reduced-motion:reduce){html.splash-on .splash{animation:spOut .4s .9s forwards}.sp-gp,.sp-leaf,.sp-n,.sp-t,.sp-l,.sp-glow,.sp-e{animation:none}.sp-gp{fill-opacity:1;stroke-opacity:0;stroke-dashoffset:0}.sp-leaf{transform:none}.sp-n,.sp-t{opacity:1;transform:none}.sp-l{width:160px}.sp-glow{opacity:.6}.sp-e{display:none}}
+@media(prefers-reduced-motion:reduce){html.splash-on .splash{animation:spFade .6s .9s both}.sp-gp,.sp-leaf,.sp-n,.sp-t,.sp-l,.sp-glow,.sp-e{animation:none}.sp-gp{fill-opacity:1;stroke-opacity:0;stroke-dashoffset:0}.sp-leaf{transform:none}.sp-n,.sp-t{opacity:1;transform:none}.sp-l{width:160px}.sp-glow{opacity:.6}.sp-e{display:none}}
 
 /* Accesibilidad */
 .skip{position:fixed;left:12px;top:-60px;z-index:4000;background:#B6F23C;color:#04100A;font-weight:800;padding:12px 18px;border-radius:12px;text-decoration:none;transition:top .15s}
@@ -1290,3 +1290,15 @@ main:focus{outline:0}
 :focus-visible{outline:3px solid #B6F23C;outline-offset:3px}
 .lang-sw{min-height:34px;display:inline-flex;align-items:center}
 img{height:auto}
+
+/* Transiciones suaves, lentas y sobrias (entrada y salida de página) */
+.barrido{transform:none!important;background:#101410!important;opacity:1;animation:velo 1.1s .05s cubic-bezier(.4,0,.2,1) both}
+.barrido::after{display:none}
+@keyframes velo{from{opacity:1}to{opacity:0}}
+body.saliendo .barrido{animation:veloIn .45s ease both}
+@keyframes veloIn{from{opacity:0}to{opacity:1}}
+main{animation:entra2 1.3s .15s cubic-bezier(.22,.61,.36,1) both}
+@keyframes entra2{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+html.splash-on .barrido{display:none}
+html.splash-on main{animation-delay:2.9s}
+@media(prefers-reduced-motion:reduce){.barrido{display:none}main{animation:none}}
