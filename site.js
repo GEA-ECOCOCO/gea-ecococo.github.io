@@ -865,3 +865,75 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   }
   pv.addEventListener('input', act); nb.addEventListener('input', act); tp.addEventListener('change', act); act();
 })();
+
+/* Avisos (notificaciones push): se activan solo con un toque del visitante */
+(function () {
+  var API = (window.GEA_CONFIG && GEA_CONFIG.chatUrl) || '';
+  if (!API) return;
+  var ua = navigator.userAgent, ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  var soporta = ('serviceWorker' in navigator) && ('PushManager' in window) && ('Notification' in window);
+  if (!soporta && !(ios && !standalone)) return;
+  function get(k) { try { return localStorage.getItem(k) } catch (e) { return null } }
+  function put(k, v) { try { localStorage.setItem(k, v) } catch (e) {} }
+  function toast(m) { var d = document.createElement('div'); d.className = 'toast'; d.textContent = m; document.body.appendChild(d); setTimeout(function () { d.remove() }, 5200) }
+  function b64(s) { var p = '='.repeat((4 - s.length % 4) % 4), r = atob((s + p).replace(/-/g, '+').replace(/_/g, '/')), o = new Uint8Array(r.length); for (var i = 0; i < r.length; i++) o[i] = r.charCodeAt(i); return o }
+  function activa() { return soporta && Notification.permission === 'granted' && get('gea-push') === '1' }
+  function activar() {
+    return Notification.requestPermission().then(function (perm) {
+      if (perm !== 'granted') return 'denied';
+      return navigator.serviceWorker.ready.then(function (reg) {
+        return fetch(API + '/push/key').then(function (r) { if (!r.ok) throw new Error('key'); return r.json() }).then(function (k) {
+          return reg.pushManager.getSubscription().then(function (s) { return s || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(k.key) }) });
+        }).then(function (sub) {
+          return fetch(API + '/push/sub', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sub: sub.toJSON(), lang: GEA_EN ? 'en' : 'es' }) }).then(function (r) { if (!r.ok) throw new Error('sub'); put('gea-push', '1'); return 'ok' });
+        });
+      });
+    });
+  }
+  function desactivar() {
+    return navigator.serviceWorker.ready.then(function (reg) { return reg.pushManager.getSubscription() }).then(function (s) {
+      put('gea-push', '0');
+      if (!s) return;
+      var e = s.endpoint;
+      return s.unsubscribe().then(function () { return fetch(API + '/push/unsub', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: e }) }) });
+    });
+  }
+  var btn = null;
+  function pinta() { if (!btn) return; var on = activa(); btn.setAttribute('aria-pressed', on ? 'true' : 'false'); btn.lastChild.textContent = ' ' + (on ? gL('Avisos de ofertas: sí', 'Offer alerts: on') : gL('Recibir avisos de ofertas', 'Get offer alerts')) }
+  function alternar() {
+    if (!soporta) { toast(gL('En iPhone: toca Compartir, "Añadir a pantalla de inicio", abre la app y activa los avisos aquí.', 'On iPhone: tap Share, "Add to Home Screen", open the app and turn on alerts here.')); return }
+    if (activa()) { desactivar().then(function () { pinta(); toast(gL('Avisos desactivados.', 'Alerts turned off.')) }).catch(function () { toast(gL('No se pudo desactivar. Intenta de nuevo.', 'Could not turn off. Try again.')) }); return }
+    if (Notification.permission === 'denied') { toast(gL('Los avisos están bloqueados en tu navegador. Habilítalos en los ajustes del sitio.', 'Alerts are blocked in your browser. Enable them in the site settings.')); return }
+    activar().then(function (r) {
+      pinta();
+      if (r === 'ok') { put('gea-push-ask', '1'); toast(gL('Listo: recibirás novedades y promociones de ECOCOCO (máximo 2 por semana).', 'Done: you will get ECOCOCO news and offers (at most 2 per week).')) }
+      else toast(gL('No se activaron los avisos.', 'Alerts were not turned on.'));
+    }).catch(function () { toast(gL('Los avisos no están disponibles por ahora. Intenta más tarde.', 'Alerts are not available right now. Try again later.')) });
+  }
+  function pie() {
+    var lang = document.querySelector('.pie-lang'); if (!lang || !lang.parentNode) return;
+    var p = document.createElement('p'); p.className = 'pie-snd pie-not';
+    btn = document.createElement('button'); btn.type = 'button'; btn.className = 'pie-sh pie-nt';
+    btn.appendChild(document.createTextNode(' '));
+    btn.addEventListener('click', alternar);
+    p.appendChild(btn); lang.parentNode.insertBefore(p, lang.nextSibling); pinta();
+  }
+  function sugerencia() {
+    if (!soporta || Notification.permission !== 'default' || get('gea-push-ask')) return;
+    var v = parseInt(get('gea-vis') || '0', 10);
+    try { if (!sessionStorage.getItem('gea-vis-s')) { sessionStorage.setItem('gea-vis-s', '1'); v++; put('gea-vis', String(v)) } } catch (e) {}
+    if (!(standalone || v >= 2)) return;
+    var intentos = 0;
+    (function mostrar() {
+      if (document.querySelector('.consent') || document.querySelector('.chat-box.open')) { if (++intentos < 4) setTimeout(mostrar, 15000); return }
+      var d = document.createElement('div'); d.className = 'not-pr'; d.setAttribute('role', 'dialog'); d.setAttribute('aria-label', gL('Avisos de ofertas', 'Offer alerts'));
+      d.innerHTML = '<p>' + gL('¿Quieres recibir novedades y promociones de ECOCOCO? Máximo 2 avisos por semana.', 'Want to get ECOCOCO news and offers? At most 2 alerts per week.') + '</p><div><button type="button" data-si>' + gL('Activar', 'Turn on') + '</button><button type="button" data-no>' + gL('Ahora no', 'Not now') + '</button></div>';
+      document.body.appendChild(d);
+      d.querySelector('[data-no]').onclick = function () { put('gea-push-ask', '1'); d.remove() };
+      d.querySelector('[data-si]').onclick = function () { put('gea-push-ask', '1'); d.remove(); alternar() };
+    })();
+  }
+  function init() { pie(); setTimeout(sugerencia, 20000) }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();

@@ -55,7 +55,7 @@ const MAX_BODY = 12000, MAX_MSGS = 14, MAX_CHARS = 600;
 function cors(origin) {
   return {
     'Access-Control-Allow-Origin': origin,
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Max-Age': '86400',
     'Vary': 'Origin'
@@ -110,12 +110,160 @@ async function facturaMail(request, env, origin) {
   } catch (e) { return json({ error: 'mail-fail' }, 502, origin); }
 }
 
+/* ---------- Avisos push (Web Push con VAPID, sin carga útil) ----------
+   Las suscripciones y las llaves VAPID viven en el KV "RL" (prefijos ps: y push:). Las llaves se crean solas la primera vez.
+   El mensaje se lee de https://gea-ecococo.github.io/promos.json. Hace falta un disparador (Cron Trigger) cada 5 minutos (cron de cinco campos: asterisco, barra, 5, y cuatro asteriscos).
+   Opcional: secreto PUSH_ADMIN para las rutas de prueba /push/test y /push/stats; variable PUSH_BATCH (por defecto 20 envíos por ejecución). */
+const SITE = 'https://gea-ecococo.github.io/';
+const PUSH_HOSTS = [/(^|\.)fcm\.googleapis\.com$/, /(^|\.)android\.googleapis\.com$/, /\.push\.services\.mozilla\.com$/, /\.push\.apple\.com$/, /\.notify\.windows\.com$/];
+const b64u = (buf) => btoa(String.fromCharCode.apply(null, new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const ub64 = (s) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0));
+async function subId(endpoint) {
+  const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(endpoint));
+  return Array.from(new Uint8Array(h)).slice(0, 16).map((x) => ('0' + x.toString(16)).slice(-2)).join('');
+}
+async function vapidKeys(env) {
+  let v = await env.RL.get('push:vapid', 'json');
+  if (!v) {
+    const kp = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+    const j = await crypto.subtle.exportKey('jwk', kp.privateKey);
+    const raw = new Uint8Array(65); raw[0] = 4; raw.set(ub64(j.x), 1); raw.set(ub64(j.y), 33);
+    v = { jwk: { kty: j.kty, crv: j.crv, x: j.x, y: j.y, d: j.d }, pub: b64u(raw) };
+    await env.RL.put('push:vapid', JSON.stringify(v));
+  }
+  const key = await crypto.subtle.importKey('jwk', v.jwk, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']);
+  return { key, pub: v.pub };
+}
+async function vapidJwt(key, aud) {
+  const enc = (o) => b64u(new TextEncoder().encode(JSON.stringify(o)));
+  const data = enc({ typ: 'JWT', alg: 'ES256' }) + '.' + enc({ aud, exp: Math.floor(Date.now() / 1000) + 12 * 3600, sub: 'mailto:geaecococo.ventas@gmail.com' });
+  const sig = await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, key, new TextEncoder().encode(data));
+  return data + '.' + b64u(sig);
+}
+function gtNow() {
+  const d = new Date(Date.now() - 6 * 3600e3); /* Guatemala = UTC-6, sin horario de verano */
+  const p = (n) => ('0' + n).slice(-2);
+  return { dow: d.getUTCDay(), h: d.getUTCHours(), m: d.getUTCMinutes(), md: p(d.getUTCMonth() + 1) + '-' + p(d.getUTCDate()), key: d.toISOString().slice(0, 13), wk: Math.floor(d.getTime() / 604800000) };
+}
+async function loadPromos() {
+  const r = await fetch(SITE + 'promos.json', { cf: { cacheTtl: 60 } });
+  if (!r.ok) throw new Error('promos');
+  return r.json();
+}
+function enVentana(p, md) {
+  if (!p.desde || !p.hasta) return true;
+  return p.desde <= p.hasta ? (md >= p.desde && md <= p.hasta) : (md >= p.desde || md <= p.hasta);
+}
+function elegir(P, cat, now) {
+  const el = (P.items || []).filter((p) => p.on !== false && p.c === cat && enVentana(p, now.md));
+  if (!el.length) return null;
+  const est = el.filter((p) => p.desde), fijos = el.filter((p) => !p.desde);
+  if (est.length && (!fijos.length || now.wk % 2 === 0)) return est[Math.floor(now.wk / 2) % est.length];
+  return (fijos.length ? fijos : est)[now.wk % (fijos.length || est.length)];
+}
+function armar(p) {
+  const out = {};
+  ['es', 'en'].forEach((l) => {
+    const c = p[l] || p.es;
+    let u = String(p.u || 'index.html'); const h = u.indexOf('#'); const hash = h >= 0 ? u.slice(h) : ''; if (h >= 0) u = u.slice(0, h);
+    u = SITE + (l === 'en' ? 'en/' : '') + u + (u.indexOf('?') >= 0 ? '&' : '?') + 'utm_source=push&utm_medium=aviso&utm_campaign=' + encodeURIComponent(p.id) + hash;
+    out[l] = { t: c.t, b: c.b, u, g: String(p.id) };
+  });
+  return out;
+}
+async function enviarLote(env, run) {
+  const { key, pub } = await vapidKeys(env);
+  const lim = Math.max(1, Math.min(parseInt(env.PUSH_BATCH, 10) || 20, 40));
+  const lst = await env.RL.list({ prefix: 'ps:', limit: lim, cursor: run.cur || undefined });
+  const jwts = {};
+  let ok = 0, gone = 0, err = 0;
+  await Promise.all(lst.keys.map(async (k) => {
+    const e = k.metadata && k.metadata.e; if (!e) return;
+    try {
+      const aud = new URL(e).origin;
+      jwts[aud] = jwts[aud] || await vapidJwt(key, aud);
+      const r = await fetch(e, { method: 'POST', headers: { TTL: '86400', Urgency: 'normal', Authorization: 'vapid t=' + jwts[aud] + ', k=' + pub } });
+      if (r.status === 404 || r.status === 410) { gone++; await env.RL.delete(k.name); }
+      else if (r.ok) ok++; else err++;
+    } catch (x) { err++; }
+  }));
+  run.sent = (run.sent || 0) + ok; run.gone = (run.gone || 0) + gone; run.err = (run.err || 0) + err;
+  run.cur = lst.list_complete ? null : lst.cursor; run.done = !!lst.list_complete;
+  await env.RL.put('push:run', JSON.stringify(run), { expirationTtl: 30 * 86400 });
+  return run;
+}
+async function pushTick(env) {
+  let run = await env.RL.get('push:run', 'json');
+  if (!run || run.done) {
+    const now = gtNow();
+    const P = await loadPromos();
+    const slot = (P.horario || []).find((s) => s.d === now.dow && s.h === now.h && now.m < 5);
+    if (!slot) return;
+    const mk = 'push:slot:' + now.key + ':' + slot.c;
+    if (await env.RL.get(mk)) return;
+    const p = elegir(P, slot.c, now);
+    await env.RL.put(mk, '1', { expirationTtl: 7200 });
+    if (!p) return;
+    run = { id: p.id, m: armar(p), cur: null, sent: 0, gone: 0, err: 0, done: false, t: Date.now() };
+  }
+  await enviarLote(env, run);
+}
+async function pushRoutes(request, env, origin, okOrigin, path) {
+  if (!env.RL) return json({ error: 'kv' }, 501, okOrigin ? origin : '');
+  const url = new URL(request.url);
+  /* Rutas de administración (clave PUSH_ADMIN), sin cabecera Origin para poder abrirlas desde el navegador */
+  if (path === '/push/test' || path === '/push/stats') {
+    if (!env.PUSH_ADMIN || url.searchParams.get('key') !== env.PUSH_ADMIN) return json({ error: 'auth' }, 403, '');
+    if (path === '/push/stats') { const l = await env.RL.list({ prefix: 'ps:', limit: 1000 }); return json({ suscriptores: l.keys.length, mas: !l.list_complete, ultimo: await env.RL.get('push:run', 'json') }, 200, ''); }
+    const P = await loadPromos(); const id = url.searchParams.get('id');
+    const p = (P.items || []).find((x) => x.id === id) || (P.items || [])[0];
+    const run = { id: p.id, m: armar(p), cur: null, sent: 0, gone: 0, err: 0, done: false, t: Date.now(), prueba: true };
+    await env.RL.put('push:run', JSON.stringify(run), { expirationTtl: 30 * 86400 });
+    return json(await enviarLote(env, run), 200, '');
+  }
+  if (!okOrigin) return json({ error: 'origin' }, 403, '');
+  if (path === '/push/key' && request.method === 'GET') { const v = await vapidKeys(env); return json({ key: v.pub }, 200, origin); }
+  if (path === '/push/msg' && request.method === 'GET') {
+    const id = (url.searchParams.get('e') || '').replace(/[^0-9a-f]/g, '').slice(0, 32);
+    let l = url.searchParams.get('l') === 'en' ? 'en' : 'es';
+    if (id) { const g = await env.RL.getWithMetadata('ps:' + id); if (g && g.metadata && g.metadata.l) l = g.metadata.l === 'en' ? 'en' : 'es'; }
+    const run = await env.RL.get('push:run', 'json');
+    if (!run || !run.m) return json({ error: 'none' }, 404, origin);
+    return json(run.m[l], 200, origin);
+  }
+  if (request.method !== 'POST') return json({ error: 'method' }, 405, origin);
+  let b; try { b = await request.json(); } catch (e) { return json({ error: 'json' }, 400, origin); }
+  const ip = request.headers.get('CF-Connecting-IP') || 'x';
+  if (path === '/push/sub') {
+    const e = b && b.sub && b.sub.endpoint;
+    let ok = false; try { const u = new URL(e); ok = u.protocol === 'https:' && String(e).length < 700 && PUSH_HOSTS.some((re) => re.test(u.hostname)); } catch (x) {}
+    if (!ok) return json({ error: 'endpoint' }, 400, origin);
+    const rk = 'rl:ps:' + ip, n = parseInt(await env.RL.get(rk) || '0', 10) + 1;
+    if (n > 10) return json({ error: 'rate' }, 429, origin);
+    await env.RL.put(rk, String(n), { expirationTtl: 900 });
+    const id = await subId(e);
+    await env.RL.put('ps:' + id, '1', { metadata: { e, l: b.lang === 'en' ? 'en' : 'es', t: Date.now() } });
+    return json({ ok: true }, 200, origin);
+  }
+  if (path === '/push/unsub') {
+    const e = b && b.endpoint; if (!e || String(e).length > 700) return json({ error: 'endpoint' }, 400, origin);
+    await env.RL.delete('ps:' + await subId(e));
+    return json({ ok: true }, 200, origin);
+  }
+  return json({ error: 'route' }, 404, origin);
+}
+
 export default {
+  async scheduled(event, env, ctx) {
+    if (env.RL) ctx.waitUntil(pushTick(env).catch(() => {}));
+  },
   async fetch(request, env) {
     const allowed = (env.ALLOWED_ORIGINS ? String(env.ALLOWED_ORIGINS).split(',').map(s => s.trim()).filter(Boolean) : DEFAULT_ORIGINS);
     const origin = request.headers.get('Origin') || '';
     const okOrigin = allowed.indexOf(origin) !== -1;
     if (request.method === 'OPTIONS') return okOrigin ? new Response(null, { status: 204, headers: cors(origin) }) : new Response(null, { status: 403 });
+    const pth = new URL(request.url).pathname;
+    if (pth.indexOf('/push/') === 0) { try { return await pushRoutes(request, env, origin, okOrigin, pth); } catch (e) { return json({ error: 'push' }, 500, okOrigin ? origin : ''); } }
     if (request.method !== 'POST') return json({ error: 'method' }, 405, okOrigin ? origin : '');
     if (!okOrigin) return json({ error: 'origin' }, 403, '');
     if (new URL(request.url).pathname === '/factura') return facturaMail(request, env, origin);

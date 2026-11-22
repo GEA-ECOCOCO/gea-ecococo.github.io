@@ -25,3 +25,16 @@ La ruta `/factura` de este mismo Worker envía la proforma en PDF al correo que 
 3. Con el KV `RL` ya conectado, aplica el límite de 4 envíos por visitante cada 10 minutos.
 
 Mientras no estén esos datos, el formulario avisa y deja descargar o enviar por WhatsApp.
+
+## Avisos (notificaciones push) y promociones programadas
+
+El Worker también envía avisos a quienes los activan en el sitio o la app. Los mensajes salen de `promos.json` (en la raíz del sitio): lo edita Claude, no hace falta volver a pegar el Worker para cambiar promociones.
+
+1. Pega de nuevo el `worker.js` actualizado en Cloudflare (Edit code → Deploy). El KV `RL` debe estar conectado (ya lo está para el chat).
+2. En el Worker: **Settings → Trigger Events → Cron Triggers → Add**: expresión `*/5 * * * *` (cada 5 minutos). Ese disparador revisa el calendario y envía por lotes.
+3. (Recomendado) Secreto `PUSH_ADMIN` con una clave que tú inventes, solo para pruebas.
+4. Las llaves de cifrado VAPID se crean solas la primera vez y quedan en el KV. No hay nada más que copiar.
+
+Prueba: en el sitio, pie de página → "Recibir avisos de ofertas" → acepta el permiso. Luego abre en el navegador:
+`https://ecococo-chat.manolo-esau.workers.dev/push/test?key=TU_CLAVE&id=asado-1kg` y llegará el aviso. `/push/stats?key=TU_CLAVE` muestra cuántas personas están suscritas.
+Horario por defecto (hora de Guatemala): miércoles 12:00 (aviso informativo) y viernes 11:00 (promoción). Plan gratuito: el Worker envía 20 avisos por ejecución (cada 5 minutos), así que 1,000 suscriptores se atienden en unas 4 horas.
