@@ -803,3 +803,8 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     },function(){window.open(u2,'_blank','noopener')});
   });
 })();
+
+/* Pantalla de inicio de la app: se retira al terminar la animación */
+(function(){var h=document.documentElement;if(!h.classList.contains('splash-on'))return;
+  setTimeout(function(){h.classList.remove('splash-on');var e=document.querySelector('.splash');if(e&&e.parentNode)e.parentNode.removeChild(e)},3600);
+  try{window.geaTrack&&geaTrack('inicio_app',{})}catch(x){}})();

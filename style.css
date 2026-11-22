@@ -1255,3 +1255,30 @@ svg.ar{width:1.05em;height:1.05em;margin-left:.35em;vertical-align:-.16em;stroke
 .wch-h .ovl-x:hover{background:#1A1A1A;color:#F5F0E6}
 .redes [data-app-modo] i{background:#04100A!important;color:#B6F23C!important}
 .redes i{color:#fff}
+
+/* Pantalla de inicio de la app: la G se dibuja y brota la hoja */
+.splash{display:none}
+html.splash-on .splash{display:flex;position:fixed;inset:0;z-index:3000;background:#04100A;align-items:center;justify-content:center;overflow:hidden;animation:spOut .7s 2.7s cubic-bezier(.77,0,.18,1) forwards}
+html.splash-on{overflow:hidden}
+@keyframes spOut{to{transform:translateY(-101%)}}
+.sp-glow{position:absolute;width:140vmin;height:140vmin;border-radius:50%;background:radial-gradient(circle,rgba(139,224,0,.28),rgba(11,77,31,.15) 45%,transparent 70%);opacity:0;animation:spGlow 2.6s .1s ease-out forwards}
+@keyframes spGlow{0%{opacity:0;transform:scale(.4)}60%{opacity:1}100%{opacity:.75;transform:scale(1)}}
+.sp-box{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center}
+.sp-g{overflow:visible;filter:drop-shadow(0 0 16px rgba(139,224,0,.35))}
+.sp-gp{fill:#F5F0E6;fill-opacity:0;stroke:#B6F23C;stroke-width:90;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:spDraw 1.3s .25s cubic-bezier(.65,0,.35,1) forwards,spFill .7s 1.25s ease forwards}
+@keyframes spDraw{to{stroke-dashoffset:0}}
+@keyframes spFill{to{fill-opacity:1;stroke-opacity:0}}
+.sp-leaf{fill:#52B788;transform-box:fill-box;transform-origin:0 100%;transform:scale(0);animation:spLeaf .7s 1.45s cubic-bezier(.3,1.6,.5,1) forwards,spSway 2.4s 2.15s ease-in-out infinite}
+@keyframes spLeaf{to{transform:scale(1)}}
+@keyframes spSway{0%,100%{transform:rotate(0)}50%{transform:rotate(7deg)}}
+.sp-n{font-family:var(--cond,Anton,sans-serif);font-size:2.3rem;letter-spacing:.14em;color:#F5F0E6;margin-top:14px;opacity:0;transform:translateY(12px);animation:spUp .6s 1.75s ease forwards}
+.sp-n::after{content:"ECOCOCO"}
+.sp-t{font-size:.78rem;letter-spacing:.42em;color:#B6F23C;margin-top:4px;opacity:0;animation:spUp .6s 2s ease forwards}
+.sp-t::after{content:"GEA CARBÓN"}
+@keyframes spUp{to{opacity:1;transform:none}}
+.sp-l{display:block;height:3px;width:0;margin-top:22px;border-radius:3px;background:linear-gradient(90deg,#B6F23C,#E85D04);box-shadow:0 0 16px rgba(182,242,60,.6);animation:spBar 2.2s .3s cubic-bezier(.65,0,.35,1) forwards}
+@keyframes spBar{to{width:min(220px,60vw)}}
+.sp-e{position:absolute;bottom:-10px;width:6px;height:6px;border-radius:50%;background:#E85D04;box-shadow:0 0 10px #E85D04;opacity:0;animation:spEm 2.6s ease-in infinite}
+.sp-e.e1{left:12%;animation-delay:.1s}.sp-e.e2{left:30%;animation-delay:.7s;width:4px;height:4px}.sp-e.e3{left:52%;animation-delay:.3s}.sp-e.e4{left:71%;animation-delay:1s;width:4px;height:4px}.sp-e.e5{left:88%;animation-delay:.5s}
+@keyframes spEm{0%{opacity:0;transform:translateY(0)}15%{opacity:.9}100%{opacity:0;transform:translateY(-70vh) translateX(18px)}}
+@media(prefers-reduced-motion:reduce){html.splash-on .splash{animation:spOut .4s .9s forwards}.sp-gp,.sp-leaf,.sp-n,.sp-t,.sp-l,.sp-glow,.sp-e{animation:none}.sp-gp{fill-opacity:1;stroke-opacity:0;stroke-dashoffset:0}.sp-leaf{transform:none}.sp-n,.sp-t{opacity:1;transform:none}.sp-l{width:160px}.sp-glow{opacity:.6}.sp-e{display:none}}
