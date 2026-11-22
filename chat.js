@@ -46,7 +46,7 @@ var ft=el('div','chat-ft',AI?L('Las respuestas las genera una IA con los datos d
 if(SR)ft.textContent+=' '+L('Si usas el micrófono, el reconocimiento de voz lo hace tu navegador y no guardamos el audio.','If you use the microphone, voice recognition is done by your browser and we do not store the audio.');
 box.appendChild(hd);box.appendChild(log);box.appendChild(sug);box.appendChild(vn);box.appendChild(fm);box.appendChild(ft);
 document.body.appendChild(btn);document.body.appendChild(box);
-(function(){var t=setTimeout(function(){btn.classList.add('mini')},8000);function ex(){btn.classList.remove('mini')}btn.addEventListener('mouseenter',ex);btn.addEventListener('focus',ex);btn.addEventListener('mouseleave',function(){clearTimeout(t);t=setTimeout(function(){btn.classList.add('mini')},3000)});btn.addEventListener('blur',function(){btn.classList.add('mini')})})();
+(function(){function mn(){if(btn.classList.contains('mini'))return;btn.classList.add('fading');setTimeout(function(){btn.style.width=btn.offsetWidth+'px';void btn.offsetWidth;btn.classList.add('mini');btn.style.width='';},380)}var t=setTimeout(function(){mn()},8000);function ex(){btn.classList.remove('mini');btn.classList.remove('fading')}btn.addEventListener('mouseenter',ex);btn.addEventListener('focus',ex);btn.addEventListener('mouseleave',function(){clearTimeout(t);t=setTimeout(function(){mn()},3000)});btn.addEventListener('blur',function(){mn()})})();
 
 function ttsText(t){
   t=String(t).replace(/https?:\/\/\S+/g,'').replace(/\bECOCOCO/gi,'Eco Coco').replace(/\bGEA\b/g,'Jea').replace(/\s*\(\s*ECO-\d+KG\s*\)/gi,'').replace(/\bECO-\d+KG\b/gi,'').replace(/US\$\s?(\d[\d.,]*)/g,'$1 '+L('dólares','dollars')).replace(/Q\s?(\d[\d.,]*)/g,'$1 '+L('quetzales','quetzales'))

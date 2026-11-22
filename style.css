@@ -147,7 +147,7 @@ footer .sep{display:block;height:2px;width:90px;margin:0 auto 16px;background:li
   -webkit-mask-image:linear-gradient(#000,transparent 75%);mask-image:linear-gradient(#000,transparent 75%);
   opacity:0;animation:rayos 2.2s .1s ease-out both,sway 9s 2.3s ease-in-out infinite}
 @keyframes rayos{0%{opacity:0;transform:translateX(-50%) scaleY(.4)}100%{opacity:1;transform:translateX(-50%) scaleY(1)}}
-@keyframes sway{0%,100%{transform:translateX(-50%) rotate(-1.6deg)}50%{transform:translateX(-50%) rotate(1.6deg)}}
+@keyframes sway{0%,100%{transform:translateX(-50%) rotate(0)}25%{transform:translateX(-50%) rotate(-1.6deg)}75%{transform:translateX(-50%) rotate(1.6deg)}}
 .ondas{position:absolute;left:-14%;top:-8%;width:128%;height:116%;pointer-events:none;overflow:visible}
 .ondas path{fill:none;stroke:var(--lime);stroke-width:2.4;stroke-linecap:round;stroke-dasharray:900;stroke-dashoffset:900;opacity:.9;filter:drop-shadow(0 0 7px var(--lime))}
 .ondas .o1{animation:traza 1.9s .35s ease-out forwards,tenue 3s 2.3s ease-in-out infinite alternate}
@@ -159,7 +159,7 @@ footer .sep{display:block;height:2px;width:90px;margin:0 auto 16px;background:li
 .reveal{clip-path:inset(0 100% 0 0);animation:revela 1.5s .55s cubic-bezier(.65,0,.2,1) forwards}
 @keyframes revela{0%{clip-path:inset(0 100% 0 0);filter:blur(10px) brightness(1.8)}100%{clip-path:inset(-140px -140px -140px -140px);filter:none}}
 .logo-wrap::after{content:"";position:absolute;top:36px;bottom:36px;left:0;width:3px;background:var(--lime);box-shadow:0 0 26px 7px var(--lime);opacity:0;animation:barra 1.5s .55s cubic-bezier(.65,0,.2,1) forwards}
-@keyframes barra{0%{left:0;opacity:1}90%{opacity:1}100%{left:calc(100% - 3px);opacity:0}}
+@keyframes barra{0%{left:0;opacity:0}10%{opacity:1}60%{opacity:1}100%{left:calc(100% - 3px);opacity:0}}
 .logo-card{animation:flota 6s 2.2s ease-in-out infinite,destello 3.4s 2.2s ease-in-out infinite}
 @keyframes destello{0%,100%{box-shadow:0 0 0 1px rgba(139,224,0,.5),0 0 50px rgba(139,224,0,.25),0 30px 60px rgba(0,0,0,.5)}50%{box-shadow:0 0 0 1px rgba(139,224,0,.8),0 0 90px rgba(139,224,0,.5),0 30px 60px rgba(0,0,0,.5)}}
 .lema{margin:12px 0 0;min-height:1.6em;color:var(--lime2);letter-spacing:.16em;text-transform:uppercase;font-size:.82rem;font-weight:700}
@@ -1299,7 +1299,6 @@ body.saliendo .barrido{animation:veloIn .45s ease both}
 @keyframes veloIn{from{opacity:0}to{opacity:1}}
 main{animation:entra2 1.3s .15s cubic-bezier(.22,.61,.36,1) both}
 @keyframes entra2{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-html.splash-on .barrido{display:none}
 html.splash-on main{animation-delay:2.9s}
 @media(prefers-reduced-motion:reduce){.barrido{display:none}main{animation:none}}
 .barrido.quiet{display:block;animation:none;opacity:0}
@@ -1312,3 +1311,17 @@ body.saliendo .barrido.quiet{animation:veloIn .45s ease both}
 .lema.typing .lm-t .caret{transition:opacity .7s ease}
 .lema.typing .lm-t.fin .caret{animation:none;opacity:0}
 #lema span{font-size:inherit;font-weight:inherit;margin:0;letter-spacing:inherit}
+
+/* Final de la intro sin cortes: el asistente se contrae con fundido y la portada de la app espera a la pantalla de la G */
+.chat-float{transition:width .55s cubic-bezier(.4,0,.2,1),padding .55s cubic-bezier(.4,0,.2,1)}
+.chat-float .cf-t{transition:opacity .35s ease}
+.chat-float.fading .cf-t{opacity:0}
+html.splash-on .rayos{animation-delay:2.8s,4.9s}
+html.splash-on .ondas .o1{animation-delay:2.8s,4.8s}
+html.splash-on .ondas .o2{animation-delay:3.05s,5.2s}
+html.splash-on .ondas .o3{animation-delay:3.25s,5.6s}
+html.splash-on .reveal,html.splash-on .logo-wrap::after{animation-delay:3s}
+html.splash-on .logo-card{animation-delay:4.7s,4.7s}
+html.splash-on .in1{animation-delay:3.9s}html.splash-on .in2{animation-delay:4.15s}html.splash-on .in3{animation-delay:4.4s}
+html.splash-on.splash-done{overflow:visible}
+html.splash-on .barrido:not(.quiet){display:none}
