@@ -1542,7 +1542,9 @@ html[data-tema="tecnologia"] footer.pie .pie-redes a:hover{background:#22D3EE;co
 }
 @media(prefers-reduced-motion:reduce){html[data-tema="tecnologia"] body::after{animation:none;display:none}}
 /* animación de entrada: arranque de sistema */
-html.bt-on{background:#060D14}
+html.bt-on{background:#1A1A1A}
+html.bt-on[data-tema="consultora"]{background:#0A2A3F}
+html.bt-on[data-tema="tecnologia"]{background:#060D14}
 html.bt-on body{opacity:0}
 .bt{position:fixed;inset:0;z-index:3000;background:#060D14;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#7DE3FF;
   background-image:linear-gradient(rgba(76,195,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(76,195,255,.07) 1px,transparent 1px);background-size:44px 44px;animation:bt-out .45s ease 1.45s forwards}
@@ -1584,3 +1586,20 @@ html[data-tema="tecnologia"] .logo-nav,html[data-tema="tecnologia"] .pie-logo{ba
 html[data-tema="tecnologia"] .pie-logo{padding:6px 10px}
 html[data-tema="tecnologia"] .cart-float{border-color:#22D3EE;box-shadow:0 0 18px rgba(34,211,238,.4)}
 html[data-tema="tecnologia"] .cart-n{background:#22D3EE;color:#060D14}
+
+/* variantes del arranque por ambiente */
+.bt-logo{display:flex;justify-content:flex-start;margin-bottom:20px}
+.bt-logo img{height:64px;width:auto;display:block}
+.bt-k{font-family:var(--cond,"Anton","Arial Narrow",Impact,sans-serif);color:#F5F0E6;background-color:#1A1A1A;background-image:radial-gradient(520px 320px at 50% 105%,rgba(232,93,4,.55),transparent 70%),radial-gradient(260px 200px at 22% 100%,rgba(255,179,71,.28),transparent 70%);background-size:auto}
+.bt-k .bt-logo img{background:#F5F0E6;border-radius:12px;padding:5px 12px;box-shadow:0 0 28px rgba(232,93,4,.45);height:64px}
+.bt-k .bt-l1{font-size:1.9rem;letter-spacing:.14em;color:#fff;text-shadow:0 0 22px rgba(232,93,4,.7)}
+.bt-k .bt-l2{font-size:1rem;letter-spacing:.1em;color:#FFB347;text-transform:uppercase;margin:6px 0 14px}
+.bt-k .bt-bar{background:rgba(245,240,230,.18)}
+.bt-k .bt-bar i{background:linear-gradient(90deg,#E85D04,#FFB347);box-shadow:0 0 14px #E85D04}
+.bt-k .bt-l3{color:#D8CFC0;font-family:"Segoe UI",Calibri,Arial,sans-serif;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase}
+.bt-c{font-family:"Segoe UI",Calibri,Arial,sans-serif;color:#F3E9D2;background-color:#0A2A3F;background-image:radial-gradient(620px 360px at 80% 20%,rgba(37,133,197,.4),transparent 70%),radial-gradient(520px 320px at 10% 100%,rgba(76,195,255,.18),transparent 70%);background-size:auto}
+.bt-c .bt-logo img{height:80px}
+.bt-c .bt-l2{font-size:.9rem;letter-spacing:.08em;color:#9BF8FC;margin:2px 0 14px}
+.bt-c .bt-bar{background:rgba(243,233,210,.2)}
+.bt-c .bt-bar i{background:linear-gradient(90deg,#2585C5,#9BF8FC);box-shadow:0 0 14px #4CC3FF}
+.bt-c .bt-l3{color:#F3E9D2;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;opacity:.9}
