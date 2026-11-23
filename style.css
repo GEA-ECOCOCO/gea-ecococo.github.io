@@ -1398,3 +1398,19 @@ html.splash-on .logo-card.emb{animation-delay:4.7s}
 /* Pagos en línea (próximamente) */
 .pago-off{border-left:6px solid var(--brasa)}
 .c-pay{background:transparent;color:inherit;border:2px dashed currentColor;opacity:.75;margin-top:8px;width:100%}
+
+/* Noticias */
+.nw-bar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:0 0 22px}
+.nw-f{display:flex;gap:8px;flex-wrap:wrap}
+.nw-f button{font:inherit;font-size:.92rem;padding:8px 16px;border-radius:999px;border:1px solid var(--muted);background:transparent;color:inherit;cursor:pointer}
+.nw-f button.on{background:var(--lime);border-color:var(--lime);color:#04100A;font-weight:700}
+.nw-nt{margin:0}
+.nw-l{display:grid;gap:16px;max-width:760px}
+.nw-c{padding:20px 22px;scroll-margin-top:90px}
+.nw-c h2{margin:6px 0 8px;font-size:1.25rem}
+.nw-c p{margin:0 0 14px;color:var(--muted)}
+.nw-m{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.nw-m .tag{margin:0}
+.nw-go{margin:0}
+.nw-on{border-left:6px solid var(--lime);box-shadow:0 0 0 2px var(--lime)}
+.nw-e{color:var(--muted)}

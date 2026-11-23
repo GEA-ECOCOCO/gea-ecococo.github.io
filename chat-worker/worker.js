@@ -165,7 +165,8 @@ function armar(p) {
   const out = {};
   ['es', 'en'].forEach((l) => {
     const c = p[l] || p.es;
-    let u = String(p.u || 'index.html'); const h = u.indexOf('#'); const hash = h >= 0 ? u.slice(h) : ''; if (h >= 0) u = u.slice(0, h);
+    let u = String(p.u || 'index.html'); const h = u.indexOf('#'); let hash = h >= 0 ? u.slice(h) : ''; if (h >= 0) u = u.slice(0, h);
+    if (p.n) { u = 'noticias.html'; hash = '#' + encodeURIComponent(String(p.id)); }
     u = SITE + (l === 'en' ? 'en/' : '') + u + (u.indexOf('?') >= 0 ? '&' : '?') + 'utm_source=push&utm_medium=aviso&utm_campaign=' + encodeURIComponent(p.id) + hash;
     out[l] = { t: c.t, b: c.b, u, g: String(p.id) };
   });

@@ -325,6 +325,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
    ['Factura electrónica FEL','Solicita tu factura: llena tus datos con NIT, descarga la proforma y envíala','factura.html','factura fel nit proforma facturar facturacion comprobante cf consumidor final'],
    ['Guías y fichas PDF','Descarga ficha del producto, uso seguro, compra, exportación, preguntas frecuentes y catálogo','descargas.html','pdf guia guias ficha catalogo folleto descargar documento manual exportacion preguntas frecuentes uso seguro'],
    ['Precios','Precio por kg, bulto de 25 kg para mayoristas y calculadora','precios.html','precio costo cuánto bulto kg calculadora mayorista'],
+   ['Noticias','Datos, promociones y novedades de ECOCOCO; los avisos abren aquí','noticias.html','noticias avisos novedades promociones notificaciones ofertas'],
    ['Pagos en línea','Próximamente: pago en línea. Hoy: transferencia, depósito o contra entrega','pagos-en-linea.html','pagos en linea tarjeta paypal pagar online digital'],
    ['Distribuidores y mayoristas','Condiciones comerciales y pedidos por volumen','distribuidores.html','distribuidor mayorista tienda restaurante volumen negocio'],
    ['Distribuidores: precios y margen','Escala de precios mayorista, bulto de 25 kg y simulador de margen','distribuidores-precios.html','precio mayorista margen ganancia calculadora bulto volumen distribuidor'],
@@ -352,6 +353,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
    ['PDF guides and sheets','Download product sheet, safe use, buying, export, FAQ and catalog','descargas.html','pdf guide guides sheet catalog brochure download document manual export faq safe use'],
    ['Prices','Price per kg, 25 kg sack for wholesalers and calculator','precios.html','price cost how much sack kg calculator wholesale'],
    ['How to buy and FAQ','Steps to order, minimums, payment and delivery','como-comprar.html','how buy order faq questions payment delivery invoice'],
+   ['News','ECOCOCO facts, offers and news; alerts open here','noticias.html','news alerts offers notifications updates promotions'],
    ['Online payments','Coming soon: online payment. Today: bank transfer, deposit or cash on delivery','pagos-en-linea.html','online payments card paypal pay digital'],
    ['Distributors and wholesalers','Commercial terms and volume orders','distribuidores.html','distributor wholesale shop restaurant volume business'],
    ['Distributors: prices and margin','Wholesale price scale, 25 kg sack and margin simulator','distribuidores-precios.html','wholesale price margin profit calculator sack volume distributor'],
@@ -945,4 +947,46 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
 (function () {
   function aviso() { var d = document.createElement('div'); d.className = 'toast'; d.textContent = gL('Pagos en línea: no disponible por el momento. Paga por transferencia, depósito o contra entrega.', 'Online payments: not available at the moment. Pay by bank transfer, deposit or cash on delivery.'); document.body.appendChild(d); setTimeout(function () { d.remove() }, 4800) }
   document.addEventListener('click', function (e) { var t = e.target.closest && e.target.closest('[data-pago-off]'); if (t) { e.preventDefault(); aviso() } });
+})();
+
+/* Noticias: se leen de promos.json (la misma fuente de los avisos); el aviso abre su noticia por #id */
+(function () {
+  var L = document.getElementById('nw-l'); if (!L) return;
+  var filtro = 'all', datos = [];
+  var TAG = { info: gL('Dato', 'Fact'), promo: gL('Promoción', 'Offer'), noticia: gL('Novedad', 'News') };
+  function md() { var d = new Date(); return ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2) }
+  function enV(p, m) { if (!p.desde || !p.hasta) return true; return p.desde <= p.hasta ? (m >= p.desde && m <= p.hasta) : (m >= p.desde || m <= p.hasta) }
+  function fecha(f) { var a = String(f || '').split('-'); if (a.length !== 3) return ''; try { return new Date(+a[0], +a[1] - 1, +a[2]).toLocaleDateString(GEA_EN ? 'en-US' : 'es-GT', { day: 'numeric', month: 'long', year: 'numeric' }) } catch (e) { return f } }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] }) }
+  function pinta() {
+    var l = datos.filter(function (p) { return filtro === 'all' || p.c === filtro });
+    if (!l.length) { L.innerHTML = '<p class="nw-e">' + gL('No hay noticias en esta categoría por ahora.', 'No news in this category for now.') + '</p>'; return }
+    L.innerHTML = l.map(function (p) {
+      var c = (GEA_EN && p.en) || p.es, u = String(p.u || 'index.html'), href = u;
+      var cta = p.a === 'avisos' ? '<button type="button" class="btn nw-go" data-nt>' + gL('Activar avisos', 'Turn on alerts') + '</button>' : '<a class="btn sec nw-go" href="' + esc(href) + '">' + gL('Ver más', 'See more') + '</a>';
+      return '<article class="card nw-c" id="' + esc(p.id) + '"><div class="nw-m"><span class="tag nw-' + esc(p.c) + '">' + TAG[p.c] + '</span>' + (p.f ? '<time datetime="' + esc(p.f) + '">' + fecha(p.f) + '</time>' : '') + '</div><h2>' + esc(c.t) + '</h2><p>' + esc(c.b) + '</p>' + cta + '</article>';
+    }).join('');
+    marca();
+  }
+  function marca() {
+    var h = decodeURIComponent((location.hash || '').slice(1)); if (!h) return;
+    var e = document.getElementById(h); if (!e || !e.classList.contains('nw-c')) return;
+    e.classList.add('nw-on'); setTimeout(function () { e.scrollIntoView({ behavior: 'smooth', block: 'center' }) }, 80);
+  }
+  fetch('/promos.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw 0; return r.json() }).then(function (P) {
+    var m = md();
+    datos = (P.items || []).filter(function (p) { return p.on !== false && enV(p, m) });
+    var con = datos.filter(function (p) { return p.f }).sort(function (a, b) { return a.f < b.f ? 1 : -1 }), sin = datos.filter(function (p) { return !p.f });
+    datos = con.concat(sin);
+    pinta();
+  }).catch(function () { L.innerHTML = '<p class="nw-e">' + gL('No se pudieron cargar las noticias. Revisa tu conexión e intenta de nuevo.', 'Could not load the news. Check your connection and try again.') + '</p>' });
+  document.addEventListener('click', function (e) {
+    var f = e.target.closest && e.target.closest('[data-nf]');
+    if (f) { filtro = f.getAttribute('data-nf'); document.querySelectorAll('[data-nf]').forEach(function (b) { b.classList.toggle('on', b === f) }); pinta(); return }
+    var n = e.target.closest && e.target.closest('[data-nt], .nw-nt');
+    if (n) { var b = document.querySelector('.pie-nt'); if (b) b.click() }
+  });
+  /* El botón de avisos solo aparece si el navegador (o iPhone con la app instalada) puede recibirlos */
+  setTimeout(function () { var b = document.querySelector('.pie-nt'), x = document.querySelector('.nw-nt'); if (b && x) x.hidden = false }, 600);
+  window.addEventListener('hashchange', function () { document.querySelectorAll('.nw-on').forEach(function (e) { e.classList.remove('nw-on') }); marca() });
 })();

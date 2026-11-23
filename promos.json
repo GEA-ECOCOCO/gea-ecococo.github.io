@@ -1,50 +1,218 @@
 {
-  "nota": "Calendario de avisos (notificaciones). Lo lee el Worker. Cada aviso: id, c (info o promo), on (false lo pausa), desde/hasta opcionales en formato MM-DD (temporada), u (página del sitio) y textos es/en. Títulos de hasta 40 caracteres y mensajes de hasta 110. Solo datos ya publicados en el sitio.",
+  "nota": "Calendario de avisos (notificaciones). Lo lee el Worker. Cada aviso: id, c (info o promo), on (false lo pausa), desde/hasta opcionales en formato MM-DD (temporada), u (página del sitio a la que lleva el botón de la noticia), n (1 = el aviso abre su noticia en la sección Noticias), f (fecha AAAA-MM-DD, opcional), c \"noticia\" (solo se muestra en Noticias, no se envía) y textos es/en. Títulos de hasta 40 caracteres y mensajes de hasta 110. Solo datos ya publicados en el sitio.",
   "horario": [
-    { "d": 3, "h": 12, "c": "info" },
-    { "d": 5, "h": 11, "c": "promo" }
+    {
+      "d": 3,
+      "h": 12,
+      "c": "info"
+    },
+    {
+      "d": 5,
+      "h": 11,
+      "c": "promo"
+    }
   ],
   "items": [
-    { "id": "residuo", "c": "info", "u": "impacto-ambiental.html",
-      "es": { "t": "¿Sabías que…?", "b": "ECOCOCO se hace con cáscara de coco de la Costa Sur, un residuo agroindustrial. Sin usar leña como materia prima." },
-      "en": { "t": "Did you know…?", "b": "ECOCOCO is made from South Coast coconut shell, an agro-industrial residue. No firewood as raw material." } },
-    { "id": "encendido", "c": "info", "u": "en-accion.html",
-      "es": { "t": "Míralo encender", "b": "Según pruebas de GEA, la briqueta enciende en unos 5 a 10 minutos. Mira cómo se ve en video." },
-      "en": { "t": "Watch it light up", "b": "In GEA tests, the briquette lights in about 5 to 10 minutes. See how it looks on video." } },
-    { "id": "uso-seguro", "c": "info", "u": "descargas.html",
-      "es": { "t": "Cocina con seguridad", "b": "Descarga gratis la guía de uso seguro de ECOCOCO y revísala antes de tu próximo asado." },
-      "en": { "t": "Cook safely", "b": "Download the free ECOCOCO safe-use guide and read it before your next barbecue." } },
-    { "id": "uniforme", "c": "info", "u": "producto.html",
-      "es": { "t": "Briqueta uniforme", "b": "Mismo tamaño y forma: más fácil de almacenar, contar y dosificar que los trozos irregulares." },
-      "en": { "t": "Uniform briquette", "b": "Same size and shape: easier to store, count and portion than irregular chunks." } },
-    { "id": "comprar-facil", "c": "info", "u": "como-comprar.html",
-      "es": { "t": "Comprar es fácil", "b": "Elige tu presentación, arma el pedido y confirma por WhatsApp. Pago por transferencia, depósito o contra entrega." },
-      "en": { "t": "Buying is easy", "b": "Pick your size, build your order and confirm on WhatsApp. Pay by transfer, deposit or cash on delivery." } },
-
-    { "id": "asado-1kg", "c": "promo", "u": "precios.html",
-      "es": { "t": "¿Asado este fin de semana?", "b": "Bolsa de 1 kg de ECOCOCO a Q20. Pídela por WhatsApp o arma tu pedido en la página." },
-      "en": { "t": "Barbecue this weekend?", "b": "1 kg bag of ECOCOCO for Q20. Order on WhatsApp or build your order on the site." } },
-    { "id": "bulto-restaurantes", "c": "promo", "u": "distribuidores-precios.html",
-      "es": { "t": "Restaurantes y asaderos", "b": "Bulto de 25 kg a Q350 (Q14 por kg) y factura electrónica FEL. Cotiza tu volumen." },
-      "en": { "t": "Restaurants and grill houses", "b": "25 kg sack for Q350 (Q14 per kg) with FEL e-invoice. Ask for a volume quote." } },
-    { "id": "mayorista-tiendas", "c": "promo", "u": "distribuidores-precios.html",
-      "es": { "t": "¿Tienes una tienda?", "b": "Mayorista desde Q15 por kg, pedido mínimo de 20 kg en Retalhuleu y Costa Sur." },
-      "en": { "t": "Own a shop?", "b": "Wholesale from Q15 per kg, minimum order 20 kg in Retalhuleu and the South Coast." } },
-    { "id": "calcula-pedido", "c": "promo", "u": "precios.html#calcular",
-      "es": { "t": "Calcula tu pedido", "b": "Elige los kilos y mira el total al instante. Después lo envías por WhatsApp." },
-      "en": { "t": "Work out your order", "b": "Choose the kilos and see the total instantly. Then send it on WhatsApp." } },
-    { "id": "factura-fel", "c": "promo", "u": "factura.html",
-      "es": { "t": "Compra con factura FEL", "b": "Genera tu proforma con NIT y datos fiscales en segundos y envíala a ventas." },
-      "en": { "t": "Buy with FEL invoice", "b": "Generate your pro forma with tax ID and details in seconds and send it to sales." } },
-    { "id": "vende-ecococo", "c": "promo", "u": "distribuidores-mercado.html",
-      "es": { "t": "Vende ECOCOCO en tu negocio", "b": "Conoce los argumentos, el margen y las condiciones para ser distribuidor." },
-      "en": { "t": "Sell ECOCOCO in your business", "b": "See the selling points, margin and terms to become a distributor." } },
-
-    { "id": "navidad", "c": "promo", "desde": "12-01", "hasta": "12-23", "u": "ventas.html",
-      "es": { "t": "Brasa para tu cena de Navidad", "b": "Pide tu carbón con tiempo para las fiestas. Escríbenos por WhatsApp y coordinamos." },
-      "en": { "t": "Embers for your Christmas dinner", "b": "Order your charcoal early for the holidays. Message us on WhatsApp and we will arrange it." } },
-    { "id": "fin-de-ano", "c": "promo", "desde": "12-26", "hasta": "12-31", "u": "ventas.html",
-      "es": { "t": "Estrena el año con brasa", "b": "Prepara tu parrillada de Año Nuevo con ECOCOCO. Pide hoy por WhatsApp." },
-      "en": { "t": "Start the year with embers", "b": "Get ready for your New Year grill with ECOCOCO. Order today on WhatsApp." } }
+    {
+      "id": "avisos-noticias",
+      "c": "noticia",
+      "f": "2026-11-23",
+      "u": "noticias.html",
+      "a": "avisos",
+      "es": {
+        "t": "Nueva sección de noticias",
+        "b": "Aquí encontrarás los datos, promociones y novedades de ECOCOCO. Cada aviso que recibas en tu celular te trae directo a esta sección."
+      },
+      "en": {
+        "t": "New news section",
+        "b": "Here you will find ECOCOCO facts, offers and news. Every alert you get on your phone brings you straight to this section."
+      }
+    },
+    {
+      "id": "residuo",
+      "c": "info",
+      "u": "impacto-ambiental.html",
+      "es": {
+        "t": "¿Sabías que…?",
+        "b": "ECOCOCO se hace con cáscara de coco de la Costa Sur, un residuo agroindustrial. Sin usar leña como materia prima."
+      },
+      "en": {
+        "t": "Did you know…?",
+        "b": "ECOCOCO is made from South Coast coconut shell, an agro-industrial residue. No firewood as raw material."
+      },
+      "n": 1
+    },
+    {
+      "id": "encendido",
+      "c": "info",
+      "u": "en-accion.html",
+      "es": {
+        "t": "Míralo encender",
+        "b": "Según pruebas de GEA, la briqueta enciende en unos 5 a 10 minutos. Mira cómo se ve en video."
+      },
+      "en": {
+        "t": "Watch it light up",
+        "b": "In GEA tests, the briquette lights in about 5 to 10 minutes. See how it looks on video."
+      },
+      "n": 1
+    },
+    {
+      "id": "uso-seguro",
+      "c": "info",
+      "u": "descargas.html",
+      "es": {
+        "t": "Cocina con seguridad",
+        "b": "Descarga gratis la guía de uso seguro de ECOCOCO y revísala antes de tu próximo asado."
+      },
+      "en": {
+        "t": "Cook safely",
+        "b": "Download the free ECOCOCO safe-use guide and read it before your next barbecue."
+      },
+      "n": 1
+    },
+    {
+      "id": "uniforme",
+      "c": "info",
+      "u": "producto.html",
+      "es": {
+        "t": "Briqueta uniforme",
+        "b": "Mismo tamaño y forma: más fácil de almacenar, contar y dosificar que los trozos irregulares."
+      },
+      "en": {
+        "t": "Uniform briquette",
+        "b": "Same size and shape: easier to store, count and portion than irregular chunks."
+      },
+      "n": 1
+    },
+    {
+      "id": "comprar-facil",
+      "c": "info",
+      "u": "como-comprar.html",
+      "es": {
+        "t": "Comprar es fácil",
+        "b": "Elige tu presentación, arma el pedido y confirma por WhatsApp. Pago por transferencia, depósito o contra entrega."
+      },
+      "en": {
+        "t": "Buying is easy",
+        "b": "Pick your size, build your order and confirm on WhatsApp. Pay by transfer, deposit or cash on delivery."
+      },
+      "n": 1
+    },
+    {
+      "id": "asado-1kg",
+      "c": "promo",
+      "u": "precios.html",
+      "es": {
+        "t": "¿Asado este fin de semana?",
+        "b": "Bolsa de 1 kg de ECOCOCO a Q20. Pídela por WhatsApp o arma tu pedido en la página."
+      },
+      "en": {
+        "t": "Barbecue this weekend?",
+        "b": "1 kg bag of ECOCOCO for Q20. Order on WhatsApp or build your order on the site."
+      },
+      "n": 1
+    },
+    {
+      "id": "bulto-restaurantes",
+      "c": "promo",
+      "u": "distribuidores-precios.html",
+      "es": {
+        "t": "Restaurantes y asaderos",
+        "b": "Bulto de 25 kg a Q350 (Q14 por kg) y factura electrónica FEL. Cotiza tu volumen."
+      },
+      "en": {
+        "t": "Restaurants and grill houses",
+        "b": "25 kg sack for Q350 (Q14 per kg) with FEL e-invoice. Ask for a volume quote."
+      },
+      "n": 1
+    },
+    {
+      "id": "mayorista-tiendas",
+      "c": "promo",
+      "u": "distribuidores-precios.html",
+      "es": {
+        "t": "¿Tienes una tienda?",
+        "b": "Mayorista desde Q15 por kg, pedido mínimo de 20 kg en Retalhuleu y Costa Sur."
+      },
+      "en": {
+        "t": "Own a shop?",
+        "b": "Wholesale from Q15 per kg, minimum order 20 kg in Retalhuleu and the South Coast."
+      },
+      "n": 1
+    },
+    {
+      "id": "calcula-pedido",
+      "c": "promo",
+      "u": "precios.html#calcular",
+      "es": {
+        "t": "Calcula tu pedido",
+        "b": "Elige los kilos y mira el total al instante. Después lo envías por WhatsApp."
+      },
+      "en": {
+        "t": "Work out your order",
+        "b": "Choose the kilos and see the total instantly. Then send it on WhatsApp."
+      },
+      "n": 1
+    },
+    {
+      "id": "factura-fel",
+      "c": "promo",
+      "u": "factura.html",
+      "es": {
+        "t": "Compra con factura FEL",
+        "b": "Genera tu proforma con NIT y datos fiscales en segundos y envíala a ventas."
+      },
+      "en": {
+        "t": "Buy with FEL invoice",
+        "b": "Generate your pro forma with tax ID and details in seconds and send it to sales."
+      },
+      "n": 1
+    },
+    {
+      "id": "vende-ecococo",
+      "c": "promo",
+      "u": "distribuidores-mercado.html",
+      "es": {
+        "t": "Vende ECOCOCO en tu negocio",
+        "b": "Conoce los argumentos, el margen y las condiciones para ser distribuidor."
+      },
+      "en": {
+        "t": "Sell ECOCOCO in your business",
+        "b": "See the selling points, margin and terms to become a distributor."
+      },
+      "n": 1
+    },
+    {
+      "id": "navidad",
+      "c": "promo",
+      "desde": "12-01",
+      "hasta": "12-23",
+      "u": "ventas.html",
+      "es": {
+        "t": "Brasa para tu cena de Navidad",
+        "b": "Pide tu carbón con tiempo para las fiestas. Escríbenos por WhatsApp y coordinamos."
+      },
+      "en": {
+        "t": "Embers for your Christmas dinner",
+        "b": "Order your charcoal early for the holidays. Message us on WhatsApp and we will arrange it."
+      },
+      "n": 1
+    },
+    {
+      "id": "fin-de-ano",
+      "c": "promo",
+      "desde": "12-26",
+      "hasta": "12-31",
+      "u": "ventas.html",
+      "es": {
+        "t": "Estrena el año con brasa",
+        "b": "Prepara tu parrillada de Año Nuevo con ECOCOCO. Pide hoy por WhatsApp."
+      },
+      "en": {
+        "t": "Start the year with embers",
+        "b": "Get ready for your New Year grill with ECOCOCO. Order today on WhatsApp."
+      },
+      "n": 1
+    }
   ]
 }
