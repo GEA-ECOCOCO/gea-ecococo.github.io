@@ -1394,3 +1394,7 @@ html.splash-on .logo-card.emb{animation-delay:4.7s}
 .not-pr button{font-family:var(--cond);text-transform:uppercase;letter-spacing:.05em;border-radius:999px;padding:8px 16px;border:2px solid #E85D04;cursor:pointer;background:#E85D04;color:#1A1A1A;font-size:.9rem}
 .not-pr button[data-no]{background:transparent;color:#F5F0E6;border-color:rgba(245,240,230,.45)}
 @media(max-width:560px){.not-pr{right:12px;max-width:none;bottom:calc(88px + env(safe-area-inset-bottom,0px))}}
+
+/* Pagos en línea (próximamente) */
+.pago-off{border-left:6px solid var(--brasa)}
+.c-pay{background:transparent;color:inherit;border:2px dashed currentColor;opacity:.75;margin-top:8px;width:100%}

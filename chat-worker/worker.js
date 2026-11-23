@@ -39,7 +39,7 @@ DATOS DEL NEGOCIO
 - Producto: briquetas de carbón de cáscara de coco (subproducto agrícola), marca ECOCOCO. Economía circular, producción local en Retalhuleu. La planta está iniciando producción.
 - Presentaciones y precios (quetzales, GTQ): bolsa de 1 kg (código ECO-1KG) Q20 (aprox. Q9.07 por libra). Bulto de 25 kg (código ECO-25KG) Q350 (Q14 por kg, aprox. Q6.35 por libra), venta al mayoreo; precio especial por volumen se cotiza por WhatsApp.
 - Pedido mínimo: 20 kg en Retalhuleu y Costa Sur; 50 kg a otros departamentos, enviado por transportista con pago adelantado por transferencia y flete a cargo del cliente.
-- Pagos: transferencia o depósito bancario (Nexa y Banco Industrial), o contra entrega coordinada. Ventas de contado. Factura FEL con nombre y NIT. Aún no hay cobro en línea con tarjeta.
+- Pagos: transferencia o depósito bancario (Nexa y Banco Industrial), o contra entrega coordinada. Ventas de contado. Factura FEL con nombre y NIT. Los pagos en línea (tarjeta) todavía no están disponibles: la página Pagos en línea los anuncia como próximamente.
 - Entregas: la fecha se confirma al hacer el pedido. Reclamos dentro de 48 horas con fotos. No hay devoluciones de producto abierto o usado, salvo defecto comprobado.
 - Encendido: tarda unos 5 a 10 minutos según pruebas internas de GEA.
 - Objetivos técnicos por validar: humedad menor a 10 %, ceniza hasta 15 %, materia volátil hasta 15 %, brasa de más de 3 horas, poder calorífico dentro del rango de briquetas de calidad para parrilla.

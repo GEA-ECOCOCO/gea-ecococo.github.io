@@ -325,6 +325,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
    ['Factura electrónica FEL','Solicita tu factura: llena tus datos con NIT, descarga la proforma y envíala','factura.html','factura fel nit proforma facturar facturacion comprobante cf consumidor final'],
    ['Guías y fichas PDF','Descarga ficha del producto, uso seguro, compra, exportación, preguntas frecuentes y catálogo','descargas.html','pdf guia guias ficha catalogo folleto descargar documento manual exportacion preguntas frecuentes uso seguro'],
    ['Precios','Precio por kg, bulto de 25 kg para mayoristas y calculadora','precios.html','precio costo cuánto bulto kg calculadora mayorista'],
+   ['Pagos en línea','Próximamente: pago en línea. Hoy: transferencia, depósito o contra entrega','pagos-en-linea.html','pagos en linea tarjeta paypal pagar online digital'],
    ['Distribuidores y mayoristas','Condiciones comerciales y pedidos por volumen','distribuidores.html','distribuidor mayorista tienda restaurante volumen negocio'],
    ['Distribuidores: precios y margen','Escala de precios mayorista, bulto de 25 kg y simulador de margen','distribuidores-precios.html','precio mayorista margen ganancia calculadora bulto volumen distribuidor'],
    ['Distribuidores: mercado y argumentos','Por qué ECOCOCO, comparación con leña y datos de demanda','distribuidores-mercado.html','mercado demanda leña argumentos vender distribuidor'],
@@ -351,6 +352,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
    ['PDF guides and sheets','Download product sheet, safe use, buying, export, FAQ and catalog','descargas.html','pdf guide guides sheet catalog brochure download document manual export faq safe use'],
    ['Prices','Price per kg, 25 kg sack for wholesalers and calculator','precios.html','price cost how much sack kg calculator wholesale'],
    ['How to buy and FAQ','Steps to order, minimums, payment and delivery','como-comprar.html','how buy order faq questions payment delivery invoice'],
+   ['Online payments','Coming soon: online payment. Today: bank transfer, deposit or cash on delivery','pagos-en-linea.html','online payments card paypal pay digital'],
    ['Distributors and wholesalers','Commercial terms and volume orders','distribuidores.html','distributor wholesale shop restaurant volume business'],
    ['Distributors: prices and margin','Wholesale price scale, 25 kg sack and margin simulator','distribuidores-precios.html','wholesale price margin profit calculator sack volume distributor'],
    ['Distributors: market and selling points','Why ECOCOCO, comparison with firewood and demand data','distribuidores-mercado.html','market demand firewood selling points distributor'],
@@ -442,6 +444,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       cfield('mun',gL('Municipio *','Town *'),'text','address-level2',60)+cfield('zon',gL('Colonia, lotificación, sección o zona *','Neighborhood, subdivision, section or zone *'),'text','off',80)+
       cfield('dir',gL('Calle o avenida y número de casa o lote *','Street or avenue and house or lot number *'),'text','street-address',100)+cfield('ref',gL('Referencia para llegar *','Landmark to find you *'),'text','off',120,gL('Ej. frente a la iglesia, portón negro','E.g. in front of the church, black gate'))+cfield('nit',gL('NIT para factura (opcional; si no tienes, CF)','Tax ID (NIT) for invoice (optional; use CF if none)'),'text','off',20)+cfield('nota',gL('Notas o especificaciones (opcional)','Notes or specifications (optional)'),'text','off',150)+
       '<p class="cdat-p">'+gL('Estos datos solo se usan para coordinar tu entrega y viajan en el mensaje de WhatsApp. No los guardamos en el sitio.','These details are only used to arrange your delivery and travel in the WhatsApp message. We do not store them on the site.')+'</p></div><a class="btn wa" id="c-wa" href="'+msgWA()+'" target="_blank" rel="noopener">'+gL('Enviar pedido por WhatsApp','Send order on WhatsApp')+'</a><button type="button" class="btn pdf" id="c-pdf">'+gL('Descargar orden en PDF','Download order PDF')+'</button><button type="button" class="vaciar" data-vaciar>'+gL('Vaciar carrito','Empty cart')+'</button>';
+    (function(){var w=q('#c-wa',cf);if(w&&!q('.c-pay',cf)){var pb=document.createElement('button');pb.type='button';pb.className='btn c-pay';pb.setAttribute('data-pago-off','');pb.textContent=gL('Pagar en línea (próximamente)','Pay online (coming soon)');w.parentNode.insertBefore(pb,w.nextSibling)}})();
     var aW=q('#c-wa',cf),REQ=['nom','tel','dep','mun','zon','dir','ref'];
     cf.querySelectorAll('[data-c]').forEach(function(el){el.value=cD[el.getAttribute('data-c')]||'';
       var h=function(){cD[el.getAttribute('data-c')]=el.value.replace(/\s+/g,' ').trim();aW.href=msgWA()};el.addEventListener('input',h);el.addEventListener('change',h)});
@@ -936,4 +939,10 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   }
   function init() { pie(); setTimeout(sugerencia, 20000) }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+
+/* Pagos en línea: aún no disponibles */
+(function () {
+  function aviso() { var d = document.createElement('div'); d.className = 'toast'; d.textContent = gL('Pagos en línea: no disponible por el momento. Paga por transferencia, depósito o contra entrega.', 'Online payments: not available at the moment. Pay by bank transfer, deposit or cash on delivery.'); document.body.appendChild(d); setTimeout(function () { d.remove() }, 4800) }
+  document.addEventListener('click', function (e) { var t = e.target.closest && e.target.closest('[data-pago-off]'); if (t) { e.preventDefault(); aviso() } });
 })();
