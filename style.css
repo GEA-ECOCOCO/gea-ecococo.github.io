@@ -1414,3 +1414,66 @@ html.splash-on .logo-card.emb{animation-delay:4.7s}
 .nw-go{margin:0}
 .nw-on{border-left:6px solid var(--lime);box-shadow:0 0 0 2px var(--lime)}
 .nw-e{color:var(--muted)}
+
+/* ===== Tema GEA Consultora (emblema y paleta propios): se activa en la página de servicios digitales y en el chat cuando el tema es servicios ===== */
+html[data-tema="consultora"]{
+  --carbon:#0A2A3F;--brasa:#2585C5;--brasa-d:#1B6BA3;--coco:#123E51;--bosque:#123E51;--crema:#F3E9D2;
+  --bg:#EEF4F8;--kraft:#EEF4F8;--paper:#EEF4F8;--cream:#FFFFFF;--kraft-d:#123E51;
+  --lime:#2585C5;--lime2:#123E51;--deep:#0A2A3F;--ink:#0E2233;--muted:#44586A;--papertxt:#0E2233;
+  --panel:rgba(255,255,255,.96);--panel-b:rgba(18,62,81,.22);
+}
+html[data-tema="consultora"] body{background:#EEF4F8;color:var(--ink)}
+html[data-tema="consultora"] .barrido{background:linear-gradient(100deg,#0A2A3F 0%,#153E64 70%,#4CC3FF 100%)}
+html[data-tema="consultora"] .barrido::after{background:#4CC3FF;box-shadow:0 0 24px 6px #4CC3FF}
+html[data-tema="consultora"] .topstrip{background:#123E51;color:#F3E9D2}
+html[data-tema="consultora"] nav{background:#0A2A3F;color:#F3E9D2}
+html[data-tema="consultora"] nav::after{background:#0A2A3F}
+html[data-tema="consultora"] .logo-nav{background:none;box-shadow:none;padding:0}
+html[data-tema="consultora"] .logo-nav img{height:40px;width:auto}
+html[data-tema="consultora"] .menu a{color:#F3E9D2}
+html[data-tema="consultora"] .menu a:hover{color:#fff;background:rgba(76,195,255,.22)}
+html[data-tema="consultora"] .menu a.on{color:#0A2A3F;background:#4CC3FF}
+html[data-tema="consultora"] .burger,html[data-tema="consultora"] .share-btn{color:#F3E9D2;border-color:#F3E9D2}
+html[data-tema="consultora"] .share-btn:hover{background:#4CC3FF;border-color:#4CC3FF;color:#0A2A3F}
+html[data-tema="consultora"] .eyebrow{color:#123E51}
+html[data-tema="consultora"] .eyebrow::before{background:#2585C5}
+html[data-tema="consultora"] h3{color:#123E51}
+html[data-tema="consultora"] .grad{background:linear-gradient(90deg,#123E51,#2585C5);-webkit-background-clip:text;background-clip:text;color:transparent}
+html[data-tema="consultora"] .btn.sec{border-color:#2585C5;color:#154E7A}
+html[data-tema="consultora"] .btn.sec:hover{background:rgba(37,133,197,.12)}
+html[data-tema="consultora"] .btn.pill,html[data-tema="consultora"] .btn.pill.add,html[data-tema="consultora"] .card .btn.pill.add{background:#2585C5;color:#fff;border:2px solid #2585C5}
+html[data-tema="consultora"] .btn.pill:hover,html[data-tema="consultora"] .btn.pill.add:hover,html[data-tema="consultora"] .card .btn.pill.add:hover{background:#123E51;border-color:#123E51;color:#fff}
+html[data-tema="consultora"] .card,html[data-tema="consultora"] .pd{background:var(--panel);border:1px solid var(--panel-b)}
+html[data-tema="consultora"] .card.hov:hover{box-shadow:0 12px 30px rgba(18,62,81,.2)}
+html[data-tema="consultora"] .num{color:#2585C5}
+html[data-tema="consultora"] footer.pie{background:#0A2A3F}
+html[data-tema="consultora"] .pie-logo{background:none;border-radius:0;padding:0}
+html[data-tema="consultora"] .pie-redes a{background:#F3E9D2}
+html[data-tema="consultora"] footer.pie .pie-redes a:hover{background:#4CC3FF;color:#0A2A3F}
+html[data-tema="consultora"] a.link{color:#154E7A}
+@media(max-width:1000px){
+  html[data-tema="consultora"] .menu{background:#0A2A3F;border-bottom:4px solid #4CC3FF}
+  html[data-tema="consultora"] .menu li{border-bottom:1px solid rgba(243,233,210,.2)}
+  html[data-tema="consultora"] .menu a{color:#F3E9D2}
+  html[data-tema="consultora"] .menu a.on{background:none;color:#4CC3FF;box-shadow:inset 4px 0 0 #4CC3FF}
+}
+/* chat con tema de consultora */
+.chat-box,.chat-float,.chat-hd,.chat-log,.chat-m.u,.chat-sug,.chat-fm button{transition:background-color .35s ease,color .35s ease,border-color .35s ease}
+.chat-box.tema-c .chat-hd{background:#0A2A3F;color:#F3E9D2}
+.chat-box.tema-c .chat-x,.chat-box.tema-c .chat-mu{color:#F3E9D2}
+.chat-box.tema-c .chat-mu:hover,.chat-box.tema-c .chat-mu:focus-visible{background:#4CC3FF;color:#0A2A3F;border-color:#4CC3FF}
+.chat-box.tema-c .chat-log,.chat-box.tema-c .chat-sug{background:#EEF4F8}
+.chat-box.tema-c .chat-m.u{background:#123E51;color:#F3E9D2}
+.chat-box.tema-c .chat-sug button{border-color:#123E51;color:#123E51}
+.chat-box.tema-c .chat-sug a.chat-sug-v{border-color:#123E51;background:#123E51;color:#9BF8FC}
+.chat-box.tema-c .chat-fm button{background:#123E51;color:#F3E9D2}
+.chat-box.tema-c .chat-fm .chat-mic{border-color:#0A2A3F;background:linear-gradient(135deg,#4CC3FF,#2585C5);color:#0A2A3F}
+.chat-box.tema-c .chat-ln{border-color:#2585C5;color:#0A2A3F}
+.chat-box.tema-c .chat-ln:hover{background:#E1EFF9}
+.chat-box.tema-c .chat-sp{border-color:#2585C5;background:#E8F3FB;color:#0A2A3F}
+.chat-box.tema-c .chat-sp.on{background:#0A2A3F;border-color:#0A2A3F;color:#9BF8FC}
+.chat-float.tema-c{background:linear-gradient(135deg,#4CC3FF,#2585C5);color:#0A2A3F;border-color:#0A2A3F}
+.chat-float.tema-c:hover,.chat-float.tema-c:focus-visible{background:linear-gradient(135deg,#9BF8FC,#4CC3FF)}
+.chat-float.tema-c .cf-ia{background:#0A2A3F;color:#9BF8FC}
+.chat-box.tema-c .chat-fm input:focus,.chat-box.tema-c .chat-fm input:focus-visible{outline-color:#4CC3FF;border-color:#2585C5}
+.chat-box.tema-c .chat-inst{background:#4CC3FF;border-color:#4CC3FF}

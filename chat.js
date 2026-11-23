@@ -22,6 +22,10 @@ var btn=el('button','chat-float');btn.type='button';btn.setAttribute('aria-label
 btn.innerHTML='<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14a2 2 0 012 2v9a2 2 0 01-2 2h-8l-4.5 3.6V17H5a2 2 0 01-2-2V6a2 2 0 012-2z"/><path d="M12 7.2l1 2.4 2.4 1-2.4 1-1 2.4-1-2.4-2.4-1 2.4-1z" fill="currentColor" stroke="none"/></svg><span class="cf-t"><b>'+L('Asistente IA','AI assistant')+'</b><small>'+L('Pregúntame','Ask me')+'</small></span><i class="cf-ia" aria-hidden="true">'+L('IA','AI')+'</i>';
 var box=el('div','chat-box');box.setAttribute('role','dialog');box.setAttribute('aria-label',L('Asistente ECOCOCO','ECOCOCO assistant'));box.hidden=true;
 var hd=el('div','chat-hd');var tt=el('div','chat-tt');tt.appendChild(el('b','',L('Asistente ECOCOCO','ECOCOCO assistant')));tt.appendChild(el('small','',AI?L('Respuestas con IA · no sustituye a un asesor','AI answers · not a substitute for an advisor'):L('Respuestas automáticas · un asesor te atiende por WhatsApp','Automatic answers · an advisor helps you on WhatsApp')));
+var SRVRE=/servicio|p[aá]gina web|sitio web|web ?site|chat ?bot|plataforma|\bcrm\b|consultora|digital|(app|aplicaci[oó]n) para (mi|el|un|una|mis)|software|dise[ñn]o web|landing|marketing|platform/i,CARRE=/carb[oó]n|briqueta|ecococo|precio|bolsa|bulto|pedido|distribuidor|entrega|parrilla|charcoal|briquette|price|order|delivery|grill/i;
+function tema(c){box.classList.toggle('tema-c',!!c);btn.classList.toggle('tema-c',!!c);var n=c?L('Asistente GEA Consultora','GEA Consultora assistant'):L('Asistente ECOCOCO','ECOCOCO assistant');if(tt.firstChild)tt.firstChild.textContent=n;box.setAttribute('aria-label',n);btn.title=n}
+function temaTxt(t){var a=SRVRE.test(t),b=CARRE.test(t);if(a&&!b)tema(true);else if(b&&!a)tema(false)}
+if(document.documentElement.getAttribute('data-tema')==='consultora')tema(true);
 var x=el('button','chat-x','×');x.type='button';x.setAttribute('aria-label',L('Cerrar','Close'));hd.appendChild(tt);
 hd.appendChild(x);
 var log=el('div','chat-log');log.setAttribute('aria-live','polite');
@@ -102,6 +106,7 @@ function add(role,text,fk){
   var inst=false;if(role==='assistant'&&/\[\[INSTALL\]\]/.test(text)){inst=true;text=text.replace(/\s*\[\[INSTALL\]\]\s*/g,' ').trim()}
   var shr=false;if(role==='assistant'&&/\[\[SHARE\]\]/.test(text)){shr=true;text=text.replace(/\s*\[\[SHARE\]\]\s*/g,' ').trim()}
   if(!lk.length&&fk)lk=fk;
+  if(role==='assistant'&&lk.length)tema(lk.indexOf('servicios')>-1);
   var wa=false;if(role==='assistant'&&/\[\[WA\]\]/.test(text)){wa=true;text=text.replace(/\s*\[\[WA\]\]\s*/g,' ').trim()}
   var m=el('div','chat-m '+(role==='user'?'u':'a'));
   String(text).split(/\n+/).forEach(function(par){if(par.trim())m.appendChild(el('p','',par))});
@@ -150,6 +155,7 @@ function dbg(m){try{if(location.hash.indexOf('chatdebug')>-1)add('assistant','[d
 function send(txt,viaVoice){
   txt=String(txt||'').trim().slice(0,500);if(!txt||busy)return;stopSpeak();speakNext=!!viaVoice&&!!TTS;
   if(Date.now()-last<1200)return;last=Date.now();
+  temaTxt(txt);
   busy=true;sug.hidden=true;inp.value='';go.disabled=true;
   if(AI){var q=0;try{q=parseInt(sessionStorage.getItem(CK)||'0',10)}catch(e){}
     if(q>=MAXQ){busy=false;go.disabled=false;fail('max');return}
