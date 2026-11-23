@@ -333,6 +333,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
    ['Distribuidores: condiciones y entrega','Pago, cobertura, disponibilidad y cómo pedir','distribuidores-condiciones.html','condiciones pago entrega cobertura disponibilidad pedir distribuidor'],
    ['Distribuidores: material para vender','Catálogo, fichas y guías en PDF','distribuidores-herramientas.html','material catálogo fichas guías pdf vender distribuidor'],
    ['Inscripción de distribuidores','Solicitud para ser distribuidor ECOCOCO','distribuidores-inscripcion.html','inscripción solicitud formulario distribuidor registrar'],
+   ['Servicios digitales GEA','Plataformas con chat de IA, registro de clientes y avisos para tu negocio','servicios-digitales.html','servicios digitales plataforma página web chat inteligencia artificial crm consultora desarrollo app negocio'],
    ['Impacto ambiental','Aprovechamiento de la cáscara de coco, datos de fuentes públicas y metas','impacto-ambiental.html','ambiente cáscara coco residuo agroindustrial contaminación leña guatemala potencial'],
    ['Cómo comprar y preguntas frecuentes','Pasos para pedir, mínimos, pago y entregas','como-comprar.html','cómo comprar pedir preguntas frecuentes pago entrega factura'],
    ['Tecnología GEA','Ingeniería y producción mecanizada','tecnologia-gea.html','tecnología ingeniería horno molino mezcladora prensa'],
