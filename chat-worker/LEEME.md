@@ -43,3 +43,10 @@ Horario por defecto (hora de Guatemala): miércoles 12:00 (aviso informativo) y 
 Las solicitudes del formulario de distribuidores se anotan en la hoja de Google "CRM ECOCOCO" mediante un Apps Script.
 Secretos del Worker: `CRM_URL` (dirección /exec del script publicado) y `CRM_KEY` (clave compartida; la misma que la propiedad del script `CRM_KEY`).
 Sin ellos la ruta responde 501 y el formulario cae al envío por WhatsApp, como antes.
+
+## Confirmación automática por WhatsApp (ruta /lead)
+
+Tras registrar una solicitud en el CRM, el Worker envía al cliente una plantilla de WhatsApp (API de WhatsApp Business de Meta).
+Secretos: `WA_TOKEN` (token permanente) y `WA_PHONE_ID` (identificador del número). Opcionales: `WA_TEMPLATE` (por defecto `confirmacion_solicitud`) y `WA_TEMPLATE_EN`.
+Sin esos secretos no hace nada. Si Meta falla, la solicitud ya quedó registrada y no se afecta la respuesta al visitante.
+Plantilla (categoría Utilidad, idioma es): cuerpo con dos variables: {{1}} nombre y {{2}} número de solicitud; botones: URL "Agendar una llamada" y Llamar al +502 4279-4894.

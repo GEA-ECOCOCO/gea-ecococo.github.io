@@ -121,7 +121,21 @@ const PUSH_HOSTS = [/(^|\.)fcm\.googleapis\.com$/, /(^|\.)android\.googleapis\.c
 const b64u = (buf) => btoa(String.fromCharCode.apply(null, new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const ub64 = (s) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0));
 /* Solicitudes de distribuidor -> registro de clientes (hoja de Google, Apps Script). Secretos: CRM_URL (dirección del script) y CRM_KEY (clave compartida). */
-async function leadCrm(request, env, origin) {
+/* Confirmación automática por WhatsApp (API de WhatsApp Business de Meta) tras registrar una solicitud.
+   Secretos: WA_TOKEN (token permanente) y WA_PHONE_ID (identificador del número). Opcionales: WA_TEMPLATE (plantilla en español, por defecto confirmacion_solicitud)
+   y WA_TEMPLATE_EN (plantilla en inglés). Si faltan, no hace nada. Los fallos nunca afectan al registro de la solicitud. */
+async function waConfirm(env, d) {
+  if (!env.WA_TOKEN || !env.WA_PHONE_ID) return;
+  let n = String(d.telefono || '').replace(/\D/g, '');
+  if (n.length === 8) n = '502' + n;
+  if (n.length < 10 || n.length > 15) return;
+  const en = d.idioma === 'en' && env.WA_TEMPLATE_EN;
+  const name = en ? env.WA_TEMPLATE_EN : (env.WA_TEMPLATE || 'confirmacion_solicitud');
+  const clean = (v, m) => String(v || '').replace(/[\r\n\t]+/g, ' ').replace(/ {2,}/g, ' ').trim().slice(0, m) || '-';
+  const body = { messaging_product: 'whatsapp', to: n, type: 'template', template: { name, language: { code: en ? 'en' : 'es' }, components: [{ type: 'body', parameters: [{ type: 'text', text: clean(d.nombre, 60) }, { type: 'text', text: clean(d.id, 30) }] }] } };
+  await fetch('https://graph.facebook.com/v21.0/' + encodeURIComponent(env.WA_PHONE_ID) + '/messages', { method: 'POST', headers: { 'Authorization': 'Bearer ' + env.WA_TOKEN, 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(8000) });
+}
+async function leadCrm(request, env, origin, ctx) {
   if (!env.CRM_URL || !env.CRM_KEY) return json({ error: 'crm-config' }, 501, origin);
   let b;
   try { const raw = await request.text(); if (raw.length > 8000) return json({ error: 'size' }, 413, origin); b = JSON.parse(raw); } catch (e) { return json({ error: 'json' }, 400, origin); }
@@ -142,7 +156,7 @@ async function leadCrm(request, env, origin) {
   try {
     const r = await fetch(env.CRM_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ key: env.CRM_KEY }, d)), signal: AbortSignal.timeout(9000) });
     const j = await r.json().catch(() => null);
-    if (j && j.ok) return json({ ok: true }, 200, origin);
+    if (j && j.ok) { if (ctx && env.WA_TOKEN) ctx.waitUntil(waConfirm(env, d).catch(() => {})); return json({ ok: true }, 200, origin); }
   } catch (e) { /* cae al respaldo */ }
   return json({ error: 'crm' }, 502, origin);
 }
@@ -287,7 +301,7 @@ export default {
   async scheduled(event, env, ctx) {
     if (env.RL) ctx.waitUntil(pushTick(env).catch(() => {}));
   },
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const allowed = (env.ALLOWED_ORIGINS ? String(env.ALLOWED_ORIGINS).split(',').map(s => s.trim()).filter(Boolean) : DEFAULT_ORIGINS);
     const origin = request.headers.get('Origin') || '';
     const okOrigin = allowed.indexOf(origin) !== -1;
@@ -297,7 +311,7 @@ export default {
     if (request.method !== 'POST') return json({ error: 'method' }, 405, okOrigin ? origin : '');
     if (!okOrigin) return json({ error: 'origin' }, 403, '');
     if (new URL(request.url).pathname === '/factura') return facturaMail(request, env, origin);
-    if (new URL(request.url).pathname === '/lead') return leadCrm(request, env, origin);
+    if (new URL(request.url).pathname === '/lead') return leadCrm(request, env, origin, ctx);
     if (!env.ANTHROPIC_API_KEY) return json({ error: 'config' }, 500, origin);
 
     let body;
