@@ -121,6 +121,13 @@ const PUSH_HOSTS = [/(^|\.)fcm\.googleapis\.com$/, /(^|\.)android\.googleapis\.c
 const b64u = (buf) => btoa(String.fromCharCode.apply(null, new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const ub64 = (s) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0));
 /* Solicitudes de distribuidor -> registro de clientes (hoja de Google, Apps Script). Secretos: CRM_URL (dirección del script) y CRM_KEY (clave compartida). */
+/* Contexto de seccion: el visitante puede estar en GEA Consultora (servicios digitales) o en Tecnologia GEA. */
+function temaCtx(b) {
+  const t = b && b.tema;
+  if (t === 'c') return '\n\nCONTEXTO DE SECCIÓN: el visitante está en la sección GEA Consultora (servicios digitales). Preséntate como el asistente de GEA Consultora, NO como asesor de ECOCOCO, y céntrate en los servicios digitales (descríbelos según los datos del negocio). Si pregunta por carbón, respóndele con los datos de ECOCOCO y aclara que es otra línea de GEA.';
+  if (t === 't') return '\n\nCONTEXTO DE SECCIÓN: el visitante está en la sección Tecnología GEA (hornos, molino, prensa y proceso de la planta). Preséntate como el asistente de tecnología de GEA y céntrate en el proceso y los equipos; no inventes capacidades ni fotos: lo que no esté verificado, dilo como planificado o pendiente de validación.';
+  return '';
+}
 /* Confirmación automática por WhatsApp (API de WhatsApp Business de Meta) tras registrar una solicitud.
    Secretos: WA_TOKEN (token permanente) y WA_PHONE_ID (identificador del número). Opcionales: WA_TEMPLATE (plantilla en español, por defecto confirmacion_solicitud)
    y WA_TEMPLATE_EN (plantilla en inglés). Si faltan, no hace nada. Los fallos nunca afectan al registro de la solicitud. */
@@ -351,7 +358,7 @@ export default {
       } catch (e) { /* si el KV falla, seguimos */ }
     }
 
-    const system = KB + '\n\nIdioma preferido de la página: ' + (lang === 'en' ? 'inglés' : 'español') + '. Responde en el idioma del último mensaje del usuario.';
+    const system = KB + temaCtx(body) + '\n\nIdioma preferido de la página: ' + (lang === 'en' ? 'inglés' : 'español') + '. Responde en el idioma del último mensaje del usuario.';
     try {
       const ctl = new AbortController();
       const timer = setTimeout(() => ctl.abort(), 22000);

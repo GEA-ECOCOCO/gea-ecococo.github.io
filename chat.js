@@ -25,7 +25,8 @@ var hd=el('div','chat-hd');var tt=el('div','chat-tt');tt.appendChild(el('b','',L
 var SRVRE=/servicio|p[aá]gina web|sitio web|web ?site|chat ?bot|plataforma|\bcrm\b|consultora|digital|(app|aplicaci[oó]n) para (mi|el|un|una|mis)|software|dise[ñn]o web|landing|marketing|platform/i,CARRE=/carb[oó]n|briqueta|ecococo|precio|bolsa|bulto|pedido|distribuidor|entrega|parrilla|charcoal|briquette|price|order|delivery|grill/i;
 var TECRE=/horno|pir[oó]lisis|molino|prensa|m[aá]quina|maquinaria|equipo industrial|furnace|pyrolysis|machine|mill|press/i;
 function pagTema(){var t=document.documentElement.getAttribute('data-tema');return t==='consultora'?'c':t==='tecnologia'?'t':''}
-function tema(m){if(m===true)m='c';if(m===false)m='';box.classList.toggle('tema-c',m==='c');btn.classList.toggle('tema-c',m==='c');box.classList.toggle('tema-t',m==='t');btn.classList.toggle('tema-t',m==='t');var n=m==='c'?L('Asistente GEA Consultora','GEA Consultora assistant'):m==='t'?L('Asistente GEA Tecnología','GEA Technology assistant'):L('Asistente ECOCOCO','ECOCOCO assistant');if(tt.firstChild)tt.firstChild.textContent=n;box.setAttribute('aria-label',n);btn.title=n}
+var cur='',rdy=false;
+function tema(m){if(m===true)m='c';if(m===false)m='';cur=m;box.classList.toggle('tema-c',m==='c');btn.classList.toggle('tema-c',m==='c');box.classList.toggle('tema-t',m==='t');btn.classList.toggle('tema-t',m==='t');var n=m==='c'?L('Asistente GEA Consultora','GEA Consultora assistant'):m==='t'?L('Asistente GEA Tecnología','GEA Technology assistant'):L('Asistente ECOCOCO','ECOCOCO assistant');if(tt.firstChild)tt.firstChild.textContent=n;box.setAttribute('aria-label',n);btn.title=n;if(rdy){buildSug();if(!hist.length)render()}}
 function temaTxt(t){var a=SRVRE.test(t),b=CARRE.test(t),q=TECRE.test(t);if(a&&!q)tema('c');else if(q&&!a)tema('t');else if(b&&!a&&!q)tema('')}
 if(pagTema())tema(pagTema());
 var x=el('button','chat-x','×');x.type='button';x.setAttribute('aria-label',L('Cerrar','Close'));hd.appendChild(tt);
@@ -129,17 +130,31 @@ function add(role,text,fk){
 }
 function render(){
   log.textContent='';
-  if(!hist.length){add('assistant',L('Hola, soy tu asesor de ECOCOCO. Cuéntame qué buscas y te oriento: ¿es para tu casa, para un restaurante o para revender?','Hi, I\'m your ECOCOCO advisor. Tell me what you\'re looking for and I\'ll guide you: is it for your home, a restaurant or to resell?'));
+  if(!hist.length){add('assistant',cur==='c'?L('Hola, soy el asistente de GEA Consultora. Cuéntame de tu negocio y qué necesitas: ¿una página, atención a tus clientes, registro de clientes o avisos?','Hi, I\'m the GEA Consultora assistant. Tell me about your business and what you need: a website, customer service, a customer register or alerts?'):cur==='t'?L('Hola, soy el asistente de tecnología de GEA. Pregúntame por los hornos, el molino, la prensa o cómo avanza la planta.','Hi, I\'m the GEA technology assistant. Ask me about the furnaces, the mill, the press or how the plant is progressing.'):L('Hola, soy tu asesor de ECOCOCO. Cuéntame qué buscas y te oriento: ¿es para tu casa, para un restaurante o para revender?','Hi, I\'m your ECOCOCO advisor. Tell me what you\'re looking for and I\'ll guide you: is it for your home, a restaurant or to resell?'));
     sug.hidden=false}
   else{hist.forEach(function(h){add(h.role,h.content)});sug.hidden=true}
 }
-[[L('¿Cuánto cuesta?','How much is it?'),L('¿Cuánto cuesta cada presentación?','How much does each size cost?')],
+var CH={
+'':[[L('¿Cuánto cuesta?','How much is it?'),L('¿Cuánto cuesta cada presentación?','How much does each size cost?')],
  [L('¿Cómo hago un pedido?','How do I order?'),L('¿Cómo hago un pedido y cuáles son los métodos de pago?','How do I place an order and what payment methods are available?')],
  [L('Quiero distribuir','I want to resell'),L('Quiero ser distribuidor, ¿qué necesito?','I want to become a distributor, what do I need?')],
  [L('Envíos y exportación','Shipping & export'),L('¿Hacen envíos y cotizan exportación?','Do you ship and quote exports?')],
- [L('Instalar la app','Install the app'),L('¿Cómo instalo la app en mi celular?','How do I install the app on my phone?')]].forEach(function(s){
-  var b=el('button','',s[0]);b.type='button';b.addEventListener('click',function(){send(s[1])});sug.appendChild(b)});
-var vta=el('a','chat-sug-v',null);vta.href='ventas.html';vta.innerHTML=L('Ir a ventas','Go to sales')+ic('ar',14);vta.addEventListener('click',function(){track('click_chat_link',{destino:'ventas'})});sug.appendChild(vta);
+ [L('Instalar la app','Install the app'),L('¿Cómo instalo la app en mi celular?','How do I install the app on my phone?')]],
+c:[[L('¿Qué servicios ofrecen?','What services do you offer?'),L('¿Qué servicios digitales ofrece GEA Consultora?','What digital services does GEA Consultora offer?')],
+ [L('Quiero una página web','I want a website'),L('Quiero una página web para mi negocio, ¿qué incluye?','I want a website for my business, what does it include?')],
+ [L('Chat con IA y CRM','AI chat & CRM'),L('¿Cómo funcionan el chat con IA y el registro de clientes?','How do the AI chat and the customer register work?')],
+ [L('¿Cómo empezamos?','How do we start?'),L('¿Cómo empezamos y cómo se cotiza?','How do we start and how is it quoted?')]],
+t:[[L('Hornos de pirólisis','Pyrolysis furnaces'),L('¿Cómo funcionan los hornos de pirólisis?','How do the pyrolysis furnaces work?')],
+ [L('Molino y prensa','Mill & press'),L('¿Qué hacen el molino y la prensa?','What do the mill and the press do?')],
+ [L('Estado de la planta','Plant status'),L('¿En qué estado está la planta hoy?','What is the plant status today?')],
+ [L('Capacidad','Capacity'),L('¿Qué capacidad tiene la planta?','What is the plant capacity?')]]};
+function buildSug(){
+  sug.textContent='';
+  (CH[cur]||CH['']).forEach(function(s){var b=el('button','',s[0]);b.type='button';b.addEventListener('click',function(){send(s[1])});sug.appendChild(b)});
+  var d=cur==='c'?['servicios-digitales.html','Ver servicios','See services','servicios']:cur==='t'?['tecnologia-gea.html','Ver tecnología','See technology','tecnologia']:['ventas.html','Ir a ventas','Go to sales','ventas'];
+  var vta=el('a','chat-sug-v',null);vta.href=d[0];vta.innerHTML=L(d[1],d[2])+ic('ar',14);vta.addEventListener('click',function(){track('click_chat_link',{destino:d[3]})});sug.appendChild(vta);
+}
+buildSug();rdy=true;
 
 function norm(x){return String(x).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,' ')}
 function local(txt){
@@ -167,7 +182,7 @@ function send(txt,viaVoice){
   track('use_chat',{idioma:EN?'en':'es',modo:AI?'ia':'faq'});
   if(!AI){setTimeout(function(){answerLocal(txt,wait)},450);return}
   var ctl=window.AbortController?new AbortController():null;var to=setTimeout(function(){ctl&&ctl.abort()},26000);
-  fetch(C.chatUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:hist.slice(-12),lang:EN?'en':'es'}),signal:ctl?ctl.signal:undefined})
+  fetch(C.chatUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:hist.slice(-12),lang:EN?'en':'es',tema:cur}),signal:ctl?ctl.signal:undefined})
   .then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j,s:r.status}})})
   .then(function(o){
     clearTimeout(to);
