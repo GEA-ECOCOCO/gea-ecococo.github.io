@@ -43,7 +43,7 @@
     var d=datos(id());
     if(!C.formEndpoint){confirmar(d,false);return}
     enviando=true;var btn=f.querySelector('button[type=submit]');btn.disabled=true;btn.textContent=L('Enviando…','Sending…');
-    var body=Object.assign({subject:L('Solicitud de distribuidor ','Distributor application ')+d.id+' · '+d.negocio},d);
+    var body=Object.assign({acepto:true,subject:L('Solicitud de distribuidor ','Distributor application ')+d.id+' · '+d.negocio},d);
     if(C.formKey)body.access_key=C.formKey;
     var ctl=new AbortController(),to=setTimeout(function(){ctl.abort()},12000);
     fetch(C.formEndpoint,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(body),signal:ctl.signal})

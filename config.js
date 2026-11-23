@@ -5,4 +5,4 @@
    usdRate: quetzales por 1 USD, solo para la equivalencia aproximada en la versión en inglés (tipo de cambio de referencia del Banguat, 20 nov 2026: 7.6478). Actualízalo cuando cambie.
    chatUrl: dirección del Worker de Cloudflare del asistente con IA (ver chat-worker/LEEME.md). Vacío = el chat no se muestra.
    reportUrl: enlace de inserción (embed) de un informe de Looker Studio con permisos solo para GEA. Vacío = no se muestra. */
-window.GEA_CONFIG={chatUrl:'https://ecococo-chat.manolo-esau.workers.dev',formEndpoint:'',formKey:'',ga4Id:'G-W9EH1L3LKN',reportUrl:'',whatsapp:'50242794894',nit:'70960682',usdRate:7.65,usdDate:'Nov 20, 2026'};
+window.GEA_CONFIG={chatUrl:'https://ecococo-chat.manolo-esau.workers.dev',formEndpoint:'https://ecococo-chat.manolo-esau.workers.dev/lead',formKey:'',ga4Id:'G-W9EH1L3LKN',reportUrl:'',whatsapp:'50242794894',nit:'70960682',usdRate:7.65,usdDate:'Nov 20, 2026'};

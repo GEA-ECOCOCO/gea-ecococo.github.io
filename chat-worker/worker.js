@@ -118,6 +118,33 @@ const SITE = 'https://gea-ecococo.github.io/';
 const PUSH_HOSTS = [/(^|\.)fcm\.googleapis\.com$/, /(^|\.)android\.googleapis\.com$/, /\.push\.services\.mozilla\.com$/, /\.push\.apple\.com$/, /\.notify\.windows\.com$/];
 const b64u = (buf) => btoa(String.fromCharCode.apply(null, new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const ub64 = (s) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0));
+/* Solicitudes de distribuidor -> registro de clientes (hoja de Google, Apps Script). Secretos: CRM_URL (dirección del script) y CRM_KEY (clave compartida). */
+async function leadCrm(request, env, origin) {
+  if (!env.CRM_URL || !env.CRM_KEY) return json({ error: 'crm-config' }, 501, origin);
+  let b;
+  try { const raw = await request.text(); if (raw.length > 8000) return json({ error: 'size' }, 413, origin); b = JSON.parse(raw); } catch (e) { return json({ error: 'json' }, 400, origin); }
+  if (!b || typeof b !== 'object') return json({ error: 'datos' }, 400, origin);
+  if (b.web) return json({ ok: true }, 200, origin);
+  const t = (k, n) => String(b[k] == null ? '' : b[k]).replace(/[\u0000-\u001f<>]/g, ' ').trim().slice(0, n);
+  const d = { id: t('id', 30), nombre: t('nombre', 80), negocio: t('negocio', 80), telefono: t('telefono', 25), correo: t('correo', 120), departamento: t('departamento', 40), municipio: t('municipio', 60), direccion: t('direccion', 120), tipo: t('tipo', 40), interes: t('interes', 60), volumen: t('volumen', 40), comentarios: t('comentarios', 400), idioma: t('idioma', 2) };
+  if (b.acepto !== true || d.nombre.length < 2 || d.negocio.length < 2 || d.telefono.replace(/\D/g, '').length < 8 || !d.municipio || !d.departamento) return json({ error: 'datos' }, 400, origin);
+  if (env.RL) {
+    try {
+      const ip = request.headers.get('CF-Connecting-IP') || 'x';
+      const k = 'lead:' + ip + ':' + Math.floor(Date.now() / 600000);
+      const n = parseInt(await env.RL.get(k) || '0', 10) + 1;
+      if (n > 4) return json({ error: 'rate' }, 429, origin);
+      await env.RL.put(k, String(n), { expirationTtl: 900 });
+    } catch (e) { /* sin límite si el KV falla */ }
+  }
+  try {
+    const r = await fetch(env.CRM_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ key: env.CRM_KEY }, d)), signal: AbortSignal.timeout(9000) });
+    const j = await r.json().catch(() => null);
+    if (j && j.ok) return json({ ok: true }, 200, origin);
+  } catch (e) { /* cae al respaldo */ }
+  return json({ error: 'crm' }, 502, origin);
+}
+
 async function subId(endpoint) {
   const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(endpoint));
   return Array.from(new Uint8Array(h)).slice(0, 16).map((x) => ('0' + x.toString(16)).slice(-2)).join('');
@@ -268,6 +295,7 @@ export default {
     if (request.method !== 'POST') return json({ error: 'method' }, 405, okOrigin ? origin : '');
     if (!okOrigin) return json({ error: 'origin' }, 403, '');
     if (new URL(request.url).pathname === '/factura') return facturaMail(request, env, origin);
+    if (new URL(request.url).pathname === '/lead') return leadCrm(request, env, origin);
     if (!env.ANTHROPIC_API_KEY) return json({ error: 'config' }, 500, origin);
 
     let body;

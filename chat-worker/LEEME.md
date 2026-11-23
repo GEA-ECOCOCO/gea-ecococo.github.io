@@ -38,3 +38,8 @@ El Worker también envía avisos a quienes los activan en el sitio o la app. Los
 Prueba: en el sitio, pie de página → "Recibir avisos de ofertas" → acepta el permiso. Luego abre en el navegador:
 `https://ecococo-chat.manolo-esau.workers.dev/push/test?key=TU_CLAVE&id=asado-1kg` y llegará el aviso. `/push/stats?key=TU_CLAVE` muestra cuántas personas están suscritas.
 Horario por defecto (hora de Guatemala): miércoles 12:00 (aviso informativo) y viernes 11:00 (promoción). Plan gratuito: el Worker envía 20 avisos por ejecución (cada 5 minutos), así que 1,000 suscriptores se atienden en unas 4 horas.
+
+## Registro de clientes (CRM) — ruta /lead
+Las solicitudes del formulario de distribuidores se anotan en la hoja de Google "CRM ECOCOCO" mediante un Apps Script.
+Secretos del Worker: `CRM_URL` (dirección /exec del script publicado) y `CRM_KEY` (clave compartida; la misma que la propiedad del script `CRM_KEY`).
+Sin ellos la ruta responde 501 y el formulario cae al envío por WhatsApp, como antes.
