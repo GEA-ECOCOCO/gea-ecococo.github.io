@@ -23,9 +23,11 @@ btn.innerHTML='<svg viewBox="0 0 24 24" width="28" height="28" fill="none" strok
 var box=el('div','chat-box');box.setAttribute('role','dialog');box.setAttribute('aria-label',L('Asistente ECOCOCO','ECOCOCO assistant'));box.hidden=true;
 var hd=el('div','chat-hd');var tt=el('div','chat-tt');tt.appendChild(el('b','',L('Asistente ECOCOCO','ECOCOCO assistant')));tt.appendChild(el('small','',AI?L('Respuestas con IA · no sustituye a un asesor','AI answers · not a substitute for an advisor'):L('Respuestas automáticas · un asesor te atiende por WhatsApp','Automatic answers · an advisor helps you on WhatsApp')));
 var SRVRE=/servicio|p[aá]gina web|sitio web|web ?site|chat ?bot|plataforma|\bcrm\b|consultora|digital|(app|aplicaci[oó]n) para (mi|el|un|una|mis)|software|dise[ñn]o web|landing|marketing|platform/i,CARRE=/carb[oó]n|briqueta|ecococo|precio|bolsa|bulto|pedido|distribuidor|entrega|parrilla|charcoal|briquette|price|order|delivery|grill/i;
-function tema(c){box.classList.toggle('tema-c',!!c);btn.classList.toggle('tema-c',!!c);var n=c?L('Asistente GEA Consultora','GEA Consultora assistant'):L('Asistente ECOCOCO','ECOCOCO assistant');if(tt.firstChild)tt.firstChild.textContent=n;box.setAttribute('aria-label',n);btn.title=n}
-function temaTxt(t){var a=SRVRE.test(t),b=CARRE.test(t);if(a&&!b)tema(true);else if(b&&!a)tema(false)}
-if(document.documentElement.getAttribute('data-tema')==='consultora')tema(true);
+var TECRE=/horno|pir[oó]lisis|molino|prensa|m[aá]quina|maquinaria|equipo industrial|furnace|pyrolysis|machine|mill|press/i;
+function pagTema(){var t=document.documentElement.getAttribute('data-tema');return t==='consultora'?'c':t==='tecnologia'?'t':''}
+function tema(m){if(m===true)m='c';if(m===false)m='';box.classList.toggle('tema-c',m==='c');btn.classList.toggle('tema-c',m==='c');box.classList.toggle('tema-t',m==='t');btn.classList.toggle('tema-t',m==='t');var n=m==='c'?L('Asistente GEA Consultora','GEA Consultora assistant'):m==='t'?L('Asistente GEA Tecnología','GEA Technology assistant'):L('Asistente ECOCOCO','ECOCOCO assistant');if(tt.firstChild)tt.firstChild.textContent=n;box.setAttribute('aria-label',n);btn.title=n}
+function temaTxt(t){var a=SRVRE.test(t),b=CARRE.test(t),q=TECRE.test(t);if(a&&!q)tema('c');else if(q&&!a)tema('t');else if(b&&!a&&!q)tema('')}
+if(pagTema())tema(pagTema());
 var x=el('button','chat-x','×');x.type='button';x.setAttribute('aria-label',L('Cerrar','Close'));hd.appendChild(tt);
 hd.appendChild(x);
 var log=el('div','chat-log');log.setAttribute('aria-live','polite');
@@ -106,7 +108,7 @@ function add(role,text,fk){
   var inst=false;if(role==='assistant'&&/\[\[INSTALL\]\]/.test(text)){inst=true;text=text.replace(/\s*\[\[INSTALL\]\]\s*/g,' ').trim()}
   var shr=false;if(role==='assistant'&&/\[\[SHARE\]\]/.test(text)){shr=true;text=text.replace(/\s*\[\[SHARE\]\]\s*/g,' ').trim()}
   if(!lk.length&&fk)lk=fk;
-  if(role==='assistant'&&lk.length)tema(lk.indexOf('servicios')>-1);
+  if(role==='assistant'&&lk.length)tema(lk.indexOf('servicios')>-1?'c':pagTema()==='t'?'t':'');
   var wa=false;if(role==='assistant'&&/\[\[WA\]\]/.test(text)){wa=true;text=text.replace(/\s*\[\[WA\]\]\s*/g,' ').trim()}
   var m=el('div','chat-m '+(role==='user'?'u':'a'));
   String(text).split(/\n+/).forEach(function(par){if(par.trim())m.appendChild(el('p','',par))});
