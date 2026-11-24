@@ -1727,3 +1727,21 @@ html[data-tema="consultora"] .cart-float.cf-cot:hover,html[data-tema="consultora
 .gc-tx b{font-family:var(--cond);text-transform:uppercase;letter-spacing:.05em;font-size:.95rem;color:#9BF8FC;font-weight:400}
 .gc-tx small{font-size:.76rem;line-height:1.25;color:#C9DCE8}
 .gc-go{flex:none;color:#4CC3FF;font-size:1.2rem}
+
+/* Barra superior y navegación de GEA Consultora: aspecto de plataforma de sistemas */
+html[data-tema="consultora"] .topstrip{background:linear-gradient(90deg,#061A29,#0C2F48 60%,#0A2A3F);border-bottom:1px solid rgba(76,195,255,.2);color:#9BF8FC}
+html[data-tema="consultora"] .topstrip .wrap{justify-content:space-between!important;padding-top:5px;padding-bottom:5px}
+html[data-tema="consultora"] .topstrip .wrap>span:first-child{display:flex!important}
+.ts-sys{align-items:center;gap:9px;font-size:.7rem;letter-spacing:.16em;font-weight:600;color:#9BF8FC}
+.ts-sys::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:#4CE0A0;box-shadow:0 0 0 0 rgba(76,224,160,.55);animation:tsd 2.4s ease-out infinite}
+@keyframes tsd{0%{box-shadow:0 0 0 0 rgba(76,224,160,.55)}70%,100%{box-shadow:0 0 0 7px rgba(76,224,160,0)}}
+html[data-tema="consultora"] .topstrip .lang-sw{background:transparent!important;border:1px solid rgba(76,195,255,.55)!important;color:#9BF8FC!important;box-shadow:none!important;font-size:.68rem;letter-spacing:.12em;padding:2px 11px!important}
+html[data-tema="consultora"] .topstrip .lang-sw::before{margin-right:5px}
+html[data-tema="consultora"] .topstrip .lang-sw:hover{background:rgba(76,195,255,.16)!important}
+html[data-tema="consultora"] nav{background-color:#0A2A3F;background-image:linear-gradient(rgba(76,195,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(76,195,255,.07) 1px,transparent 1px);background-size:22px 22px;border-bottom:0}
+html[data-tema="consultora"] nav::after{height:2px;clip-path:none;background:linear-gradient(90deg,rgba(37,133,197,0),#2585C5 18%,#4CC3FF 50%,#2585C5 82%,rgba(37,133,197,0)) 0 0/200% 100%;animation:navln 6s linear infinite;box-shadow:0 0 12px rgba(76,195,255,.45)}
+@keyframes navln{from{background-position:0 0}to{background-position:-200% 0}}
+@media(prefers-reduced-motion:reduce){.ts-sys::before,html[data-tema="consultora"] nav::after{animation:none}}
+.ts-sys{white-space:nowrap;font-size:.66rem;letter-spacing:.12em}
+@media(min-width:561px){.ts-sys{font-size:.72rem;letter-spacing:.16em}}
+@media(max-width:420px){.ts-sys{font-size:.6rem;letter-spacing:.08em;gap:7px}html[data-tema="consultora"] .topstrip .lang-sw{padding:2px 9px!important}}
