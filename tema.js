@@ -18,6 +18,13 @@
   var go=function(){
     if(document.querySelector('.bt'))return;
     var o=document.createElement('div');o.className='bt '+C.c;o.setAttribute('aria-hidden','true');
+    if(T==='consultora'){
+      o.className='bt bt-c bt-c2';
+      o.innerHTML='<div class="bc-grid"></div><div class="bc-scan"></div><div class="bc-main"><div class="bc-stage"><svg class="bc-r1" viewBox="0 0 200 200"><circle cx="100" cy="100" r="96" fill="none" stroke="#4CC3FF" stroke-width="1" stroke-dasharray="2 9" stroke-linecap="round"/></svg><svg class="bc-r2" viewBox="0 0 200 200"><circle cx="100" cy="100" r="82" fill="none" stroke="#9BF8FC" stroke-width="1.4" stroke-dasharray="120 396" stroke-linecap="round"/></svg><svg class="bc-r3" viewBox="0 0 200 200"><circle cx="100" cy="100" r="70" fill="none" stroke="#2585C5" stroke-width="1" pathLength="100" stroke-dasharray="100"/></svg><img class="bc-sh" src="'+B+'img/escudo-gea-consultora.png" alt="" width="68" height="84"></div><div class="bc-name"><b>GEA</b><span>CONSULTORA</span></div><div class="bc-bar"><i></i></div><div class="bc-l2">'+C.l2+'</div><div class="bc-l3">'+C.l3+'</div></div><div class="bc-line"></div>';
+      d.appendChild(o);d.classList.remove('bt-on');
+      setTimeout(function(){if(o.parentNode)o.parentNode.removeChild(o)},3000);
+      return;
+    }
     o.innerHTML='<div class="bt-in">'+(C.img?'<div class="bt-logo"><img src="'+B+C.img+'" alt="" width="'+C.w+'" height="'+C.h+'"></div>':'')+(C.l1?'<div class="bt-l1">'+C.l1+'</div>':'')+'<div class="bt-l2">'+C.l2+'</div><div class="bt-bar"><i></i></div><div class="bt-l3">'+C.l3+'</div></div>';
     d.appendChild(o);d.classList.remove('bt-on');
     setTimeout(function(){if(o.parentNode)o.parentNode.removeChild(o)},2100);

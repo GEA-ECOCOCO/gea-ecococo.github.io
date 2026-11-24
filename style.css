@@ -1605,3 +1605,32 @@ html[data-tema="tecnologia"] .cart-n{background:#22D3EE;color:#060D14}
 .bt-c .bt-l3{color:#F3E9D2;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;opacity:.9}
 
 html[data-tema="consultora"] .pie-logo{height:84px;width:auto;display:block;object-fit:contain;margin-bottom:6px}
+
+/* Transición corporativa a GEA Consultora */
+.bt-c2{background-color:#07202F;background-image:radial-gradient(680px 420px at 78% 18%,rgba(37,133,197,.42),transparent 70%),radial-gradient(560px 360px at 8% 102%,rgba(76,195,255,.2),transparent 70%);background-size:auto;animation:bc-out .65s cubic-bezier(.75,0,.2,1) 2.3s forwards;overflow:hidden}
+.bc-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(155,248,252,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(155,248,252,.06) 1px,transparent 1px);background-size:44px 44px;-webkit-mask-image:radial-gradient(circle at 50% 46%,#000 0,transparent 68%);mask-image:radial-gradient(circle at 50% 46%,#000 0,transparent 68%);opacity:0;animation:bc-fade .9s ease .1s forwards}
+.bc-scan{position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,#9BF8FC 30%,#4CC3FF 70%,transparent);box-shadow:0 0 22px 4px rgba(76,195,255,.55);opacity:0;animation:bc-scan 1.5s cubic-bezier(.4,0,.2,1) .15s forwards}
+.bc-main{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;width:min(80vw,340px)}
+.bc-stage{position:relative;width:176px;height:176px;display:flex;align-items:center;justify-content:center}
+.bc-stage svg{position:absolute;inset:0;width:100%;height:100%;opacity:0;animation:bc-fade .8s ease .35s forwards}
+.bc-r1{animation:bc-fade .8s ease .35s forwards,bc-spin 18s linear infinite!important}
+.bc-r2{animation:bc-fade .8s ease .45s forwards,bc-spin 3.4s linear infinite reverse!important}
+.bc-r3 circle{stroke-dashoffset:100;animation:bc-draw 1.3s cubic-bezier(.5,0,.2,1) .4s forwards}
+.bc-sh{position:relative;height:84px;width:auto;opacity:0;transform:translateY(10px) scale(.9);filter:blur(7px) drop-shadow(0 0 0 rgba(76,195,255,0));animation:bc-in .9s cubic-bezier(.2,.7,.2,1) .55s forwards,bc-glow 1.8s ease-in-out 1.45s 1}
+.bc-name{margin-top:20px;color:#F3E9D2;line-height:1}
+.bc-name b{display:block;font:700 2.5rem/1 "Segoe UI",Calibri,Arial,sans-serif;letter-spacing:.5em;margin-right:-.5em;opacity:0;animation:bc-track 1.1s cubic-bezier(.2,.7,.2,1) .8s forwards}
+.bc-name span{display:block;margin-top:8px;font:600 .74rem/1 "Segoe UI",Calibri,Arial,sans-serif;letter-spacing:.5em;margin-right:-.5em;color:#9BF8FC;opacity:0;animation:bc-fade .8s ease 1.2s forwards}
+.bc-bar{margin-top:26px;width:min(62vw,230px);height:2px;background:rgba(243,233,210,.16);border-radius:2px;overflow:hidden;opacity:0;animation:bc-fade .5s ease 1s forwards}
+.bc-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2585C5,#9BF8FC);box-shadow:0 0 12px #4CC3FF;animation:bt-load 1.15s cubic-bezier(.5,0,.2,1) 1.05s forwards}
+.bc-l2{margin-top:12px;font:.8rem "Segoe UI",Calibri,Arial,sans-serif;letter-spacing:.1em;color:#9BF8FC;opacity:0;animation:bc-fade .6s ease 1.1s forwards}
+.bc-l3{margin-top:6px;font:.68rem "Segoe UI",Calibri,Arial,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#F3E9D2;opacity:0;animation:bc-fade .6s ease 1.3s forwards;--o:.7}
+.bc-line{position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;background:linear-gradient(90deg,transparent,#9BF8FC 25%,#fff 50%,#9BF8FC 75%,transparent);box-shadow:0 0 26px 6px rgba(76,195,255,.65);opacity:0;animation:bc-lineon .65s ease 2.3s forwards}
+@keyframes bc-fade{to{opacity:1}}
+@keyframes bc-spin{to{transform:rotate(360deg)}}
+@keyframes bc-draw{to{stroke-dashoffset:0}}
+@keyframes bc-in{to{opacity:1;transform:none;filter:blur(0) drop-shadow(0 0 10px rgba(76,195,255,.55))}}
+@keyframes bc-glow{50%{filter:blur(0) drop-shadow(0 0 22px rgba(155,248,252,.95))}}
+@keyframes bc-track{from{opacity:0;letter-spacing:.9em;margin-right:-.9em;filter:blur(4px)}to{opacity:1;letter-spacing:.5em;margin-right:-.5em;filter:blur(0)}}
+@keyframes bc-scan{0%{top:0;opacity:0}12%{opacity:1}88%{opacity:1}100%{top:100%;opacity:0}}
+@keyframes bc-lineon{0%{opacity:0}60%{opacity:1}100%{opacity:0}}
+@keyframes bc-out{0%{clip-path:inset(0 0 0 0);opacity:1}72%{clip-path:inset(49.6% 0 49.6% 0);opacity:1}100%{clip-path:inset(50% 0 50% 0);opacity:0;visibility:hidden}}
