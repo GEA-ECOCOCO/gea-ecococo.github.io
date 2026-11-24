@@ -1603,3 +1603,5 @@ html[data-tema="tecnologia"] .cart-n{background:#22D3EE;color:#060D14}
 .bt-c .bt-bar{background:rgba(243,233,210,.2)}
 .bt-c .bt-bar i{background:linear-gradient(90deg,#2585C5,#9BF8FC);box-shadow:0 0 14px #4CC3FF}
 .bt-c .bt-l3{color:#F3E9D2;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;opacity:.9}
+
+html[data-tema="consultora"] .pie-logo{height:84px;width:auto;display:block;object-fit:contain;margin-bottom:6px}
