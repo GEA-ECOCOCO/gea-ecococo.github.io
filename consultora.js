@@ -103,11 +103,24 @@
     pf.appendChild(tb);
     var go=document.createElement('a');go.className='pk-btn';go.href='servicios-digitales.html#solicitud';go.textContent=L('Enviar mi solicitud','Send my request');
     go.addEventListener('click',function(){pkClose()});pf.appendChild(go);
+    var pr=document.createElement('div');pr.className='pk-pdf';
+    [['pdf',L('Descargar PDF','Download PDF')],['print',L('Imprimir','Print')]].forEach(function(x){var b=document.createElement('button');b.type='button';b.className='pk-b2';b.textContent=x[1];b.addEventListener('click',function(){cotiz(x[0])});pr.appendChild(b)});
+    pf.appendChild(pr);
     var cl=document.createElement('button');cl.type='button';cl.className='pk-clr';cl.textContent=L('Vaciar paquete','Clear package');
     cl.addEventListener('click',function(){put([]);refresh()});pf.appendChild(cl);
   }
+  function cotiz(mode){
+    var v=get(),T=totals(v);if(!v.length||!window.geaCotizacionPDF)return;
+    var rows=[];if(T.t.u)rows.push([L('Pago único','One-time'),moneyU(T.t.u)]);if(T.t.m)rows.push([L('Cada mes','Monthly'),moneyU(T.t.m)]);if(T.t.a)rows.push([L('Cada año','Yearly'),moneyU(T.t.a)]);if(T.t.h)rows.push([L('Mejoras (por hora)','Improvements (per hour)'),moneyU(T.t.h)]);
+    var no=window.geaCotizacionNo?geaCotizacionNo():'COT',f=null;try{f=window.geaFX&&geaFX()}catch(e){}
+    var d={en:EN,no:no,fecha:window.geaOrdenFecha?geaOrdenFecha(EN):'',fx:f,tot:rows,items:v.map(function(it){var c=!!T.cov[it.k];return {t:it.t,inc:c,pr:c?L('Incluido en la plataforma completa','Included in the complete platform'):ptxt(it.p)}})};
+    var name=(EN?'gea-consultora-quote-':'cotizacion-gea-consultora-')+no+'.pdf',blob=window.geaCotizacionPDF(d);
+    try{window.geaTrack&&geaTrack('cotizacion_pdf',{via:mode,items:v.length})}catch(e){}
+    if(mode==='print'&&window.geaPdfImprimir)window.geaPdfImprimir(blob,name);else if(window.geaPdfBajar)window.geaPdfBajar(blob,name);
+  }
   function pkOpen(){pkRender();pbg.hidden=false;pk.setAttribute('aria-hidden','false');requestAnimationFrame(function(){pk.classList.add('on')});document.body.classList.add('noscroll')}
   function pkClose(){pk.classList.remove('on');pk.setAttribute('aria-hidden','true');pbg.hidden=true;document.body.classList.remove('noscroll')}
+  document.addEventListener('click',function(e){var o=e.target.closest&&e.target.closest('[data-open-pkg]');if(o){e.preventDefault();pkOpen()}});
   pbg.addEventListener('click',pkClose);pk.querySelector('.pk-x').addEventListener('click',pkClose);
   document.addEventListener('keydown',function(e){if(e.key==='Escape'&&pk.classList.contains('on'))pkClose()});
   document.addEventListener('click',function(e){var c=e.target.closest&&e.target.closest('.cf-cot');if(c){e.preventDefault();e.stopPropagation();pkOpen()}},true);

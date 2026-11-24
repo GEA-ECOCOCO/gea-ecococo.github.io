@@ -1822,3 +1822,16 @@ html[data-tema="consultora"] .cs-lema h3{color:#F3E9D2}html[data-tema="consultor
 .pk-sec{margin-bottom:6px}
 .pk-f{margin:0 12px 12px;border:0;border-radius:22px;padding:14px 16px;box-shadow:0 6px 20px rgba(10,42,63,.2)}
 @media(max-width:560px){.pk-bg{background:rgba(4,20,32,.5)}}
+
+.pk-pdf{display:flex;gap:8px;margin-top:10px}
+.pk-b2{flex:1;border:1.5px solid #2585C5;background:#fff;color:#2585C5;border-radius:999px;padding:10px 12px;font-family:var(--cond);text-transform:uppercase;letter-spacing:.04em;font-size:.95rem;cursor:pointer}
+.pk-b2:hover{background:#2585C5;color:#fff}
+@media print{.pk,.pk-bg{display:none!important}}
+/* Tarjetas de documentos en el ambiente Consultora */
+html[data-tema="consultora"] .dl-card{background:#fff;border-left-color:#2585C5;color:#0A2A3F;box-shadow:0 6px 18px rgba(10,42,63,.15)}
+html[data-tema="consultora"] .dl-ic{background:#0A2A3F;color:#9BF8FC}
+html[data-tema="consultora"] .dl-d{color:#3C5A6E}
+html[data-tema="consultora"] .dl-m{color:#2585C5}
+html[data-tema="consultora"] .dl-a{border-color:#2585C5;color:#0A2A3F;background:transparent}
+html[data-tema="consultora"] .dl-a:hover{background:#2585C5;color:#fff}
+html[data-tema="consultora"] .note-pdf{color:#3C5A6E}

@@ -238,4 +238,99 @@
     return build(doc);
   };
   window.geaFacturaNo=function(){var n=new Date();return 'PF-'+n.getFullYear()+pad(n.getMonth()+1)+pad(n.getDate())+'-'+pad(n.getHours())+pad(n.getMinutes())+pad(n.getSeconds())};
+  /* ---- GEA Consultora: cotización del paquete (varias páginas, sin servidor) ---- */
+  function buildN(docs){
+    var objs=[];function add(x){objs.push(x);return objs.length}
+    var n=docs.length,kids=[];for(var i=0;i<n;i++)kids.push((3+i*2)+' 0 R');
+    add('<< /Type /Catalog /Pages 2 0 R >>');
+    add('<< /Type /Pages /Kids ['+kids.join(' ')+'] /Count '+n+' >>');
+    var fo=3+n*2;
+    docs.forEach(function(d,i){
+      var c=d.s.join('\n');
+      add('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+W+' '+H+'] /Contents '+(4+i*2)+' 0 R /Resources << /Font << /F1 '+fo+' 0 R /F2 '+(fo+1)+' 0 R >> >> >>');
+      add('<< /Length '+c.length+' >>\nstream\n'+c+'\nendstream');
+    });
+    add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
+    add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+    var out='%PDF-1.4\n',off=[];
+    objs.forEach(function(o,i){off.push(out.length);out+=(i+1)+' 0 obj\n'+o+'\nendobj\n'});
+    var x=out.length;out+='xref\n0 '+(objs.length+1)+'\n0000000000 65535 f \n';
+    off.forEach(function(q){out+=('0000000000'+q).slice(-10)+' 00000 n \n'});
+    out+='trailer\n<< /Size '+(objs.length+1)+' /Root 1 0 R >>\nstartxref\n'+x+'\n%%EOF';
+    var u=new Uint8Array(out.length);for(var i=0;i<out.length;i++)u[i]=out.charCodeAt(i)&255;
+    return new Blob([u],{type:'application/pdf'});
+  }
+  var CC={nv:[.039,.165,.247],az:[.145,.522,.773],cy:[.298,.765,1],cr:[.953,.914,.824],bg:[.933,.957,.973],gr:[.235,.353,.431],bl:[1,1,1]};
+  function poly(doc,pts,fill){var o=[];pts.forEach(function(p,i){o.push(p[0].toFixed(2)+' '+(H-p[1]).toFixed(2)+(i?' l':' m'))});doc.s.push(col(fill)+' rg '+o.join(' ')+' h f')}
+  function escudo(doc,x,y,k){ // escudo simple de GEA Consultora en vectores
+    function P(a){return a.map(function(p){return [x+p[0]*k,y+p[1]*k]})}
+    poly(doc,P([[0,6],[22,0],[44,6],[44,30],[22,54],[0,30]]),CC.cr);
+    poly(doc,P([[4,9],[22,4],[40,9],[40,28],[22,48],[4,28]]),CC.nv);
+    poly(doc,P([[12,36],[16,36],[16,20],[12,20]]),CC.cr);poly(doc,P([[20,40],[24,40],[24,14],[20,14]]),CC.cr);poly(doc,P([[28,36],[32,36],[32,24],[28,24]]),CC.cr);
+  }
+  // d: {en,no,fecha,items:[{t,pr,inc}],tot:[[etiqueta,monto]],fx:{r,d}}
+  window.geaCotizacionPDF=function(d){
+    var L=function(es,en){return d.en?en:es},pages=[],doc,y,fx=d.fx&&d.fx.r?d.fx.r:7.65;
+    function pie(){
+      doc.rect(0,H-46,W,46,CC.nv);doc.rect(0,H-46,W,3,CC.az);
+      doc.text(L('Para confirmar tu cotización: WhatsApp +502 4279-4894','To confirm your quote: WhatsApp +502 4279-4894'),M,H-26,9.5,{bold:true,color:CC.cr});
+      doc.text('geaecococo.ventas@gmail.com  ·  gea-ecococo.github.io',W-M,H-26,9,{color:[.78,.86,.92],right:true});
+      doc.text('GEA Consultora · GEA Grupo Empresarial Armas · Retalhuleu, Guatemala',M,H-12,7.5,{color:[.6,.72,.8]});
+    }
+    function nueva(primera){
+      doc=new Doc();pages.push(doc);
+      if(primera){
+        doc.rect(0,0,W,104,CC.nv);doc.rect(0,104,W,4,CC.az);escudo(doc,M,20,1.25);
+        doc.text('GEA',M+66,60,34,{bold:true,color:CC.cr});doc.text('C O N S U L T O R A',M+68,76,8.5,{bold:true,color:CC.cy});
+        doc.text(L('COTIZACIÓN DE SERVICIOS DIGITALES','DIGITAL SERVICES QUOTE'),W-M,40,12.5,{bold:true,color:CC.cy,right:true});
+        doc.text(L('N.º ','No. ')+d.no,W-M,58,11,{bold:true,color:CC.cr,right:true});
+        doc.text(L('Fecha: ','Date: ')+d.fecha+'   ·   '+L('Vigencia: 15 días','Valid for 15 days'),W-M,76,9.5,{color:[.78,.86,.92],right:true});
+        doc.text('Estrategia · Tecnología · Desarrollo',W-M,92,8,{color:[.6,.72,.8],right:true});
+        y=134;
+      }else{
+        doc.rect(0,0,W,46,CC.nv);doc.rect(0,46,W,3,CC.az);
+        doc.text('GEA Consultora',M,29,13,{bold:true,color:CC.cr});
+        doc.text(L('Cotización ','Quote ')+d.no+L(' (continuación)',' (continued)'),W-M,29,9.5,{color:CC.cy,right:true});
+        y=74;
+      }
+      pie();
+    }
+    function cab(){
+      doc.rect(M,y,W-2*M,22,CC.nv);
+      doc.text(L('SERVICIO','SERVICE'),M+10,y+15,9,{bold:true,color:CC.cr});
+      doc.text(L('PRECIO DE REFERENCIA','REFERENCE PRICE'),W-M-10,y+15,9,{bold:true,color:CC.cr,right:true});
+      y+=22;
+    }
+    nueva(true);
+    doc.text(L('SERVICIOS ELEGIDOS','SELECTED SERVICES'),M,y,10,{bold:true,color:CC.az});doc.line(M,y+6,W-M,y+6,CC.az,1);y+=20;
+    cab();
+    d.items.forEach(function(it,i){
+      var ls=wrap(it.t,10.5,W-2*M-230,true),h=Math.max(26,ls.length*13+12);
+      if(y+h>H-70){nueva(false);cab()}
+      doc.rect(M,y,W-2*M,h,i%2?CC.bl:CC.bg);
+      ls.forEach(function(l,j){doc.text(l,M+10,y+17+j*13,10.5,{bold:true})});
+      doc.text(it.pr,W-M-10,y+17,9.5,{right:true,color:it.inc?CC.gr:CC.nv,bold:!it.inc});
+      y+=h;
+    });
+    doc.line(M,y,W-M,y,CC.nv,1);y+=24;
+    var nT=d.tot.length,hT=34+nT*20+26;
+    if(y+hT+140>H-60){nueva(false)}
+    doc.rect(W-M-300,y,300,hT,CC.nv);
+    doc.text(L('TOTAL ESTIMADO','ESTIMATED TOTAL'),W-M-288,y+22,10,{bold:true,color:CC.cy});
+    d.tot.forEach(function(r,i){
+      doc.text(r[0],W-M-288,y+44+i*20,10,{color:CC.cr});
+      doc.text(r[1],W-M-12,y+44+i*20,11,{bold:true,color:CC.cr,right:true});
+    });
+    doc.text(L('Tipo de cambio de referencia: Q'+fx.toFixed(2)+' por US$1','Reference exchange rate: Q'+fx.toFixed(2)+' per US$1'),W-M-288,y+hT-10,7.5,{color:[.6,.72,.8]});
+    y+=hT+26;
+    doc.text(L('CONDICIONES','TERMS'),M,y,10,{bold:true,color:CC.az});doc.line(M,y+6,W-M,y+6,CC.az,1);y+=22;
+    var T=[L('Los precios son de referencia, en quetzales. El monto en dólares es aproximado; el cobro es en quetzales.','Prices are for reference, in quetzales. The US dollar amount is approximate; payment is in quetzales.'),
+      L('El precio final se confirma por escrito después de una conversación sobre el alcance de tu proyecto.','The final price is confirmed in writing after a conversation about your project scope.'),
+      L('Esta cotización informativa tiene una vigencia de 15 días desde su fecha.','This informational quote is valid for 15 days from its date.'),
+      L('Dominio, alojamiento y servicios de terceros se informan aparte cuando aplican. Factura electrónica FEL.','Domain, hosting and third-party services are quoted separately when they apply. FEL electronic invoice.'),
+      L('Términos de servicio y privacidad en gea-ecococo.github.io/consultora-terminos.html','Terms of service and privacy at gea-ecococo.github.io/en/consultora-terminos.html')];
+    T.forEach(function(t){wrap(t,9,W-2*M-14).forEach(function(l,i){if(y>H-70){nueva(false)}if(i===0)doc.text('•',M+2,y,9,{bold:true,color:CC.az});doc.text(l,M+14,y,9,{color:CC.nv});y+=12.5});y+=3});
+    return buildN(pages);
+  };
+  window.geaCotizacionNo=function(){var n=new Date();return 'COT-'+n.getFullYear()+pad(n.getMonth()+1)+pad(n.getDate())+'-'+pad(n.getHours())+pad(n.getMinutes())};
 })();
