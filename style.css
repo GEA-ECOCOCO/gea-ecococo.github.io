@@ -1777,3 +1777,14 @@ html[data-tema="consultora"] footer.pie .pie-sh{border-color:#4CC3FF;color:#9BF8
 .pk-btn:hover{background:#0A2A3F}
 .pk-clr{display:block;margin:10px auto 0;background:none;border:0;color:#3C5A6E;text-decoration:underline;font-size:.85rem;cursor:pointer}
 @media(prefers-reduced-motion:reduce){.pk{transition:none}}
+
+/* Lema oficial de GEA Consultora */
+.cs-lema{margin:26px 0 30px;background:linear-gradient(135deg,#0A2A3F,#123E51);border:1px solid rgba(76,195,255,.3);border-radius:22px;padding:6px 18px;color:#F3E9D2;box-shadow:0 10px 28px rgba(10,42,63,.25)}
+.cs-lema ol{list-style:none;margin:0;padding:0}
+.cs-lema li{display:flex;gap:14px;align-items:flex-start;padding:16px 0;border-bottom:1px solid rgba(76,195,255,.2)}
+.cs-lema li:last-child{border-bottom:0}
+.cs-lema li>b{flex:none;width:38px;height:38px;border-radius:50%;border:1.5px solid #4CC3FF;color:#9BF8FC;display:flex;align-items:center;justify-content:center;font-family:var(--cond);font-size:1.15rem;font-weight:400}
+.cs-lema h3{margin:0 0 3px;font-family:var(--cond);text-transform:uppercase;letter-spacing:.04em;font-size:1.25rem;font-weight:400;color:#F3E9D2}
+.cs-lema p{margin:0;font-size:.92rem;color:#C9DCE8}
+@media(min-width:820px){.cs-lema{padding:10px 26px}.cs-lema ol{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}.cs-lema li{border-bottom:0;flex-direction:column;gap:10px;padding:16px 0}}
+html[data-tema="consultora"] .cs-lema h3{color:#F3E9D2}html[data-tema="consultora"] .cs-lema p{color:#C9DCE8}
