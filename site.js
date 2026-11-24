@@ -574,7 +574,9 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     pais:['pais','País de destino','Destination country','text',1],
     dest:['dest','Ciudad o puerto de destino','Destination city or port','text',1],
     inc:['inc','Condición de entrega (Incoterm)','Delivery terms (Incoterm)','sel',1],
-    mail:['mail','Correo electrónico','Email','mail',1]
+    mail:['mail','Correo electrónico','Email','mail',1],
+    giro:['giro','A qué se dedica tu negocio','What your business does','text',1],
+    web:['web','Tu página o red social actual (opcional)','Your current website or social page (optional)','text',0]
   };
   var INC=[['FOB (puerto de salida en Guatemala)','FOB (Guatemalan port of departure)'],['CIF (hasta el puerto de destino)','CIF (to the destination port)'],['EXW (en la planta, Retalhuleu)','EXW (at the plant, Retalhuleu)'],['No estoy seguro; necesito asesoría','Not sure; I need guidance']];
   var OPT=[
@@ -599,7 +601,21 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       saludo:['Hola, quiero más información sobre el carbón ECOCOCO.','Hi, I would like more information about ECOCOCO charcoal.'],
       f:['nom','esp'],preg:1}
   ];
-  var OPT_ES=['Consumidor final','Tienda o abarrotes','Restaurante o parrillada','Distribuidor o mayorista','Exportación','Más información'];
+
+  /* GEA Consultora: opciones propias (nada de carbón) */
+  if(document.documentElement.getAttribute('data-tema')==='consultora'){
+    var CF=['nom','neg','giro','dep','mun','web','esp'];
+    OPT=[
+      {i:'globe',t:['Página web profesional','Professional website'],d:['Quiero que mi negocio tenga página propia','I want my business to have its own website'],saludo:['Hola, quiero una página web profesional para mi negocio.','Hi, I want a professional website for my business.'],f:CF,lug:'Departamento'},
+      {i:'app',t:['Aplicación instalable','Installable app'],d:['Que mis clientes me tengan en su celular','Have my customers keep me on their phone'],saludo:['Hola, quiero una aplicación instalable para mi negocio.','Hi, I want an installable app for my business.'],f:CF},
+      {i:'chat',t:['Asistente y registro de clientes','Assistant and customer register'],d:['Atender y dar seguimiento a clientes','Serve and follow up with customers'],saludo:['Hola, quiero un asistente con inteligencia artificial y registro de clientes.','Hi, I want an AI assistant and a customer register.'],f:CF},
+      {i:'clip',t:['Revisar mi página o aplicación','Review my website or app'],d:['Quiero un diagnóstico de calidad','I want a quality diagnosis'],saludo:['Hola, quiero que revisen la calidad de mi página o aplicación.','Hi, I want you to review the quality of my website or app.'],f:CF},
+      {i:'doc',t:['Marca e imagen','Brand and image'],d:['Identidad visual, textos y redes sociales','Visual identity, texts and social media'],saludo:['Hola, quiero mejorar la marca y la imagen digital de mi negocio.','Hi, I want to improve the brand and digital image of my business.'],f:CF},
+      {i:'link',t:['Soporte y mantenimiento','Support and maintenance'],d:['Ya tengo página y necesito ayuda','I already have a website and need help'],saludo:['Hola, quiero soporte y mantenimiento para mi plataforma digital.','Hi, I want support and maintenance for my digital platform.'],f:CF},
+      {i:'mail',t:['Quiero más información','I want more information'],d:['Tengo preguntas sobre los servicios','I have questions about the services'],saludo:['Hola, quiero más información sobre los servicios de GEA Consultora.','Hi, I would like more information about GEA Consultora services.'],f:['nom','esp'],preg:1}
+    ];
+  }
+  var OPT_ES=OPT.map(function(o){return o.t[0]});
   function X(a){return gL(a[0],a[1])}
   function esc(t){return String(t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
   function Qf(n){return 'Q'+n.toLocaleString(GEA_LOC)}
@@ -626,6 +642,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     else if(k==='dest')h+='<label for="'+id+'">'+lab+' *</label><input id="'+id+'" name="dest" maxlength="80" required>';
     else if(k==='mail')h+='<label for="'+id+'">'+lab+' *</label><input id="'+id+'" name="mail" type="email" inputmode="email" maxlength="100" autocomplete="email" required>';
     else if(k==='inc')h+='<label for="'+id+'">'+lab+' *</label><select id="'+id+'" name="inc" required><option value="">'+gL('Selecciona','Select')+'</option>'+INC.map(function(x){return '<option>'+gL(x[0],x[1])+'</option>'}).join('')+'</select>';
+    else if(k==='giro'||k==='web')h+='<label for="'+id+'">'+lab+(d[4]?' *':'')+'</label><input id="'+id+'" name="'+k+'" maxlength="120"'+(d[4]?' required':'')+'>';
     else if(k==='esp')h+='<label for="'+id+'">'+(o.preg?gL('¿Qué quieres saber? *','What would you like to know? *'):lab)+'</label><textarea id="'+id+'" name="esp" rows="'+(o.preg?4:3)+'" maxlength="400"'+(o.preg?' required':'')+'></textarea>';
     return '<div class="wf-c">'+h+'<span class="wf-e" aria-live="polite"></span></div>';
   }
@@ -657,8 +674,11 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     if(v.dest)L.push(gL('Ciudad o puerto de destino: ','Destination city or port: ')+v.dest);
     if(v.inc)L.push(gL('Condición de entrega: ','Delivery terms: ')+v.inc);
     if(v.mail)L.push(gL('Correo: ','Email: ')+v.mail);
+    if(v.giro)L.push(gL('Giro: ','Business type: ')+v.giro);
+    if(v.web)L.push(gL('Página o red actual: ','Current site or page: ')+v.web);
     if(v.dep)L.push(gL(o.lug?'Ubicación de entrega: ':'Departamento: ',o.lug?'Delivery location: ':'Department: ')+v.dep+(v.mun?', '+v.mun:''));
     if(v.esp)L.push((o.preg?gL('Consulta: ','Question: '):gL('Especificaciones: ','Specifications: '))+v.esp);
+    try{var pk=JSON.parse(localStorage.getItem('gea-pkg')||'[]');if(pk.length&&document.documentElement.getAttribute('data-tema')==='consultora')L.push(gL('Mi paquete: ','My package: ')+pk.map(function(x){return x.t}).join(', '))}catch(x){}
     return L.join('\n');
   }
   function enviar(form){
@@ -677,7 +697,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       if(el.name==='esp'&&o.preg&&v.esp&&v.esp.length<5)err(el,gL('Cuéntanos un poco más.','Tell us a little more.'));
     });
     if(bad){bad.focus();return}
-    if(window.geaTrack){geaTrack('click_whatsapp',{destino:'formulario: '+OPT_ES[cur]});if(cur>=1&&cur<=4)geaTrack('generate_lead',{tipo:OPT_ES[cur],via:'whatsapp'})}
+    if(window.geaTrack){geaTrack('click_whatsapp',{destino:'formulario: '+OPT_ES[cur]});if(cur>=0&&cur<=(document.documentElement.getAttribute('data-tema')==='consultora'?5:4)&&(cur>=1||document.documentElement.getAttribute('data-tema')==='consultora'))geaTrack('generate_lead',{tipo:OPT_ES[cur],via:'whatsapp'})}
     window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(mensaje(o,v)),'_blank','noopener');
     cerrar();
   }

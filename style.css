@@ -1835,3 +1835,19 @@ html[data-tema="consultora"] .dl-m{color:#2585C5}
 html[data-tema="consultora"] .dl-a{border-color:#2585C5;color:#0A2A3F;background:transparent}
 html[data-tema="consultora"] .dl-a:hover{background:#2585C5;color:#fff}
 html[data-tema="consultora"] .note-pdf{color:#3C5A6E}
+
+/* Menú "¿Qué necesitas?" en el ambiente Consultora */
+html[data-tema="consultora"] .wch{background:rgba(4,20,32,.62)}
+html[data-tema="consultora"] .wch-in{background:#EEF4F8;color:#0A2A3F;border-radius:28px 28px 0 0}
+html[data-tema="consultora"] .wch-h h2{color:#0A2A3F}
+html[data-tema="consultora"] .wch-s{color:#3C5A6E}
+html[data-tema="consultora"] .wch-l button{border-color:rgba(10,42,63,.14);border-left:4px solid #2585C5;color:#0A2A3F}
+html[data-tema="consultora"] .wch-l button:hover,html[data-tema="consultora"] .wch-l button:focus-visible{border-color:#2585C5;box-shadow:0 0 0 3px rgba(37,133,197,.28)}
+html[data-tema="consultora"] .wch-l small{color:#3C5A6E}
+html[data-tema="consultora"] .wch-i{background:#0A2A3F;color:#9BF8FC}
+html[data-tema="consultora"] .wch-h .wch-b,html[data-tema="consultora"] .wch-h .ovl-x{border-color:#0A2A3F;color:#0A2A3F}
+html[data-tema="consultora"] .wch-h .ovl-x:hover{background:#0A2A3F;color:#EEF4F8}
+html[data-tema="consultora"] .wf-c input:focus,html[data-tema="consultora"] .wf-c select:focus,html[data-tema="consultora"] .wf-c textarea:focus{border-color:#2585C5;box-shadow:0 0 0 3px rgba(37,133,197,.28);outline:0}
+html[data-tema="consultora"] .wf-go{background:#2585C5;color:#fff;border-color:#2585C5}
+html[data-tema="consultora"] .wf-go:hover{background:#0A2A3F}
+html[data-tema="consultora"] .wf-c label{color:#3C5A6E}
