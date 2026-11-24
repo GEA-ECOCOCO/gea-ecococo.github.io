@@ -1663,3 +1663,7 @@ html[data-tema="tecnologia"] .cart-float{border-color:#8CCB5E}
 .bt-t .bt-bar{width:min(62vw,230px);background:rgba(238,242,234,.16)}
 .bt-t .bt-bar i{background:linear-gradient(90deg,#8CCB5E,#E7B24A);box-shadow:none}
 .bt-t .bt-l3{color:#9DB3A5;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase}
+
+/* Consultora: botón flotante "Cotizar" en lugar del carrito */
+html[data-tema="consultora"] .cart-float.cf-cot{background:#0A2A3F;color:#F3E9D2;border:2px solid #4CC3FF;display:flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:0 6px 18px rgba(10,42,63,.35)}
+html[data-tema="consultora"] .cart-float.cf-cot:hover,html[data-tema="consultora"] .cart-float.cf-cot:focus-visible{background:#123E51;border-color:#9BF8FC}
