@@ -1667,3 +1667,47 @@ html[data-tema="tecnologia"] .cart-float{border-color:#8CCB5E}
 /* Consultora: botón flotante "Cotizar" en lugar del carrito */
 html[data-tema="consultora"] .cart-float.cf-cot{background:#0A2A3F;color:#F3E9D2;border:2px solid #4CC3FF;display:flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:0 6px 18px rgba(10,42,63,.35)}
 html[data-tema="consultora"] .cart-float.cf-cot:hover,html[data-tema="consultora"] .cart-float.cf-cot:focus-visible{background:#123E51;border-color:#9BF8FC}
+
+/* ===== GEA Consultora: plataforma propia ===== */
+.cs-hero{text-align:center;margin:6px 0 34px}
+.cs-hint{font-size:.85rem;opacity:.72;margin-top:6px}
+.em-wrap{position:relative;width:min(340px,92vw);aspect-ratio:1;margin:0 auto}
+.em-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.em-o1{transform-origin:100px 100px;animation:bc-spin 46s linear infinite}
+.em-o2{transform-origin:100px 100px;animation:bc-spin 8s linear infinite reverse}
+.em-ln line{stroke-dashoffset:0;animation:em-flow 1.8s linear infinite;transition:stroke .2s,stroke-width .2s}
+.em-ln line.on{stroke:#0A2A3F;stroke-width:1.6}
+.em-sh{position:absolute;left:50%;top:50%;height:20%;width:auto;transform:translate(-50%,-50%);filter:drop-shadow(0 0 12px rgba(76,195,255,.55));animation:em-pulse 3.6s ease-in-out infinite}
+.em-n{position:absolute;transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border-radius:999px;background:#0A2A3F;color:#F3E9D2;border:1.5px solid #4CC3FF;font:600 .78rem/1 "Segoe UI",Calibri,Arial,sans-serif;letter-spacing:.03em;text-decoration:none;white-space:nowrap;box-shadow:0 6px 14px rgba(10,42,63,.3);transition:background .2s,transform .2s,border-color .2s}
+.em-n i{width:8px;height:8px;border-radius:50%;background:#9BF8FC;box-shadow:0 0 8px #4CC3FF;animation:em-blink 2.4s ease-in-out infinite}
+.em-n:hover,.em-n:focus-visible{background:#2585C5;border-color:#9BF8FC;transform:translate(-50%,-50%) scale(1.06);outline:0}
+.em-n:nth-of-type(2) i{animation-delay:.4s}.em-n:nth-of-type(3) i{animation-delay:.8s}.em-n:nth-of-type(4) i{animation-delay:1.2s}.em-n:nth-of-type(5) i{animation-delay:1.6s}
+@keyframes em-flow{to{stroke-dashoffset:-20}}
+@keyframes em-pulse{50%{filter:drop-shadow(0 0 22px rgba(155,248,252,.85))}}
+@keyframes em-blink{50%{opacity:.35}}
+@keyframes cs-float{50%{transform:translateY(-6px)}}
+.cs-area{display:block;text-decoration:none;color:inherit}
+.cs-ill{display:block;width:100%;height:auto;max-height:150px;object-fit:contain;margin:0 auto 10px;animation:cs-float 6s ease-in-out infinite}
+.cs-ill-hd{max-width:340px;max-height:190px;margin:0 auto 20px}
+.cs-more{display:inline-block;margin-top:6px;color:#2585C5;font-weight:700;font-size:.92rem}
+.cs-more::after{content:" →"}
+.cs-item{display:flex;flex-direction:column}
+.cs-item p{flex:1}
+.cs-add{align-self:flex-start;margin-top:6px;padding:9px 16px;border-radius:999px;border:2px solid #2585C5;background:transparent;color:#0A2A3F;font:700 .88rem "Segoe UI",Calibri,Arial,sans-serif;cursor:pointer;transition:background .2s,color .2s}
+.cs-add:hover,.cs-add:focus-visible{background:rgba(37,133,197,.14);outline:0}
+.cs-add[aria-pressed="true"]{background:#2585C5;color:#fff}
+.cs-pkg,.cs-next,.cs-diag{margin:26px 0}
+.cs-list{list-style:none;margin:10px 0 14px;padding:0}
+.cs-list li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(10,42,63,.14)}
+.cs-list button{width:32px;height:32px;border-radius:50%;border:1.5px solid #2585C5;background:transparent;color:#0A2A3F;font-size:1.1rem;cursor:pointer}
+.cs-q{list-style:none;margin:0 0 16px;padding:0}
+.cs-q li{padding:8px 0;border-bottom:1px solid rgba(10,42,63,.1)}
+.cs-q label{display:flex;gap:12px;align-items:flex-start;cursor:pointer}
+.cs-q input{width:22px;height:22px;flex:none;accent-color:#2585C5;margin-top:1px}
+.cs-meter{height:10px;border-radius:6px;background:#D3E2EC;overflow:hidden;margin:6px 0}
+#dg-bar{display:block;height:100%;width:0;background:linear-gradient(90deg,#2585C5,#4CC3FF);transition:width .4s}
+.cs-score{font-size:1.3rem;margin:4px 0}
+.cs-msg{min-height:1.4em}
+.cf-n{position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;padding:0 5px;border-radius:11px;background:#4CC3FF;color:#0A2A3F;font:700 .78rem/22px "Segoe UI",Arial,sans-serif;text-align:center;box-sizing:border-box}
+.cf-n[hidden]{display:none}
+@media(prefers-reduced-motion:reduce){.em-o1,.em-o2,.em-ln line,.em-sh,.em-n i,.cs-ill{animation:none}}
