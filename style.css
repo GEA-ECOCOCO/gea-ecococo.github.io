@@ -1480,71 +1480,71 @@ html[data-tema="consultora"] a.link{color:#154E7A}
 
 /* ===== Tema TECNOLOGÍA: ambiente corporativo-tecnológico (sección Tecnología GEA) ===== */
 html[data-tema="tecnologia"]{
-  --carbon:#060D14;--brasa:#22D3EE;--brasa-d:#0FB5D0;--coco:#4CC3FF;--bosque:#7DE3FF;--crema:#0E1B29;
-  --bg:#060D14;--kraft:#060D14;--paper:#060D14;--cream:#0E1B29;--kraft-d:#4CC3FF;
-  --lime:#22D3EE;--lime2:#B6F23C;--verde:#22D3EE;--deep:#060D14;--ink:#E6F1F7;--muted:#8FA9BC;--papertxt:#E6F1F7;
-  --panel:rgba(12,28,42,.78);--panel-b:rgba(76,195,255,.28);--alerta:#FF8A5B;
+  --carbon:#0F1B16;--brasa:#8CCB5E;--brasa-d:#74B24A;--coco:#A8CBA0;--bosque:#C9E6B4;--crema:#162A22;
+  --bg:#0F1B16;--kraft:#0F1B16;--paper:#0F1B16;--cream:#162A22;--kraft-d:#A8CBA0;
+  --lime:#8CCB5E;--lime2:#E7B24A;--verde:#8CCB5E;--deep:#0F1B16;--ink:#EEF2EA;--muted:#9DB3A5;--papertxt:#EEF2EA;
+  --panel:rgba(22,42,34,.9);--panel-b:rgba(168,203,160,.28);--alerta:#FF8A5B;
 }
-html[data-tema="tecnologia"] body{background:#060D14;color:#E6F1F7;
-  background-image:radial-gradient(1100px 520px at 85% -8%,rgba(34,211,238,.16),transparent 62%),radial-gradient(800px 480px at -10% 30%,rgba(21,62,100,.38),transparent 60%),linear-gradient(rgba(76,195,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(76,195,255,.055) 1px,transparent 1px);
+html[data-tema="tecnologia"] body{background:#0F1B16;color:#EEF2EA;
+  background-image:radial-gradient(1100px 520px at 85% -8%,rgba(140,203,94,.16),transparent 62%),radial-gradient(800px 480px at -10% 30%,rgba(31,74,51,.45),transparent 60%),linear-gradient(rgba(168,203,160,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(168,203,160,.055) 1px,transparent 1px);
   background-size:auto,auto,44px 44px,44px 44px;background-attachment:fixed}
-html[data-tema="tecnologia"] body::after{content:"";position:fixed;left:0;right:0;top:-12%;height:12%;pointer-events:none;z-index:40;background:linear-gradient(180deg,transparent,rgba(34,211,238,.07),transparent);animation:tec-scan 9s linear infinite}
+html[data-tema="tecnologia"] body::after{content:"";position:fixed;left:0;right:0;top:-12%;height:12%;pointer-events:none;z-index:40;background:linear-gradient(180deg,transparent,rgba(140,203,94,.07),transparent);animation:tec-scan 9s linear infinite}
 @keyframes tec-scan{to{top:110%}}
-html[data-tema="tecnologia"] .barrido{background:linear-gradient(100deg,#060D14 0%,#153E64 60%,#22D3EE 100%)}
-html[data-tema="tecnologia"] .barrido::after{background:#22D3EE;box-shadow:0 0 24px 6px #22D3EE}
-html[data-tema="tecnologia"] .topstrip{background:#0A1A28;color:#7DE3FF;border-bottom:1px solid rgba(76,195,255,.25);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-html[data-tema="tecnologia"] .topstrip a{color:#B6F23C}
-html[data-tema="tecnologia"] nav{background:rgba(6,13,20,.9);color:#E6F1F7;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(76,195,255,.35);box-shadow:0 1px 24px rgba(34,211,238,.14)}
+html[data-tema="tecnologia"] .barrido{background:linear-gradient(100deg,#0F1B16 0%,#1F4A33 60%,#8CCB5E 100%)}
+html[data-tema="tecnologia"] .barrido::after{background:#8CCB5E;box-shadow:0 0 24px 6px #8CCB5E}
+html[data-tema="tecnologia"] .topstrip{background:#13241C;color:#C9E6B4;border-bottom:1px solid rgba(168,203,160,.25);font-family:inherit}
+html[data-tema="tecnologia"] .topstrip a{color:#E7B24A}
+html[data-tema="tecnologia"] nav{background:rgba(15,27,22,.9);color:#EEF2EA;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(168,203,160,.35);box-shadow:0 1px 24px rgba(140,203,94,.14)}
 html[data-tema="tecnologia"] nav::after{background:transparent}
-html[data-tema="tecnologia"] .menu a{color:#E6F1F7}
-html[data-tema="tecnologia"] .menu a:hover{color:#fff;background:rgba(34,211,238,.18)}
-html[data-tema="tecnologia"] .menu a.on{color:#060D14;background:#22D3EE}
-html[data-tema="tecnologia"] .burger,html[data-tema="tecnologia"] .share-btn{color:#7DE3FF;border-color:rgba(125,227,255,.7)}
-html[data-tema="tecnologia"] .share-btn:hover{background:#22D3EE;border-color:#22D3EE;color:#060D14}
-html[data-tema="tecnologia"] .eyebrow{color:#22D3EE;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.2em}
-html[data-tema="tecnologia"] .eyebrow::before{background:#22D3EE;box-shadow:0 0 10px #22D3EE}
-html[data-tema="tecnologia"] h1,html[data-tema="tecnologia"] h2{color:#fff;text-shadow:0 0 28px rgba(34,211,238,.25)}
-html[data-tema="tecnologia"] h3{color:#7DE3FF}
-html[data-tema="tecnologia"] .lead,html[data-tema="tecnologia"] p{color:#B9CCDA}
-html[data-tema="tecnologia"] .grad{background:linear-gradient(90deg,#22D3EE,#B6F23C);-webkit-background-clip:text;background-clip:text;color:transparent}
-html[data-tema="tecnologia"] .cita{color:#E6F1F7}
-html[data-tema="tecnologia"] .btn.sec{border-color:#22D3EE;color:#7DE3FF}
-html[data-tema="tecnologia"] .btn.sec:hover{background:rgba(34,211,238,.16)}
-html[data-tema="tecnologia"] .btn.pill,html[data-tema="tecnologia"] .btn.pill.add,html[data-tema="tecnologia"] .card .btn.pill.add{background:#22D3EE;color:#060D14;border:2px solid #22D3EE}
-html[data-tema="tecnologia"] .btn.pill:hover,html[data-tema="tecnologia"] .card .btn.pill.add:hover{background:#B6F23C;border-color:#B6F23C;color:#060D14}
-html[data-tema="tecnologia"] .card,html[data-tema="tecnologia"] .pd{background:var(--panel);border:1px solid var(--panel-b);box-shadow:inset 0 1px 0 rgba(125,227,255,.22),0 8px 28px rgba(0,0,0,.35)}
-html[data-tema="tecnologia"] .card.hov:hover{border-color:#22D3EE;box-shadow:inset 0 1px 0 rgba(125,227,255,.4),0 0 0 1px rgba(34,211,238,.35),0 12px 34px rgba(34,211,238,.18)}
-html[data-tema="tecnologia"] .linea::before{background:linear-gradient(#22D3EE,#B6F23C,transparent);box-shadow:0 0 12px #22D3EE}
-html[data-tema="tecnologia"] .linea li::before{background:#060D14;border-color:#22D3EE;box-shadow:0 0 14px #22D3EE}
-html[data-tema="tecnologia"] .linea .num{color:#B6F23C;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-html[data-tema="tecnologia"] .linea img{border-color:rgba(76,195,255,.4);filter:saturate(.9) contrast(1.05)}
-html[data-tema="tecnologia"] .eq dt,html[data-tema="tecnologia"] .ficha dt{color:#7DE3FF;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.82rem}
-html[data-tema="tecnologia"] .eq dd,html[data-tema="tecnologia"] .ficha dd{color:#E6F1F7}
-html[data-tema="tecnologia"] .estado{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+html[data-tema="tecnologia"] .menu a{color:#EEF2EA}
+html[data-tema="tecnologia"] .menu a:hover{color:#fff;background:rgba(140,203,94,.18)}
+html[data-tema="tecnologia"] .menu a.on{color:#0F1B16;background:#8CCB5E}
+html[data-tema="tecnologia"] .burger,html[data-tema="tecnologia"] .share-btn{color:#C9E6B4;border-color:rgba(201,230,180,.7)}
+html[data-tema="tecnologia"] .share-btn:hover{background:#8CCB5E;border-color:#8CCB5E;color:#0F1B16}
+html[data-tema="tecnologia"] .eyebrow{color:#8CCB5E;font-family:inherit;letter-spacing:.2em}
+html[data-tema="tecnologia"] .eyebrow::before{background:#8CCB5E;box-shadow:0 0 10px #8CCB5E}
+html[data-tema="tecnologia"] h1,html[data-tema="tecnologia"] h2{color:#fff;text-shadow:0 0 28px rgba(140,203,94,.25)}
+html[data-tema="tecnologia"] h3{color:#C9E6B4}
+html[data-tema="tecnologia"] .lead,html[data-tema="tecnologia"] p{color:#C5D3C9}
+html[data-tema="tecnologia"] .grad{background:linear-gradient(90deg,#8CCB5E,#E7B24A);-webkit-background-clip:text;background-clip:text;color:transparent}
+html[data-tema="tecnologia"] .cita{color:#EEF2EA}
+html[data-tema="tecnologia"] .btn.sec{border-color:#8CCB5E;color:#C9E6B4}
+html[data-tema="tecnologia"] .btn.sec:hover{background:rgba(140,203,94,.16)}
+html[data-tema="tecnologia"] .btn.pill,html[data-tema="tecnologia"] .btn.pill.add,html[data-tema="tecnologia"] .card .btn.pill.add{background:#8CCB5E;color:#0F1B16;border:2px solid #8CCB5E}
+html[data-tema="tecnologia"] .btn.pill:hover,html[data-tema="tecnologia"] .card .btn.pill.add:hover{background:#E7B24A;border-color:#E7B24A;color:#0F1B16}
+html[data-tema="tecnologia"] .card,html[data-tema="tecnologia"] .pd{background:var(--panel);border:1px solid var(--panel-b);box-shadow:inset 0 1px 0 rgba(201,230,180,.22),0 8px 28px rgba(0,0,0,.35)}
+html[data-tema="tecnologia"] .card.hov:hover{border-color:#8CCB5E;box-shadow:inset 0 1px 0 rgba(201,230,180,.4),0 0 0 1px rgba(140,203,94,.35),0 12px 34px rgba(140,203,94,.18)}
+html[data-tema="tecnologia"] .linea::before{background:linear-gradient(#8CCB5E,#E7B24A,transparent);box-shadow:0 0 12px #8CCB5E}
+html[data-tema="tecnologia"] .linea li::before{background:#0F1B16;border-color:#8CCB5E;box-shadow:0 0 14px #8CCB5E}
+html[data-tema="tecnologia"] .linea .num{color:#E7B24A;font-family:inherit}
+html[data-tema="tecnologia"] .linea img{border-color:rgba(168,203,160,.4);filter:saturate(.9) contrast(1.05)}
+html[data-tema="tecnologia"] .eq dt,html[data-tema="tecnologia"] .ficha dt{color:#C9E6B4;font-family:inherit;font-size:.82rem}
+html[data-tema="tecnologia"] .eq dd,html[data-tema="tecnologia"] .ficha dd{color:#EEF2EA}
+html[data-tema="tecnologia"] .estado{font-family:inherit}
 html[data-tema="tecnologia"] .estado.c{background:rgba(255,138,91,.14);color:#FFB08F;border-color:#FF8A5B}
-html[data-tema="tecnologia"] .estado.d{background:rgba(182,242,60,.12);color:#B6F23C;border-color:#B6F23C}
-html[data-tema="tecnologia"] .estado.p{background:rgba(143,169,188,.14);color:#B9CCDA;border-color:#8FA9BC}
+html[data-tema="tecnologia"] .estado.d{background:rgba(182,242,60,.12);color:#E7B24A;border-color:#E7B24A}
+html[data-tema="tecnologia"] .estado.p{background:rgba(143,169,188,.14);color:#C5D3C9;border-color:#9DB3A5}
 html[data-tema="tecnologia"] .estado.m{background:rgba(255,205,86,.14);color:#FFD76B;border-color:#FFD76B}
-html[data-tema="tecnologia"] .estado.t{background:rgba(34,211,238,.14);color:#7DE3FF;border-color:#22D3EE}
-html[data-tema="tecnologia"] a.link,html[data-tema="tecnologia"] p a{color:#7DE3FF}
-html[data-tema="tecnologia"] .tabla th{background:#0A1A28;color:#7DE3FF}
-html[data-tema="tecnologia"] .tabla{background:#0E1B29}
-html[data-tema="tecnologia"] .tabla td{color:#E6F1F7;border-color:rgba(76,195,255,.2)}
-html[data-tema="tecnologia"] .tabla td:first-child{color:#7DE3FF}
-html[data-tema="tecnologia"] footer.pie{background:#040A10;border-top:1px solid rgba(76,195,255,.3);box-shadow:0 -1px 30px rgba(34,211,238,.1)}
-html[data-tema="tecnologia"] .pie-redes a{background:#E6F1F7}
-html[data-tema="tecnologia"] footer.pie .pie-redes a:hover{background:#22D3EE;color:#060D14}
+html[data-tema="tecnologia"] .estado.t{background:rgba(140,203,94,.14);color:#C9E6B4;border-color:#8CCB5E}
+html[data-tema="tecnologia"] a.link,html[data-tema="tecnologia"] p a{color:#C9E6B4}
+html[data-tema="tecnologia"] .tabla th{background:#13241C;color:#C9E6B4}
+html[data-tema="tecnologia"] .tabla{background:#162A22}
+html[data-tema="tecnologia"] .tabla td{color:#EEF2EA;border-color:rgba(168,203,160,.2)}
+html[data-tema="tecnologia"] .tabla td:first-child{color:#C9E6B4}
+html[data-tema="tecnologia"] footer.pie{background:#0A130F;border-top:1px solid rgba(168,203,160,.3);box-shadow:0 -1px 30px rgba(140,203,94,.1)}
+html[data-tema="tecnologia"] .pie-redes a{background:#EEF2EA}
+html[data-tema="tecnologia"] footer.pie .pie-redes a:hover{background:#8CCB5E;color:#0F1B16}
 @media(max-width:1000px){
-  html[data-tema="tecnologia"] .menu{background:#060D14;border-bottom:4px solid #22D3EE}
-  html[data-tema="tecnologia"] .menu li{border-bottom:1px solid rgba(125,227,255,.18)}
-  html[data-tema="tecnologia"] .menu a{color:#E6F1F7}
-  html[data-tema="tecnologia"] .menu a.on{background:none;color:#22D3EE;box-shadow:inset 4px 0 0 #22D3EE}
+  html[data-tema="tecnologia"] .menu{background:#0F1B16;border-bottom:4px solid #8CCB5E}
+  html[data-tema="tecnologia"] .menu li{border-bottom:1px solid rgba(201,230,180,.18)}
+  html[data-tema="tecnologia"] .menu a{color:#EEF2EA}
+  html[data-tema="tecnologia"] .menu a.on{background:none;color:#8CCB5E;box-shadow:inset 4px 0 0 #8CCB5E}
 }
 @media(prefers-reduced-motion:reduce){html[data-tema="tecnologia"] body::after{animation:none;display:none}}
 /* animación de entrada: arranque de sistema */
 html.bt-on{background:#1A1A1A}
 html.bt-on[data-tema="consultora"]{background:#0A2A3F}
-html.bt-on[data-tema="tecnologia"]{background:#060D14}
+html.bt-on[data-tema="tecnologia"]{background:#0F1B16}
 html.bt-on body{opacity:0}
 .bt{position:fixed;inset:0;z-index:3000;background:#060D14;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#7DE3FF;
   background-image:linear-gradient(rgba(76,195,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(76,195,255,.07) 1px,transparent 1px);background-size:44px 44px;animation:bt-out .45s ease 1.45s forwards}
@@ -1558,34 +1558,34 @@ html.bt-on body{opacity:0}
 @keyframes bt-out{to{opacity:0;visibility:hidden}}
 @media(prefers-reduced-motion:reduce){.bt{display:none}html.bt-on body{opacity:1}}
 /* chat con tema tecnología */
-.chat-box.tema-t .chat-hd{background:#060D14;color:#E6F1F7;border-bottom:1px solid rgba(76,195,255,.4)}
-.chat-box.tema-t .chat-x,.chat-box.tema-t .chat-mu{color:#7DE3FF}
-.chat-box.tema-t .chat-mu{border-color:rgba(125,227,255,.45)}
-.chat-box.tema-t .chat-mu:hover,.chat-box.tema-t .chat-mu:focus-visible{background:#22D3EE;color:#060D14;border-color:#22D3EE}
-.chat-box.tema-t{background:#0B1622;color:#E6F1F7;border:1px solid rgba(76,195,255,.35)}
-.chat-box.tema-t .chat-log,.chat-box.tema-t .chat-sug{background:#0B1622}
-.chat-box.tema-t .chat-m.a{background:#112335;color:#E6F1F7;border-color:rgba(76,195,255,.25)}
-.chat-box.tema-t .chat-m.u{background:#22D3EE;color:#060D14}
-.chat-box.tema-t .chat-sug button{background:#112335;border-color:#22D3EE;color:#7DE3FF}
-.chat-box.tema-t .chat-sug a.chat-sug-v{border-color:#22D3EE;background:#22D3EE;color:#060D14}
-.chat-box.tema-t .chat-fm{background:#0B1622;border-top-color:rgba(76,195,255,.3)}
-.chat-box.tema-t .chat-fm input{background:#112335;color:#E6F1F7;border-color:rgba(76,195,255,.4)}
-.chat-box.tema-t .chat-fm input:focus,.chat-box.tema-t .chat-fm input:focus-visible{outline-color:#22D3EE;border-color:#22D3EE}
-.chat-box.tema-t .chat-fm button{background:#22D3EE;color:#060D14}
-.chat-box.tema-t .chat-fm .chat-mic{border-color:#060D14;background:linear-gradient(135deg,#22D3EE,#0FB5D0);color:#060D14}
-.chat-box.tema-t .chat-ft{background:#0B1622;color:#8FA9BC}
-.chat-box.tema-t .chat-ln{background:#112335;border-color:#22D3EE;color:#7DE3FF}
-.chat-box.tema-t .chat-ln:hover{background:#163048}
-.chat-box.tema-t .chat-sp{border-color:#22D3EE;background:#112335;color:#7DE3FF}
-.chat-box.tema-t .chat-sp.on{background:#22D3EE;border-color:#22D3EE;color:#060D14}
-.chat-box.tema-t .chat-inst{background:#22D3EE;border-color:#22D3EE}
-.chat-float.tema-t{background:linear-gradient(135deg,#22D3EE,#0FB5D0);color:#060D14;border-color:#060D14}
-.chat-float.tema-t:hover,.chat-float.tema-t:focus-visible{background:linear-gradient(135deg,#7DE3FF,#22D3EE)}
-.chat-float.tema-t .cf-ia{background:#060D14;color:#B6F23C}
-html[data-tema="tecnologia"] .logo-nav,html[data-tema="tecnologia"] .pie-logo{background:#E6F1F7;border-radius:10px;padding:3px 10px;box-shadow:0 0 18px rgba(34,211,238,.35)}
+.chat-box.tema-t .chat-hd{background:#0F1B16;color:#EEF2EA;border-bottom:1px solid rgba(168,203,160,.4)}
+.chat-box.tema-t .chat-x,.chat-box.tema-t .chat-mu{color:#C9E6B4}
+.chat-box.tema-t .chat-mu{border-color:rgba(201,230,180,.45)}
+.chat-box.tema-t .chat-mu:hover,.chat-box.tema-t .chat-mu:focus-visible{background:#8CCB5E;color:#0F1B16;border-color:#8CCB5E}
+.chat-box.tema-t{background:#12211A;color:#EEF2EA;border:1px solid rgba(168,203,160,.35)}
+.chat-box.tema-t .chat-log,.chat-box.tema-t .chat-sug{background:#12211A}
+.chat-box.tema-t .chat-m.a{background:#1A3027;color:#EEF2EA;border-color:rgba(168,203,160,.25)}
+.chat-box.tema-t .chat-m.u{background:#8CCB5E;color:#0F1B16}
+.chat-box.tema-t .chat-sug button{background:#1A3027;border-color:#8CCB5E;color:#C9E6B4}
+.chat-box.tema-t .chat-sug a.chat-sug-v{border-color:#8CCB5E;background:#8CCB5E;color:#0F1B16}
+.chat-box.tema-t .chat-fm{background:#12211A;border-top-color:rgba(168,203,160,.3)}
+.chat-box.tema-t .chat-fm input{background:#1A3027;color:#EEF2EA;border-color:rgba(168,203,160,.4)}
+.chat-box.tema-t .chat-fm input:focus,.chat-box.tema-t .chat-fm input:focus-visible{outline-color:#8CCB5E;border-color:#8CCB5E}
+.chat-box.tema-t .chat-fm button{background:#8CCB5E;color:#0F1B16}
+.chat-box.tema-t .chat-fm .chat-mic{border-color:#0F1B16;background:linear-gradient(135deg,#8CCB5E,#74B24A);color:#0F1B16}
+.chat-box.tema-t .chat-ft{background:#12211A;color:#9DB3A5}
+.chat-box.tema-t .chat-ln{background:#1A3027;border-color:#8CCB5E;color:#C9E6B4}
+.chat-box.tema-t .chat-ln:hover{background:#22392F}
+.chat-box.tema-t .chat-sp{border-color:#8CCB5E;background:#1A3027;color:#C9E6B4}
+.chat-box.tema-t .chat-sp.on{background:#8CCB5E;border-color:#8CCB5E;color:#0F1B16}
+.chat-box.tema-t .chat-inst{background:#8CCB5E;border-color:#8CCB5E}
+.chat-float.tema-t{background:linear-gradient(135deg,#8CCB5E,#74B24A);color:#0F1B16;border-color:#0F1B16}
+.chat-float.tema-t:hover,.chat-float.tema-t:focus-visible{background:linear-gradient(135deg,#C9E6B4,#8CCB5E)}
+.chat-float.tema-t .cf-ia{background:#0F1B16;color:#E7B24A}
+html[data-tema="tecnologia"] .logo-nav,html[data-tema="tecnologia"] .pie-logo{background:#EEF2EA;border-radius:10px;padding:3px 10px;box-shadow:0 0 18px rgba(140,203,94,.35)}
 html[data-tema="tecnologia"] .pie-logo{padding:6px 10px}
-html[data-tema="tecnologia"] .cart-float{border-color:#22D3EE;box-shadow:0 0 18px rgba(34,211,238,.4)}
-html[data-tema="tecnologia"] .cart-n{background:#22D3EE;color:#060D14}
+html[data-tema="tecnologia"] .cart-float{border-color:#8CCB5E;box-shadow:0 0 18px rgba(140,203,94,.4)}
+html[data-tema="tecnologia"] .cart-n{background:#8CCB5E;color:#0F1B16}
 
 /* variantes del arranque por ambiente */
 .bt-logo{display:flex;justify-content:flex-start;margin-bottom:20px}
@@ -1634,3 +1634,32 @@ html[data-tema="consultora"] .pie-logo{height:84px;width:auto;display:block;obje
 @keyframes bc-scan{0%{top:0;opacity:0}12%{opacity:1}88%{opacity:1}100%{top:100%;opacity:0}}
 @keyframes bc-lineon{0%{opacity:0}60%{opacity:1}100%{opacity:0}}
 @keyframes bc-out{0%{clip-path:inset(0 0 0 0);opacity:1}72%{clip-path:inset(49.6% 0 49.6% 0);opacity:1}100%{clip-path:inset(50% 0 50% 0);opacity:0;visibility:hidden}}
+
+/* Tecnología GEA · ambiente agroindustrial: sobrio, limpio, sin efectos de "sistema" */
+html[data-tema="tecnologia"] body{background-image:radial-gradient(900px 480px at 88% -6%,rgba(140,203,94,.13),transparent 62%),radial-gradient(760px 460px at -8% 38%,rgba(31,74,51,.5),transparent 62%);background-size:auto;background-attachment:fixed}
+html[data-tema="tecnologia"] body::after{display:none}
+html[data-tema="tecnologia"] h1,html[data-tema="tecnologia"] h2{text-shadow:none}
+html[data-tema="tecnologia"] nav{box-shadow:0 1px 0 rgba(168,203,160,.14)}
+html[data-tema="tecnologia"] .eyebrow::before{box-shadow:none}
+html[data-tema="tecnologia"] .card,html[data-tema="tecnologia"] .pd{box-shadow:0 6px 22px rgba(0,0,0,.28);border-radius:16px}
+html[data-tema="tecnologia"] .card.hov:hover{border-color:#8CCB5E;box-shadow:0 10px 28px rgba(0,0,0,.34)}
+html[data-tema="tecnologia"] .linea::before,html[data-tema="tecnologia"] .linea li::before{box-shadow:none}
+html[data-tema="tecnologia"] .logo-nav,html[data-tema="tecnologia"] .pie-logo,html[data-tema="tecnologia"] .cart-float{box-shadow:none}
+html[data-tema="tecnologia"] .logo-nav,html[data-tema="tecnologia"] .pie-logo{background:#F1EBDD}
+html[data-tema="tecnologia"] .eyebrow,html[data-tema="tecnologia"] .estado,html[data-tema="tecnologia"] .linea .num{letter-spacing:.14em}
+html[data-tema="tecnologia"] .topstrip{border-bottom-color:rgba(168,203,160,.2)}
+html[data-tema="tecnologia"] .cart-float{border-color:#8CCB5E}
+.chat-float.tema-t{box-shadow:0 6px 18px rgba(0,0,0,.35)}
+
+/* Arranque de Tecnología: engranaje + hoja, barra verde */
+.bt-t{background-color:#0F1B16;background-image:radial-gradient(620px 380px at 80% 14%,rgba(140,203,94,.18),transparent 70%),radial-gradient(560px 360px at 6% 100%,rgba(231,178,74,.12),transparent 70%);background-size:auto;font-family:"Segoe UI",Calibri,Arial,sans-serif;color:#EEF2EA;animation:bt-out .55s ease 1.75s forwards}
+.bt-t .bt-in{display:flex;flex-direction:column;align-items:center;text-align:center}
+.bt-t .bt-gear{width:92px;height:92px;margin-bottom:18px}
+.bt-t .bt-gear .g1{transform-origin:50px 50px;animation:bc-spin 9s linear infinite}
+.bt-t .bt-gear .g2{stroke-dasharray:100;stroke-dashoffset:100;animation:bc-draw 1.2s cubic-bezier(.5,0,.2,1) .2s forwards}
+.bt-t .bt-gear .lf{opacity:0;animation:bc-fade .7s ease .9s forwards}
+.bt-t .bt-l1{font:700 1.5rem/1 "Segoe UI",Calibri,Arial,sans-serif;letter-spacing:.34em;margin-right:-.34em;color:#EEF2EA;text-shadow:none}
+.bt-t .bt-l2{font-size:.86rem;letter-spacing:.06em;color:#C9E6B4;margin:12px 0 16px}
+.bt-t .bt-bar{width:min(62vw,230px);background:rgba(238,242,234,.16)}
+.bt-t .bt-bar i{background:linear-gradient(90deg,#8CCB5E,#E7B24A);box-shadow:none}
+.bt-t .bt-l3{color:#9DB3A5;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase}

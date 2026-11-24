@@ -11,7 +11,7 @@
   var C={
     carbon:{c:'bt-k',img:'img/logo-gea-carbon.svg',w:56,h:64,l1:'ECOCOCO',l2:es?'Carbón de cáscara de coco':'Coconut shell charcoal',l3:es?'Retalhuleu · Guatemala':'Retalhuleu · Guatemala'},
     consultora:{c:'bt-c',img:'img/logo-gea-consultora.png',w:208,h:80,l1:'',l2:es?'Cargando tu plataforma…':'Loading your platform…',l3:es?'Estrategia · Tecnología · Desarrollo':'Strategy · Technology · Development'},
-    tecnologia:{c:'bt-t',img:'',l1:'GEA // '+(es?'TECNOLOGÍA':'TECHNOLOGY'),l2:es?'Iniciando sistema…':'Starting system…',l3:es?'hornos · molino · prensa · planta':'furnaces · mill · press · plant'}
+    tecnologia:{c:'bt-t',img:'',l1:'GEA '+(es?'TECNOLOGÍA':'TECHNOLOGY'),l2:es?'Preparando la planta…':'Preparing the plant…',l3:es?'hornos · molino · prensa · planta':'furnaces · mill · press · plant'}
   }[T];
   if(!C)return;
   d.classList.add('bt-on');
@@ -25,7 +25,7 @@
       setTimeout(function(){if(o.parentNode)o.parentNode.removeChild(o)},3000);
       return;
     }
-    o.innerHTML='<div class="bt-in">'+(C.img?'<div class="bt-logo"><img src="'+B+C.img+'" alt="" width="'+C.w+'" height="'+C.h+'"></div>':'')+(C.l1?'<div class="bt-l1">'+C.l1+'</div>':'')+'<div class="bt-l2">'+C.l2+'</div><div class="bt-bar"><i></i></div><div class="bt-l3">'+C.l3+'</div></div>';
+    o.innerHTML='<div class="bt-in">'+(C.c==='bt-t'?'<svg class="bt-gear" viewBox="0 0 100 100" fill="none"><g class="g1"><circle cx="50" cy="50" r="38" stroke="#8CCB5E" stroke-width="9" stroke-dasharray="7.5 7.5"/></g><circle class="g2" cx="50" cy="50" r="31" stroke="#C9E6B4" stroke-width="2" pathLength="100"/><path class="lf" d="M50 66c-10-4-13-14-8-26 10 0 18 8 16 20-2 3-5 5-8 6z" fill="#E7B24A"/></svg>':'')+(C.img?'<div class="bt-logo"><img src="'+B+C.img+'" alt="" width="'+C.w+'" height="'+C.h+'"></div>':'')+(C.l1?'<div class="bt-l1">'+C.l1+'</div>':'')+'<div class="bt-l2">'+C.l2+'</div><div class="bt-bar"><i></i></div><div class="bt-l3">'+C.l3+'</div></div>';
     d.appendChild(o);d.classList.remove('bt-on');
     setTimeout(function(){if(o.parentNode)o.parentNode.removeChild(o)},2100);
   };
