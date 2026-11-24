@@ -1749,3 +1749,31 @@ html[data-tema="consultora"] nav::after{height:2px;clip-path:none;background:lin
 /* Pie de GEA Consultora: sin elementos propios de ECOCOCO (app, avisos de ofertas, nota de exportación) */
 html[data-tema="consultora"] footer.pie .pie-not,html[data-tema="consultora"] footer.pie .pwa-box,html[data-tema="consultora"] footer.pie .pie-share,html[data-tema="consultora"] footer.pie .usd-note{display:none!important}
 html[data-tema="consultora"] footer.pie .pie-sh{border-color:#4CC3FF;color:#9BF8FC}
+
+/* Panel "Mi paquete" de GEA Consultora (reemplaza al carrito) */
+.pk-bg{position:fixed;inset:0;background:rgba(4,20,32,.62);z-index:1190}
+.pk-bg[hidden]{display:none}
+.pk{position:fixed;top:0;right:0;bottom:0;width:min(420px,100vw);background:#EEF4F8;color:#0A2A3F;z-index:1210;display:flex;flex-direction:column;transform:translateX(105%);transition:transform .32s cubic-bezier(.2,.8,.2,1);border-radius:28px 0 0 28px;overflow:hidden;box-shadow:-12px 0 40px rgba(4,20,32,.4)}
+.pk.on{transform:none}
+.pk-h{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;background:#0A2A3F;color:#F3E9D2;border-bottom:2px solid #4CC3FF}
+.pk-h h2{margin:0;font-family:var(--cond);text-transform:uppercase;letter-spacing:.05em;font-size:1.3rem;font-weight:400}
+.pk-x{width:38px;height:38px;border-radius:50%;border:1.5px solid rgba(243,233,210,.5);background:none;color:#F3E9D2;font-size:1.5rem;line-height:1;cursor:pointer}
+.pk-b{flex:1;overflow-y:auto;padding:14px 18px}
+.pk-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.pk-list li{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid rgba(10,42,63,.14);border-left:4px solid #2585C5;border-radius:14px;padding:11px 12px}
+.pk-list li>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.pk-list b{font-size:.98rem}
+.pk-list span{font-size:.82rem;color:#3C5A6E}
+.pk-rm{flex:none;width:32px;height:32px;border-radius:50%;border:1px solid rgba(10,42,63,.25);background:#EEF4F8;color:#0A2A3F;font-size:1.2rem;line-height:1;cursor:pointer}
+.pk-empty{text-align:center;padding:34px 8px;color:#3C5A6E}
+.pk-empty p{margin:0 0 10px}
+.pk-f{padding:14px 18px 20px;background:#fff;border-top:1px solid rgba(10,42,63,.14)}
+.pk-f:empty{display:none}
+.pk-tt{font-family:var(--cond);text-transform:uppercase;letter-spacing:.05em;font-size:1rem;margin-bottom:6px;color:#2585C5}
+.pk-r{display:flex;justify-content:space-between;gap:10px;font-size:.92rem;padding:3px 0}
+.pk-r b{text-align:right}
+.pk-n{font-size:.78rem;color:#3C5A6E;margin:8px 0 12px}
+.pk-btn{display:block;text-align:center;text-decoration:none;background:#2585C5;color:#fff;font-family:var(--cond);text-transform:uppercase;letter-spacing:.05em;font-size:1.05rem;padding:14px 20px;border-radius:999px}
+.pk-btn:hover{background:#0A2A3F}
+.pk-clr{display:block;margin:10px auto 0;background:none;border:0;color:#3C5A6E;text-decoration:underline;font-size:.85rem;cursor:pointer}
+@media(prefers-reduced-motion:reduce){.pk{transition:none}}

@@ -57,6 +57,44 @@
   var ta=document.getElementById('f-com');if(ta)ta.addEventListener('input',function(){ta.dataset.pkg=''});
   var ok=document.getElementById('fd-ok');
   if(ok&&window.MutationObserver)new MutationObserver(function(){if(!ok.hidden){put([]);refresh()}}).observe(ok,{attributes:true,attributeFilter:['hidden']});
+
+  /* Panel "Mi paquete": el botón flotante abre la lista de servicios elegidos, con total y envío de la solicitud */
+  var dr=document.createElement('div');
+  dr.innerHTML='<div class="pk-bg" hidden></div><aside class="pk" role="dialog" aria-modal="true" aria-hidden="true" aria-label="'+L('Mi paquete de servicios','My service package')+'"><div class="pk-h"><h2>'+L('Mi paquete','My package')+'</h2><button type="button" class="pk-x" aria-label="'+L('Cerrar','Close')+'">×</button></div><div class="pk-b"></div><div class="pk-f"></div></aside>';
+  while(dr.firstChild)document.body.appendChild(dr.firstChild);
+  var pbg=document.querySelector('.pk-bg'),pk=document.querySelector('.pk'),pb=pk.querySelector('.pk-b'),pf=pk.querySelector('.pk-f');
+  function ptxt(p){return parse(p).map(function(x){return money(x.q)+' '+UN[x.u][EN?1:0]}).join(' + ')}
+  function pkRender(){
+    var v=get(),T=totals(v);pb.textContent='';pf.textContent='';
+    if(!v.length){
+      var e=document.createElement('div');e.className='pk-empty';
+      e.innerHTML='<p><b>'+L('Aún no has elegido servicios.','You have not picked any services yet.')+'</b></p><p>'+L('Entra a cada área y toca "Agregar a mi paquete". Aquí verás el total estimado y podrás enviar tu solicitud.','Open any area and tap "Add to my package". Here you will see the estimated total and can send your request.')+'</p><a class="pk-btn" href="servicios-digitales.html">'+L('Ver servicios','See services')+'</a>';
+      pb.appendChild(e);return}
+    var ul=document.createElement('ul');ul.className='pk-list';
+    v.forEach(function(it){
+      var li=document.createElement('li'),d=document.createElement('div'),b=document.createElement('b'),sm=document.createElement('span'),x=document.createElement('button');
+      b.textContent=it.t;
+      sm.textContent=T.cov[it.k]?L('Incluido en la plataforma completa','Included in the complete platform'):(ptxt(it.p)||'');
+      d.appendChild(b);d.appendChild(sm);
+      x.type='button';x.className='pk-rm';x.textContent='×';x.setAttribute('aria-label',L('Quitar ','Remove ')+it.t);
+      x.addEventListener('click',function(){remove(it.k)});
+      li.appendChild(d);li.appendChild(x);ul.appendChild(li)});
+    pb.appendChild(ul);
+    var rows=[];if(T.t.u)rows.push([L('Pago único','One-time'),T.t.u]);if(T.t.m)rows.push([L('Cada mes','Monthly'),T.t.m]);if(T.t.a)rows.push([L('Cada año','Yearly'),T.t.a]);if(T.t.h)rows.push([L('Mejoras (por hora)','Improvements (per hour)'),T.t.h]);
+    var tb=document.createElement('div');tb.className='pk-tot';tb.setAttribute('data-usd','no');
+    tb.innerHTML='<div class="pk-tt">'+L('Total estimado','Estimated total')+'</div>'+rows.map(function(r){return '<div class="pk-r"><span>'+r[0]+'</span><b>'+moneyU(r[1])+'</b></div>'}).join('')+'<p class="pk-n">'+L('Precio de referencia. Se confirma en la conversación según lo que necesites.','Reference price. Confirmed in the conversation according to what you need.')+'</p>';
+    pf.appendChild(tb);
+    var go=document.createElement('a');go.className='pk-btn';go.href='servicios-digitales.html#solicitud';go.textContent=L('Enviar mi solicitud','Send my request');
+    go.addEventListener('click',function(){pkClose()});pf.appendChild(go);
+    var cl=document.createElement('button');cl.type='button';cl.className='pk-clr';cl.textContent=L('Vaciar paquete','Clear package');
+    cl.addEventListener('click',function(){put([]);refresh()});pf.appendChild(cl);
+  }
+  function pkOpen(){pkRender();pbg.hidden=false;pk.setAttribute('aria-hidden','false');requestAnimationFrame(function(){pk.classList.add('on')});document.body.classList.add('noscroll')}
+  function pkClose(){pk.classList.remove('on');pk.setAttribute('aria-hidden','true');pbg.hidden=true;document.body.classList.remove('noscroll')}
+  pbg.addEventListener('click',pkClose);pk.querySelector('.pk-x').addEventListener('click',pkClose);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&pk.classList.contains('on'))pkClose()});
+  document.addEventListener('click',function(e){var c=e.target.closest&&e.target.closest('.cf-cot');if(c){e.preventDefault();e.stopPropagation();pkOpen()}},true);
+  var _r=refresh;refresh=function(){_r();if(pk.classList.contains('on'))pkRender()};
   refresh();
 
   /* autodiagnóstico */
