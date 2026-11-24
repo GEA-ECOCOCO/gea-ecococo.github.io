@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 232" fill="none">
+<defs>
+<linearGradient id="st" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E4E8EC"/><stop offset=".5" stop-color="#8F98A0"/><stop offset="1" stop-color="#4E555C"/></linearGradient>
+<linearGradient id="gl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D9DEE3"/><stop offset="1" stop-color="#737B83"/></linearGradient>
+<linearGradient id="rd" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#7C1519"/><stop offset="1" stop-color="#D2343A"/></linearGradient>
+</defs>
+<path d="M100 5L189 55V177L100 227L11 177V55Z" fill="#101113" stroke="url(#st)" stroke-width="9" stroke-linejoin="miter"/>
+<path d="M100 19L177 62V170L100 213L23 170V62Z" stroke="#2B2E33" stroke-width="2"/>
+<path d="M38 98C52 68 90 46 140 36C106 53 72 74 38 98Z" fill="url(#rd)"/>
+<path d="M46 108C66 82 108 62 162 54C124 71 86 89 46 108Z" fill="url(#rd)"/>
+<path d="M74 110C98 90 132 76 172 74C138 86 106 98 74 110Z" fill="url(#rd)"/>
+<g stroke="url(#gl)" stroke-width="11" stroke-linejoin="miter" transform="translate(3 0)">
+<path d="M70 129H48Q41 129 41 136V156Q41 163 48 163H69V146H57"/>
+<path d="M112 129H89V163H112M89 146H108"/>
+<path d="M119 163L135 129L151 163M126 152H144"/>
+</g>
+</svg>
