@@ -399,8 +399,17 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   while(wrap.firstChild)body.appendChild(wrap.firstChild);
   var sb=q('#buscar'),sin=q('input',sb),sres=q('.res',sb),cd=q('#carrito'),cbg=q('#cart-bg'),cb=q('.cart-b',cd),cf=q('.cart-f',cd);
   /* ---- buscador ---- */
+  var isC=document.documentElement.getAttribute('data-tema')==='consultora';
+  function cpool(){var d=window.GEA_CIDX;return d?(GEA_EN?d.en:d.es):[]}
   function render(t){
     var n=norm(t).split(/\s+/).filter(Boolean),out=[];
+    if(isC){
+      var P=cpool(),h2='';
+      if(n.length){P.forEach(function(it){var h=norm(it[0]+' '+it[1]+' '+it[3]);if(n.every(function(w){return h.indexOf(w)>-1}))out.push(it)})}
+      else{out=P.filter(function(it){return it[4]})}
+      out.forEach(function(it){h2+='<li><a href="'+it[2]+'"><b>'+it[0]+'</b><span>'+it[1]+'</span></a></li>'});
+      if(!h2)h2='<li class="vacio">'+gL('No encontramos resultados. Prueba con: página, app, velocidad, soporte, precio. O escríbenos por <a href="https://wa.me/'+WA+'">WhatsApp</a>.','No results found. Try: website, app, speed, support, price. Or message us on <a href="https://wa.me/'+WA+'">WhatsApp</a>.')+'</li>';
+      sres.innerHTML=h2;return}
     if(n.length){IDX.forEach(function(it){
       var h=norm(it[0]+' '+it[1]+' '+it[3]),ok=n.every(function(w){return h.indexOf(w)>-1});
       if(ok)out.push(it)})}
@@ -410,7 +419,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     out.forEach(function(it){h+='<li><a href="'+it[2]+'"><b>'+it[0]+'</b><span>'+it[1]+'</span></a></li>'});
     if(!h)h=n.length?'<li class="vacio">'+gL('No encontramos resultados. Escríbenos por <a href="https://wa.me/'+WA+'">WhatsApp</a> y te ayudamos.','No results found. Message us on <a href="https://wa.me/'+WA+'">WhatsApp</a> and we will help you.')+'</li>':'<li class="vacio">'+gL('Prueba con: precios, proceso, distribuidores, impacto…','Try: prices, process, distributors, impact…')+'</li>';
     sres.innerHTML=h}
-  function abrirB(v){closeC();sb.hidden=false;body.classList.add('noscroll');sin.value=v||'';render(v||'');setTimeout(function(){sin.focus()},30)}
+  function abrirB(v){closeC();if(isC){var _i=q('input',sb);if(_i)_i.placeholder=gL('Busca servicios, precios…','Search services, prices…')}sb.hidden=false;body.classList.add('noscroll');sin.value=v||'';render(v||'');setTimeout(function(){sin.focus()},30)}
   function cerrarB(){sb.hidden=true;if(cd.getAttribute('aria-hidden')!=='false')body.classList.remove('noscroll')}
   sin.addEventListener('input',function(){render(sin.value)});
   q('form',sb).addEventListener('submit',function(e){e.preventDefault();var f=sres.querySelector('a');if(f)location.href=f.href});
@@ -931,6 +940,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     p.appendChild(btn); lang.parentNode.insertBefore(p, lang.nextSibling); pinta();
   }
   function sugerencia() {
+    if (document.documentElement.getAttribute('data-tema') === 'consultora') return;
     if (!soporta || Notification.permission !== 'default' || get('gea-push-ask')) return;
     var v = parseInt(get('gea-vis') || '0', 10);
     try { if (!sessionStorage.getItem('gea-vis-s')) { sessionStorage.setItem('gea-vis-s', '1'); v++; put('gea-vis', String(v)) } } catch (e) {}
