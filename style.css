@@ -1711,3 +1711,10 @@ html[data-tema="consultora"] .cart-float.cf-cot:hover,html[data-tema="consultora
 .cf-n{position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;padding:0 5px;border-radius:11px;background:#4CC3FF;color:#0A2A3F;font:700 .78rem/22px "Segoe UI",Arial,sans-serif;text-align:center;box-sizing:border-box}
 .cf-n[hidden]{display:none}
 @media(prefers-reduced-motion:reduce){.em-o1,.em-o2,.em-ln line,.em-sh,.em-n i,.cs-ill{animation:none}}
+.cs-price{font-weight:700;color:#0A2A3F;margin:6px 0 4px;font-size:.95rem}
+.cs-note{font-size:.82rem;opacity:.75;margin:14px 0 4px}
+.cs-tot{font-weight:700;font-size:1.02rem;color:#0A2A3F;background:rgba(37,133,197,.12);border-radius:10px;padding:10px 12px;margin:6px 0 10px}
+.cs-full{margin:28px 0;border:2px solid #2585C5;background:linear-gradient(160deg,rgba(76,195,255,.14),transparent 70%)}
+.cs-inc{margin:8px 0 6px 0;padding-left:20px;columns:1}
+.cs-inc li{margin:2px 0}
+@media(min-width:700px){.cs-inc{columns:2}}
