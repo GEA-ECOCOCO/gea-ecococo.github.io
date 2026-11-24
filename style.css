@@ -1809,3 +1809,16 @@ html[data-tema="consultora"] .cs-lema h3{color:#F3E9D2}html[data-tema="consultor
 .pk-sec[open] summary::after{content:"–"}
 .pk-sec[open]{padding-bottom:6px}
 .pk-sec .pk-it{border-top:1px solid rgba(10,42,63,.08)}
+/* Panel Mi paquete: mismas proporciones que el carrito de ECOCOCO (94 % del ancho en celular, deja ver la página) y contenido compacto */
+.pk{width:min(420px,94vw);border-radius:28px 0 0 28px}
+.pk-h{padding:16px 20px}
+.pk-b{padding:10px 16px}
+.pk-empty{padding:2px 2px 0}
+.pk-empty p{font-size:.9rem;margin:0 0 6px}
+.pk-cat{margin-top:10px}
+.pk-it{padding:7px 0}
+.pk-full{padding:2px 12px;margin-bottom:8px}
+.pk-sec summary{padding:10px 0;font-size:1rem}
+.pk-sec{margin-bottom:6px}
+.pk-f{margin:0 12px 12px;border:0;border-radius:22px;padding:14px 16px;box-shadow:0 6px 20px rgba(10,42,63,.2)}
+@media(max-width:560px){.pk-bg{background:rgba(4,20,32,.5)}}
