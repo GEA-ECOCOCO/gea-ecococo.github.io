@@ -63,13 +63,30 @@
   dr.innerHTML='<div class="pk-bg" hidden></div><aside class="pk" role="dialog" aria-modal="true" aria-hidden="true" aria-label="'+L('Mi paquete de servicios','My service package')+'"><div class="pk-h"><h2>'+L('Mi paquete','My package')+'</h2><button type="button" class="pk-x" aria-label="'+L('Cerrar','Close')+'">×</button></div><div class="pk-b"></div><div class="pk-f"></div></aside>';
   while(dr.firstChild)document.body.appendChild(dr.firstChild);
   var pbg=document.querySelector('.pk-bg'),pk=document.querySelector('.pk'),pb=pk.querySelector('.pk-b'),pf=pk.querySelector('.pk-f');
-  function ptxt(p){return parse(p).map(function(x){return money(x.q)+' '+UN[x.u][EN?1:0]}).join(' + ')}
+  function ptxt(p){return parse(p).map(function(x){return money(x.q)+' (US$'+num(Math.round(x.q/fx()))+') '+UN[x.u][EN?1:0]}).join(' + ')}
+  var openSec=-1;
+  function catalog(){
+    var d=window.GEA_CCAT,C=d?(EN?d.en:d.es):[];if(!C.length)return null;
+    var w=document.createElement('div');w.className='pk-cat';
+    var h=document.createElement('div');h.className='pk-cat-t';h.textContent=L('Agrega servicios a tu paquete','Add services to your package');w.appendChild(h);
+    function row(k,tt,p,inc,dsc){
+      var r=document.createElement('div');r.className='pk-it';
+      var x=document.createElement('div');x.innerHTML='<b></b><span></span>';x.firstChild.textContent=tt;x.lastChild.textContent=(dsc?dsc+' · ':'')+L('Desde ','From ')+ptxt(p);
+      var b=document.createElement('button');b.type='button';b.className='pk-add';var on=idx(k)>-1;b.textContent=on?'✓':'+';b.setAttribute('aria-pressed',on?'true':'false');b.setAttribute('aria-label',(on?L('Quitar ','Remove '):L('Agregar ','Add '))+tt);if(on)b.classList.add('on');
+      b.addEventListener('click',function(){toggle(k,tt,p,inc)});r.appendChild(x);r.appendChild(b);return r}
+    C.forEach(function(sec,i){
+      if(sec.full){var f=document.createElement('div');f.className='pk-full';f.appendChild(row(sec.k,sec.n,sec.p,sec.inc,sec.d));w.appendChild(f);return}
+      var dt=document.createElement('details');dt.className='pk-sec';if(openSec===i)dt.open=true;
+      var sm=document.createElement('summary');sm.textContent=sec.n;dt.appendChild(sm);
+      sec.it.forEach(function(e){dt.appendChild(row(e[0],e[1],e[2],''))});
+      dt.addEventListener('toggle',function(){if(dt.open)openSec=i;else if(openSec===i)openSec=-1});w.appendChild(dt)});
+    return w}
   function pkRender(){
     var v=get(),T=totals(v);pb.textContent='';pf.textContent='';
     if(!v.length){
       var e=document.createElement('div');e.className='pk-empty';
-      e.innerHTML='<p><b>'+L('Aún no has elegido servicios.','You have not picked any services yet.')+'</b></p><p>'+L('Entra a cada área y toca "Agregar a mi paquete". Aquí verás el total estimado y podrás enviar tu solicitud.','Open any area and tap "Add to my package". Here you will see the estimated total and can send your request.')+'</p><a class="pk-btn" href="servicios-digitales.html">'+L('Ver servicios','See services')+'</a>';
-      pb.appendChild(e);return}
+      e.innerHTML='<p><b>'+L('Aún no has elegido servicios.','You have not picked any services yet.')+'</b></p><p>'+L('Toca + para agregar. Aquí verás el total estimado y podrás enviar tu solicitud.','Tap + to add. Here you will see the estimated total and can send your request.')+'</p>';
+      pb.appendChild(e);var c0=catalog();if(c0)pb.appendChild(c0);return}
     var ul=document.createElement('ul');ul.className='pk-list';
     v.forEach(function(it){
       var li=document.createElement('li'),d=document.createElement('div'),b=document.createElement('b'),sm=document.createElement('span'),x=document.createElement('button');
@@ -79,7 +96,7 @@
       x.type='button';x.className='pk-rm';x.textContent='×';x.setAttribute('aria-label',L('Quitar ','Remove ')+it.t);
       x.addEventListener('click',function(){remove(it.k)});
       li.appendChild(d);li.appendChild(x);ul.appendChild(li)});
-    pb.appendChild(ul);
+    pb.appendChild(ul);var c1=catalog();if(c1)pb.appendChild(c1);
     var rows=[];if(T.t.u)rows.push([L('Pago único','One-time'),T.t.u]);if(T.t.m)rows.push([L('Cada mes','Monthly'),T.t.m]);if(T.t.a)rows.push([L('Cada año','Yearly'),T.t.a]);if(T.t.h)rows.push([L('Mejoras (por hora)','Improvements (per hour)'),T.t.h]);
     var tb=document.createElement('div');tb.className='pk-tot';tb.setAttribute('data-usd','no');
     tb.innerHTML='<div class="pk-tt">'+L('Total estimado','Estimated total')+'</div>'+rows.map(function(r){return '<div class="pk-r"><span>'+r[0]+'</span><b>'+moneyU(r[1])+'</b></div>'}).join('')+'<p class="pk-n">'+L('Precio de referencia. Se confirma en la conversación según lo que necesites.','Reference price. Confirmed in the conversation according to what you need.')+'</p>';
