@@ -9,9 +9,11 @@ document.addEventListener('click', function (e) {
   if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || a.target === '_blank' || a.hasAttribute('download') || /\.pdf(\?|#|$)/i.test(a.getAttribute('href') || '')) return;
   var href = a.getAttribute('href');
   if (!href || href.charAt(0) === '#' || /^[a-z][a-z0-9+.-]*:/i.test(href)) return;
+  try { var u = new URL(a.href, location.href); if (u.origin === location.origin && u.pathname === location.pathname && u.hash) return; } catch (x) {}   // mismo documento con ancla: sin barrido
   e.preventDefault();
   document.body.classList.add('saliendo');
   setTimeout(function () { window.location.href = href; }, 400);
+  setTimeout(function () { document.body.classList.remove('saliendo'); }, 2500);   // red de seguridad: si no se navega, se quita el barrido
 });
 // Al volver con el botón atrás, quitar el barrido
 window.addEventListener('pageshow', function () { document.body.classList.remove('saliendo'); });
