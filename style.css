@@ -1745,3 +1745,7 @@ html[data-tema="consultora"] nav::after{height:2px;clip-path:none;background:lin
 .ts-sys{white-space:nowrap;font-size:.66rem;letter-spacing:.12em}
 @media(min-width:561px){.ts-sys{font-size:.72rem;letter-spacing:.16em}}
 @media(max-width:420px){.ts-sys{font-size:.6rem;letter-spacing:.08em;gap:7px}html[data-tema="consultora"] .topstrip .lang-sw{padding:2px 9px!important}}
+
+/* Pie de GEA Consultora: sin elementos propios de ECOCOCO (app, avisos de ofertas, nota de exportación) */
+html[data-tema="consultora"] footer.pie .pie-not,html[data-tema="consultora"] footer.pie .pwa-box,html[data-tema="consultora"] footer.pie .pie-share,html[data-tema="consultora"] footer.pie .usd-note{display:none!important}
+html[data-tema="consultora"] footer.pie .pie-sh{border-color:#4CC3FF;color:#9BF8FC}
