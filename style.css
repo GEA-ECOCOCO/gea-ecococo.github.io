@@ -1718,3 +1718,12 @@ html[data-tema="consultora"] .cart-float.cf-cot:hover,html[data-tema="consultora
 .cs-inc{margin:8px 0 6px 0;padding-left:20px;columns:1}
 .cs-inc li{margin:2px 0}
 @media(min-width:700px){.cs-inc{columns:2}}
+
+/* Acceso discreto a GEA Consultora en la portada (la prioridad es el carbón) */
+.gc-promo{display:flex;align-items:center;gap:11px;max-width:420px;margin:10px auto 0;padding:8px 14px;border-radius:16px;background:rgba(10,42,63,.92);border:1px solid rgba(76,195,255,.35);color:#EEF4F8;text-decoration:none;text-align:left;box-shadow:0 6px 18px rgba(0,0,0,.28);transition:border-color .2s,transform .2s}
+.gc-promo:hover{border-color:#4CC3FF;transform:translateY(-1px)}
+.gc-promo img{flex:none;height:37px;width:auto;display:block}
+.gc-tx{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px}
+.gc-tx b{font-family:var(--cond);text-transform:uppercase;letter-spacing:.05em;font-size:.95rem;color:#9BF8FC;font-weight:400}
+.gc-tx small{font-size:.76rem;line-height:1.25;color:#C9DCE8}
+.gc-go{flex:none;color:#4CC3FF;font-size:1.2rem}
