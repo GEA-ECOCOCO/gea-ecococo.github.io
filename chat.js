@@ -3,7 +3,7 @@
 var C=window.GEA_CONFIG||{};var AI=!!C.chatUrl;var DB=window.GEA_FAQ;if(!AI&&!DB)return;
 var EN=/^en/i.test(document.documentElement.lang||'');
 function L(es,en){return EN?en:es}
-var KEY='gea-chat',CK='gea-chat-n',MAXQ=20,hist=[],busy=false,open=false,last=0;
+var _am=document.documentElement.getAttribute('data-tema')||'';var KEY='gea-chat'+(_am?'-'+_am:''),CK='gea-chat-n',MAXQ=20,hist=[],busy=false,open=false,last=0;
 try{hist=JSON.parse(sessionStorage.getItem(KEY)||'[]').slice(-14)}catch(e){}
 function save(){try{sessionStorage.setItem(KEY,JSON.stringify(hist.slice(-14)))}catch(e){}}
 function track(n,p){try{window.geaTrack&&window.geaTrack(n,p||{})}catch(e){}}

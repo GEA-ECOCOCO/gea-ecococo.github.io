@@ -1028,3 +1028,12 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   setTimeout(function () { var b = document.querySelector('.pie-nt'), x = document.querySelector('.nw-nt'); if (b && x) x.hidden = false }, 600);
   window.addEventListener('hashchange', function () { document.querySelectorAll('.nw-on').forEach(function (e) { e.classList.remove('nw-on') }); marca() });
 })();
+
+/* Menú móvil: se cierra al elegir una sección (también en enlaces del mismo documento) y al volver a la página */
+(function(){
+  function cerrar(){var c=document.getElementById('chk');if(c&&c.checked)c.checked=false}
+  document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('nav a, .menu a');if(a)cerrar()},true);
+  window.addEventListener('pageshow',cerrar);
+  document.addEventListener('DOMContentLoaded',cerrar);
+  setTimeout(cerrar,0);
+})();
