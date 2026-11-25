@@ -1,3 +1,20 @@
+accion('produccion.registrar', true, function (db, req, ctx, ops) {
+  need(ctx, 'admin');
+  var br = n(req.briquetas_kg), ca = n(req.cascara_kg), ag = n(req.aglutinante_kg);
+  if (br <= 0) throw PE('Escribe cuántos kilos de briquetas salieron.');
+  if (ca < 0 || ag < 0) throw PE('Los kilos de insumos no pueden ser negativos.');
+  var fecha = isDate(req.fecha) ? req.fecha : ctx.today;
+  var lote = add(db, ops, 'Lotes', {
+    id: nextId(db.Lotes, 'LOT-', 4), fecha: fecha, cascara_kg: ca, aglutinante_kg: ag, briquetas_kg: br,
+    rendimiento: ca > 0 ? r2(br / ca * 100) : '', notas: s(req.notas), registrado_por: ctx.user.nombre
+  });
+  var art = articuloProducto(db), c = find(db.Inventario, ART_CASCARA), a = find(db.Inventario, ART_AGLUT);
+  if (art) mov(db, ops, ctx, art, 'Producción', br, 'Lote ' + lote.id, lote.id, fecha);
+  if (c && ca > 0) mov(db, ops, ctx, c, 'Producción', -ca, 'Usada en ' + lote.id, lote.id, fecha);
+  if (a && ag > 0) mov(db, ops, ctx, a, 'Producción', -ag, 'Usado en ' + lote.id, lote.id, fecha);
+  return { lote: lote };
+});
+
 accion('producto.guardar', true, function (db, req, ctx, ops) {
   need(ctx, 'admin');
   var p = find(db.Productos, req.id);
@@ -30,6 +47,24 @@ accion('articulo.guardar', true, function (db, req, ctx, ops) {
   return { articulo: upd(db, ops, 'Inventario', a, { stock_min: m }) };
 });
 
+accion('gasto.registrar', true, function (db, req, ctx, ops) {
+  need(ctx, 'admin');
+  var cat = CATEGORIAS.filter(function (c) { return c[0] === req.categoria })[0];
+  if (!cat) throw PE('Elige la categoría del gasto.');
+  var monto = r2(n(req.monto));
+  if (monto <= 0) throw PE('Escribe el monto del gasto.');
+  var tipo = ['Fijo', 'Variable', 'Inversión'].indexOf(req.tipo) >= 0 ? req.tipo : cat[1];
+  if (cat[1] === 'Inversión') tipo = 'Inversión';
+  return { gasto: add(db, ops, 'Gastos', { id: nextId(db.Gastos, 'GAS-', 5), fecha: isDate(req.fecha) ? req.fecha : ctx.today, categoria: cat[0], concepto: s(req.concepto), monto: monto, tipo: tipo, proveedor: s(req.proveedor), estado: 'Activo', registrado_por: ctx.user.nombre }) };
+});
+
+accion('gasto.anular', true, function (db, req, ctx, ops) {
+  need(ctx, 'admin');
+  var g = find(db.Gastos, req.id);
+  if (!g) throw PE('No encontramos ese gasto.', 'no_existe');
+  return { gasto: upd(db, ops, 'Gastos', g, { estado: 'Anulado' }) };
+});
+
 function handle(db, req, ctx) {
   var fn = ACCIONES[req && req.action];
   if (!fn) return { ok: false, error: 'Acción no válida.', code: 'accion' };
@@ -43,9 +78,7 @@ function handle(db, req, ctx) {
   }
 }
 
-var PanelCore = {
-  SCHEMA: SCHEMA, TIPOS: TIPOS, METODOS: METODOS, handle: handle, defaultDb: defaultDb, cfgObj: cfgObj
-};
+var PanelCore = { SCHEMA: SCHEMA, TIPOS: TIPOS, METODOS: METODOS, handle: handle, defaultDb: defaultDb, cfgObj: cfgObj };
 
 
 /* =====================================================================
@@ -68,8 +101,8 @@ function instalar() {
   var ss = abrir_();
   if (!ss) throw new Error('No se encontró la hoja. Escribe el ID de tu hoja en la línea ID_HOJA al inicio del código.');
   var base = PanelCore.defaultDb();
-  var orden = ['Config', 'Productos', 'Clientes', 'Pedidos', 'Cobros', 'Inventario', 'Movimientos', 'Lotes', 'Usuarios'];
-  var colores = { Pedidos: COLOR_BRASA, Clientes: '#2D6A4F', Cobros: '#2D6A4F', Inventario: '#6B4226', Movimientos: '#6B4226', Lotes: '#6B4226', Productos: COLOR_TINTA, Config: COLOR_TINTA, Usuarios: '#B3261E' };
+  var orden = ['Config', 'Productos', 'Clientes', 'Pedidos', 'Cobros', 'Inventario', 'Movimientos', 'Lotes', 'Gastos', 'Usuarios'];
+  var colores = { Pedidos: COLOR_BRASA, Clientes: '#2D6A4F', Cobros: '#2D6A4F', Inventario: '#6B4226', Movimientos: '#6B4226', Lotes: '#6B4226', Gastos: '#B8860B', Productos: COLOR_TINTA, Config: COLOR_TINTA, Usuarios: '#B3261E' };
   orden.forEach(function (nombre, i) {
     var hoja = ss.getSheetByName(nombre) || ss.insertSheet(nombre, i);
     var cab = PanelCore.SCHEMA[nombre];
@@ -96,48 +129,4 @@ function instalar() {
   ss.rename('PANEL GEA · ' + (PanelCore.cfgObj(PanelCore.defaultDb()).nombre_negocio));
   SpreadsheetApp.flush();
   Logger.log('Listo. Abre la pestaña "Usuarios": ahí están las claves de Manolo y del vendedor. Cámbialas por claves de 6 dígitos que solo tú conozcas. Después: Implementar > Nueva implementación > Aplicación web.');
-}
-
-function pinAzar_() { return String(100000 + Math.floor(Math.random() * 900000)) }
-function cerrarTodasLasSesiones() { PropertiesService.getScriptProperties().setProperty('SECRETO', Utilities.getUuid() + Utilities.getUuid()) }
-
-/* ---------- lectura y escritura de hojas ---------- */
-function hoja_(nombre) {
-  var id = PropertiesService.getScriptProperties().getProperty('HOJA');
-  var ss = id ? SpreadsheetApp.openById(id) : SpreadsheetApp.getActiveSpreadsheet();
-  return ss.getSheetByName(nombre);
-}
-function valor_(v) {
-  if (v instanceof Date) return Utilities.formatDate(v, ZONA, 'yyyy-MM-dd');
-  return v === null || v === undefined ? '' : v;
-}
-function leer_(db) {
-  Object.keys(PanelCore.SCHEMA).forEach(function (t) {
-    var h = hoja_(t), cab = PanelCore.SCHEMA[t], filas = [];
-    if (h && h.getLastRow() > 1) {
-      var vals = h.getRange(2, 1, h.getLastRow() - 1, cab.length).getValues();
-      vals.forEach(function (fila, i) {
-        var o = {}, vacia = true;
-        cab.forEach(function (c, k) { o[c] = valor_(fila[k]); if (o[c] !== '') vacia = false });
-        if (!vacia) { Object.defineProperty(o, '__fila', { value: i + 2, enumerable: false, writable: true }); filas.push(o) }
-      });
-    }
-    db[t] = filas;
-  });
-  return db;
-}
-function aplicar_(ops, db) {
-  var cache = {};
-  ops.forEach(function (op) {
-    var t = op.t, cab = PanelCore.SCHEMA[t], h = cache[t] || (cache[t] = hoja_(t));
-    var arr = cab.map(function (c) { var v = op.row[c]; return v === undefined || v === null ? '' : v });
-    if (op.op === 'add') {
-      h.appendRow(arr);
-    } else {
-      var clave = op.key || 'id', k = cab.indexOf(clave), fila = 0;
-      var col = h.getRange(2, k + 1, Math.max(h.getLastRow() - 1, 1), 1).getValues();
-      for (var i = 0; i < col.length; i++) if (String(col[i][0]) === String(op.row[clave])) { fila = i + 2; break }
-      if (fila) h.getRange(fila, 1, 1, cab.length).setValues([arr]); else h.appendRow(arr);
-    }
-  });
 }

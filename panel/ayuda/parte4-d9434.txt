@@ -1,3 +1,47 @@
+function pinAzar_() { return String(100000 + Math.floor(Math.random() * 900000)) }
+function cerrarTodasLasSesiones() { PropertiesService.getScriptProperties().setProperty('SECRETO', Utilities.getUuid() + Utilities.getUuid()) }
+
+/* ---------- lectura y escritura de hojas ---------- */
+function hoja_(nombre) {
+  var id = PropertiesService.getScriptProperties().getProperty('HOJA');
+  var ss = id ? SpreadsheetApp.openById(id) : SpreadsheetApp.getActiveSpreadsheet();
+  return ss.getSheetByName(nombre);
+}
+function valor_(v) {
+  if (v instanceof Date) return Utilities.formatDate(v, ZONA, 'yyyy-MM-dd');
+  return v === null || v === undefined ? '' : v;
+}
+function leer_(db) {
+  Object.keys(PanelCore.SCHEMA).forEach(function (t) {
+    var h = hoja_(t), cab = PanelCore.SCHEMA[t], filas = [];
+    if (h && h.getLastRow() > 1) {
+      var vals = h.getRange(2, 1, h.getLastRow() - 1, cab.length).getValues();
+      vals.forEach(function (fila, i) {
+        var o = {}, vacia = true;
+        cab.forEach(function (c, k) { o[c] = valor_(fila[k]); if (o[c] !== '') vacia = false });
+        if (!vacia) { Object.defineProperty(o, '__fila', { value: i + 2, enumerable: false, writable: true }); filas.push(o) }
+      });
+    }
+    db[t] = filas;
+  });
+  return db;
+}
+function aplicar_(ops, db) {
+  var cache = {};
+  ops.forEach(function (op) {
+    var t = op.t, cab = PanelCore.SCHEMA[t], h = cache[t] || (cache[t] = hoja_(t));
+    var arr = cab.map(function (c) { var v = op.row[c]; return v === undefined || v === null ? '' : v });
+    if (op.op === 'add') {
+      h.appendRow(arr);
+    } else {
+      var clave = op.key || 'id', k = cab.indexOf(clave), fila = 0;
+      var col = h.getRange(2, k + 1, Math.max(h.getLastRow() - 1, 1), 1).getValues();
+      for (var i = 0; i < col.length; i++) if (String(col[i][0]) === String(op.row[clave])) { fila = i + 2; break }
+      if (fila) h.getRange(fila, 1, 1, cab.length).setValues([arr]); else h.appendRow(arr);
+    }
+  });
+}
+
 /* ---------- sesiones ---------- */
 function firmar_(texto) {
   var secreto = PropertiesService.getScriptProperties().getProperty('SECRETO');

@@ -1,3 +1,8 @@
+/* ---------- acciones ---------- */
+var ACCIONES = {};
+var MUTA = {};
+function accion(nombre, muta, fn) { ACCIONES[nombre] = fn; if (muta) MUTA[nombre] = true }
+
 accion('bootstrap', false, function () { return {} });
 
 accion('cliente.guardar', true, function (db, req, ctx, ops) {
@@ -105,21 +110,4 @@ accion('inventario.mover', true, function (db, req, ctx, ops) {
   if (tipo !== 'Entrada' && !motivo) throw PE('Escribe el motivo, para que después se entienda el movimiento.');
   var cant = tipo === 'Entrada' ? q : tipo === 'Salida' ? -q : q;
   return { movimiento: mov(db, ops, ctx, art, tipo, cant, motivo || 'Compra o ingreso', '', isDate(req.fecha) ? req.fecha : null) };
-});
-
-accion('produccion.registrar', true, function (db, req, ctx, ops) {
-  need(ctx, 'admin');
-  var br = n(req.briquetas_kg), ca = n(req.cascara_kg), ag = n(req.aglutinante_kg);
-  if (br <= 0) throw PE('Escribe cuántos kilos de briquetas salieron.');
-  if (ca < 0 || ag < 0) throw PE('Los kilos de insumos no pueden ser negativos.');
-  var fecha = isDate(req.fecha) ? req.fecha : ctx.today;
-  var lote = add(db, ops, 'Lotes', {
-    id: nextId(db.Lotes, 'LOT-', 4), fecha: fecha, cascara_kg: ca, aglutinante_kg: ag, briquetas_kg: br,
-    rendimiento: ca > 0 ? r2(br / ca * 100) : '', notas: s(req.notas), registrado_por: ctx.user.nombre
-  });
-  var art = articuloProducto(db), c = find(db.Inventario, ART_CASCARA), a = find(db.Inventario, ART_AGLUT);
-  if (art) mov(db, ops, ctx, art, 'Producción', br, 'Lote ' + lote.id, lote.id, fecha);
-  if (c && ca > 0) mov(db, ops, ctx, c, 'Producción', -ca, 'Usada en ' + lote.id, lote.id, fecha);
-  if (a && ag > 0) mov(db, ops, ctx, a, 'Producción', -ag, 'Usado en ' + lote.id, lote.id, fecha);
-  return { lote: lote };
 });

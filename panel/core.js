@@ -13,11 +13,13 @@
     Inventario: ['id', 'nombre', 'unidad', 'tipo', 'stock_min', 'activo'],
     Movimientos: ['id', 'fecha', 'articulo_id', 'articulo', 'tipo', 'cantidad', 'motivo', 'referencia', 'registrado_por'],
     Lotes: ['id', 'fecha', 'cascara_kg', 'aglutinante_kg', 'briquetas_kg', 'rendimiento', 'notas', 'registrado_por'],
+    Gastos: ['id', 'fecha', 'categoria', 'concepto', 'monto', 'tipo', 'proveedor', 'estado', 'registrado_por'],
     Usuarios: ['nombre', 'rol', 'pin', 'activo']
   };
   var TIPOS = ['Tienda', 'Mayorista', 'Consumidor'];
   var METODOS = ['Efectivo', 'Transferencia', 'Depósito'];
   var PRECIO = { Tienda: 'precio_tienda', Mayorista: 'precio_mayorista', Consumidor: 'precio_publico' };
+  var CATEGORIAS = [['Cáscara de coco', 'Variable'], ['Aglutinante', 'Variable'], ['Empaque (bolsas y sacos)', 'Variable'], ['Aceite y combustible', 'Variable'], ['Electricidad', 'Variable'], ['Transporte y fletes', 'Variable'], ['Mano de obra', 'Fijo'], ['Mantenimiento', 'Fijo'], ['Alquiler y servicios', 'Fijo'], ['Comisiones de venta', 'Variable'], ['Otros gastos', 'Fijo'], ['Inversión en equipo', 'Inversión']];
   var ART_PRODUCTO = 'INV-01', ART_CASCARA = 'INV-02', ART_AGLUT = 'INV-03';
 
   /* ---------- utilidades ---------- */
@@ -103,6 +105,7 @@
       inventario: inv,
       movimientos: admin ? db.Movimientos.slice(-200) : [],
       lotes: admin ? db.Lotes.slice(-60) : [],
+      gastos: admin ? db.Gastos.slice(-500) : [],
       sheetUrl: admin ? (ctx.sheetUrl || '') : ''
     });
   }
@@ -270,6 +273,24 @@
     return { articulo: upd(db, ops, 'Inventario', a, { stock_min: m }) };
   });
 
+  accion('gasto.registrar', true, function (db, req, ctx, ops) {
+    need(ctx, 'admin');
+    var cat = CATEGORIAS.filter(function (c) { return c[0] === req.categoria })[0];
+    if (!cat) throw PE('Elige la categoría del gasto.');
+    var monto = r2(n(req.monto));
+    if (monto <= 0) throw PE('Escribe el monto del gasto.');
+    var tipo = ['Fijo', 'Variable', 'Inversión'].indexOf(req.tipo) >= 0 ? req.tipo : cat[1];
+    if (cat[1] === 'Inversión') tipo = 'Inversión';
+    return { gasto: add(db, ops, 'Gastos', { id: nextId(db.Gastos, 'GAS-', 5), fecha: isDate(req.fecha) ? req.fecha : ctx.today, categoria: cat[0], concepto: s(req.concepto), monto: monto, tipo: tipo, proveedor: s(req.proveedor), estado: 'Activo', registrado_por: ctx.user.nombre }) };
+  });
+
+  accion('gasto.anular', true, function (db, req, ctx, ops) {
+    need(ctx, 'admin');
+    var g = find(db.Gastos, req.id);
+    if (!g) throw PE('No encontramos ese gasto.', 'no_existe');
+    return { gasto: upd(db, ops, 'Gastos', g, { estado: 'Anulado' }) };
+  });
+
   function handle(db, req, ctx) {
     var fn = ACCIONES[req && req.action];
     if (!fn) return { ok: false, error: 'Acción no válida.', code: 'accion' };
@@ -309,6 +330,68 @@
     R.porCobrar = r2(R.porCobrar); R.comisionMes = r2(R.comisionMes); R.comisionSemana = r2(R.comisionSemana); R.comprometidoKg = r2(R.comprometidoKg);
     R.cobradoHoy = r2(R.cobradoHoy); R.cobradoMes = r2(R.cobradoMes);
     return R;
+  }
+
+  /* ---------- costos y contingencia (puro: lo usa la pantalla y se prueba aparte) ---------- */
+  function costos(snap) {
+    var hoy = snap.hoy, d30 = addDays(hoy, -29), p30 = addDays(hoy, -59), p30f = addDays(hoy, -30);
+    var gs = (snap.gastos || []).filter(function (g) { return g.estado !== 'Anulado' });
+    var R = { desde: d30, hasta: hoy, gastos: { total: 0, fijo: 0, variable: 0 }, porCategoria: [], inversion: 0, inversion30: 0, kgProd: 0, kgVend: 0, ventas: 0, costoKg: null, precioProm: null, margenKg: null, margenPct: null, utilidad: 0, equilibrioKg: null, cobrado: 0, flujo: 0, recuperado: null, falta: null, cascaraDias: null, costoKgPrev: null, porCobrar: 0, alertas: [], nGastos30: 0 };
+    var cat = {}, gAll = 0, gPrev = 0;
+    gs.forEach(function (g) {
+      var m = n(g.monto), f = String(g.fecha);
+      if (g.tipo === 'Inversión') { R.inversion += m; if (f >= d30 && f <= hoy) R.inversion30 += m; return }
+      gAll += m;
+      if (f >= p30 && f <= p30f) gPrev += m;
+      if (f < d30 || f > hoy) return;
+      R.gastos.total += m; R.nGastos30++;
+      if (g.tipo === 'Fijo') R.gastos.fijo += m; else R.gastos.variable += m;
+      var c = cat[g.categoria] || (cat[g.categoria] = { categoria: g.categoria, tipo: g.tipo, q: 0 }); c.q += m;
+    });
+    var kgPrev = 0, cascara30 = 0, ventasAll = 0;
+    (snap.lotes || []).forEach(function (l) {
+      var f = String(l.fecha);
+      if (f >= d30 && f <= hoy) { R.kgProd += n(l.briquetas_kg); cascara30 += n(l.cascara_kg) }
+      else if (f >= p30 && f <= p30f) kgPrev += n(l.briquetas_kg);
+    });
+    (snap.pedidos || []).forEach(function (p) {
+      if (p.estado !== 'Entregado') return;
+      var f = String(p.fecha_entrega || p.fecha); ventasAll += n(p.total);
+      if (n(p.saldo) > 0.004) R.porCobrar += n(p.saldo);
+      if (f >= d30 && f <= hoy) { R.ventas += n(p.total); R.kgVend += n(p.kg) }
+    });
+    (snap.cobros || []).forEach(function (c) { var f = String(c.fecha); if (f >= d30 && f <= hoy) R.cobrado += n(c.monto) });
+    R.porCategoria = Object.keys(cat).map(function (k) { return cat[k] }).sort(function (a, b) { return b.q - a.q });
+    if (R.kgProd > 0) R.costoKg = R.gastos.total / R.kgProd;
+    if (kgPrev > 0 && gPrev > 0) R.costoKgPrev = gPrev / kgPrev;
+    if (R.kgVend > 0) R.precioProm = R.ventas / R.kgVend;
+    if (R.costoKg !== null && R.precioProm !== null) { R.margenKg = R.precioProm - R.costoKg; R.margenPct = R.margenKg / R.precioProm }
+    R.utilidad = R.ventas - R.gastos.total;
+    if (R.kgProd > 0 && R.precioProm !== null) { var vk = R.gastos.variable / R.kgProd; if (R.precioProm - vk > 0) R.equilibrioKg = R.gastos.fijo / (R.precioProm - vk) }
+    R.flujo = R.cobrado - R.gastos.total - R.inversion30;
+    if (R.inversion > 0) { var ua = ventasAll - gAll; R.recuperado = Math.max(0, Math.min(1, ua / R.inversion)); R.falta = Math.max(0, R.inversion - ua) }
+    var art = (snap.inventario || []).filter(function (a) { return a.id === ART_CASCARA })[0];
+    if (art && cascara30 > 0) R.cascaraDias = art.stock / (cascara30 / 30);
+    // alertas
+    var A = R.alertas;
+    if (R.nGastos30 === 0) A.push({ nivel: 'info', t: 'Aún no hay gastos de los últimos 30 días', d: 'Sin gastos registrados el costo por kg no es confiable. Anota cada compra y pago.' });
+    if (R.cascaraDias !== null && R.cascaraDias < 10) A.push({ nivel: 'alta', t: 'Cáscara para ' + Math.floor(R.cascaraDias) + ' días', d: 'Al ritmo actual de producción se acaba pronto. Consigue la siguiente compra antes de parar la línea.' });
+    else if (R.cascaraDias !== null && R.cascaraDias < 20) A.push({ nivel: 'media', t: 'Cáscara para ' + Math.floor(R.cascaraDias) + ' días', d: 'Conviene programar la próxima compra.' });
+    if (R.margenPct !== null && R.margenPct < 0) A.push({ nivel: 'alta', t: 'Vendes por debajo del costo', d: 'El costo por kg supera el precio promedio. Revisa precios o gastos.' });
+    else if (R.margenPct !== null && R.margenPct < 0.25) A.push({ nivel: 'media', t: 'Margen bajo (' + Math.round(R.margenPct * 100) + ' %)', d: 'Queda poco colchón ante un aumento de costos.' });
+    if (R.costoKg !== null && R.costoKgPrev !== null && R.costoKg > R.costoKgPrev * 1.15) A.push({ nivel: 'media', t: 'El costo por kg subió ' + Math.round((R.costoKg / R.costoKgPrev - 1) * 100) + ' %', d: 'Comparado con los 30 días anteriores. Mira qué categoría creció.' });
+    if (R.ventas > 0 && R.porCobrar > R.ventas * 0.4) A.push({ nivel: 'media', t: 'Mucho dinero en la calle', d: 'Tienes por cobrar el ' + Math.round(R.porCobrar / R.ventas * 100) + ' % de lo vendido en 30 días.' });
+    if (R.equilibrioKg !== null && R.kgVend < R.equilibrioKg) A.push({ nivel: 'media', t: 'Todavía no alcanzas el punto de equilibrio', d: 'Vendiste ' + Math.round(R.kgVend) + ' kg y necesitas unos ' + Math.round(R.equilibrioKg) + ' kg al mes para cubrir los gastos fijos.' });
+    var rank = { alta: 0, media: 1, info: 2 }; A.sort(function (a, b) { return rank[a.nivel] - rank[b.nivel] });
+    return R;
+  }
+  // p: {cascara, ventas, precio, fijos} en porcentaje de cambio (ej. 20 = +20 %)
+  function simular(R, p) {
+    var v = 1 + n(p.ventas) / 100, pr = 1 + n(p.precio) / 100, fc = 1 + n(p.cascara) / 100, ff = 1 + n(p.fijos) / 100, variable = 0;
+    R.porCategoria.forEach(function (c) { if (c.tipo === 'Variable') variable += c.q * v * (c.categoria === 'Cáscara de coco' ? fc : 1) });
+    var ventas = R.ventas * v * pr, fijo = R.gastos.fijo * ff, utilidad = ventas - variable - fijo, kgVend = R.kgVend * v, out = { ventas: ventas, gastos: variable + fijo, utilidad: utilidad, delta: utilidad - R.utilidad, margenPct: ventas > 0 ? utilidad / ventas : null, equilibrioKg: null };
+    if (R.kgProd > 0 && R.precioProm !== null) { var vk = variable / (R.kgProd * v), pu = R.precioProm * pr; if (pu - vk > 0) out.equilibrioKg = fijo / (pu - vk) }
+    return out;
   }
 
   /* ---------- datos de demostración (ficticios), construidos con las mismas acciones reales ---------- */
@@ -351,6 +434,8 @@
         var e = call(admin, dia, { action: 'pedido.entregar', id: id, cobrar: rnd() < 0.82 ? { monto: 'total', metodo: pick(METODOS) } : null });
       }
     }
+    var gdemo = [[-34, 'Inversión en equipo', 9500, 'Línea inicial: molino, extrusora y mezcladora', 'Taller local'], [-26, 'Cáscara de coco', 1000, 'Compra de cáscara', 'Proveedor Champerico'], [-26, 'Aglutinante', 380, 'Fécula de maíz', 'Mercado'], [-8, 'Cáscara de coco', 860, 'Compra de cáscara', 'Proveedor Champerico'], [-8, 'Aglutinante', 380, 'Fécula de maíz', 'Mercado'], [-20, 'Empaque (bolsas y sacos)', 630, 'Bolsas y sacos', 'Distribuidora'], [-28, 'Mano de obra', 1200, 'Ayudante, quincena', ''], [-14, 'Mano de obra', 1200, 'Ayudante, quincena', ''], [-27, 'Electricidad', 310, 'Recibo de energía', 'Energuate'], [-3, 'Electricidad', 340, 'Recibo de energía', 'Energuate'], [-20, 'Transporte y fletes', 350, 'Flete a Mazatenango', ''], [-12, 'Mantenimiento', 280, 'Soldadura y repuestos', ''], [-15, 'Aceite y combustible', 90, 'Aceite reciclado', '']];
+    gdemo.forEach(function (g) { call(admin, addDays(hoy, g[0]), { action: 'gasto.registrar', categoria: g[1], monto: g[2], concepto: g[3], proveedor: g[4] }) });
     var ped = db.Pedidos.filter(function (p) { return p.estado === 'Entregado' && n(p.saldo) > 0 && n(p.pagado) === 0 })[0];
     if (ped) call(admin, hoy, { action: 'cobro.registrar', pedido_id: ped.id, monto: r2(n(ped.total) / 2), metodo: 'Transferencia', referencia: 'Dep. 48210' });
     return db;
@@ -358,6 +443,6 @@
 
   root.PanelCore = {
     SCHEMA: SCHEMA, TIPOS: TIPOS, METODOS: METODOS, handle: handle, defaultDb: defaultDb, demoDb: demoDb, resumen: resumen,
-    stockMap: stockMap, addDays: addDays, cfgObj: cfgObj, ART_PRODUCTO: ART_PRODUCTO, PRECIO: PRECIO
+    stockMap: stockMap, addDays: addDays, cfgObj: cfgObj, ART_PRODUCTO: ART_PRODUCTO, PRECIO: PRECIO, CATEGORIAS: CATEGORIAS, costos: costos, simular: simular
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

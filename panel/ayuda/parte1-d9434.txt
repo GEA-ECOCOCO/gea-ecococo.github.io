@@ -12,11 +12,13 @@ var SCHEMA = {
   Inventario: ['id', 'nombre', 'unidad', 'tipo', 'stock_min', 'activo'],
   Movimientos: ['id', 'fecha', 'articulo_id', 'articulo', 'tipo', 'cantidad', 'motivo', 'referencia', 'registrado_por'],
   Lotes: ['id', 'fecha', 'cascara_kg', 'aglutinante_kg', 'briquetas_kg', 'rendimiento', 'notas', 'registrado_por'],
+  Gastos: ['id', 'fecha', 'categoria', 'concepto', 'monto', 'tipo', 'proveedor', 'estado', 'registrado_por'],
   Usuarios: ['nombre', 'rol', 'pin', 'activo']
 };
 var TIPOS = ['Tienda', 'Mayorista', 'Consumidor'];
 var METODOS = ['Efectivo', 'Transferencia', 'Depósito'];
 var PRECIO = { Tienda: 'precio_tienda', Mayorista: 'precio_mayorista', Consumidor: 'precio_publico' };
+var CATEGORIAS = [['Cáscara de coco', 'Variable'], ['Aglutinante', 'Variable'], ['Empaque (bolsas y sacos)', 'Variable'], ['Aceite y combustible', 'Variable'], ['Electricidad', 'Variable'], ['Transporte y fletes', 'Variable'], ['Mano de obra', 'Fijo'], ['Mantenimiento', 'Fijo'], ['Alquiler y servicios', 'Fijo'], ['Comisiones de venta', 'Variable'], ['Otros gastos', 'Fijo'], ['Inversión en equipo', 'Inversión']];
 var ART_PRODUCTO = 'INV-01', ART_CASCARA = 'INV-02', ART_AGLUT = 'INV-03';
 
 /* ---------- utilidades ---------- */
@@ -102,11 +104,7 @@ function snapshot(db, ctx) {
     inventario: inv,
     movimientos: admin ? db.Movimientos.slice(-200) : [],
     lotes: admin ? db.Lotes.slice(-60) : [],
+    gastos: admin ? db.Gastos.slice(-500) : [],
     sheetUrl: admin ? (ctx.sheetUrl || '') : ''
   });
 }
-
-/* ---------- acciones ---------- */
-var ACCIONES = {};
-var MUTA = {};
-function accion(nombre, muta, fn) { ACCIONES[nombre] = fn; if (muta) MUTA[nombre] = true }

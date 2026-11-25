@@ -4,7 +4,7 @@
   var C = window.PanelCore, CFG = window.PANEL_CFG || {};
   var qs = new URLSearchParams(location.search);
   var DEMO = qs.get('demo') === '1' || !CFG.url;
-  var S = { mode: DEMO ? 'demo' : 'live', token: null, user: null, snap: null, ruta: 'inicio', cargando: false, filtro: 'todos', q: '', qc: '', limite: 40, draft: null, intro: true };
+  var S = { sim: { cascara: 0, ventas: 0, precio: 0, fijos: 0 }, mode: DEMO ? 'demo' : 'live', token: null, user: null, snap: null, ruta: 'inicio', cargando: false, filtro: 'todos', q: '', qc: '', limite: 40, draft: null, intro: true };
   var SH = null;
   var LS = {
     get: function (k) { try { return localStorage.getItem(k) } catch (e) { return null } },
@@ -33,6 +33,7 @@
     users: '<circle cx="9" cy="8" r="3.4"/><path d="M2.8 20c.4-3.4 3-5.4 6.2-5.4s5.8 2 6.2 5.4"/><path d="M16 5a3.2 3.2 0 0 1 0 6M18 14.8c2 .6 3.1 2.3 3.4 5.2"/>',
     box: '<path d="M3.5 8 12 3.5 20.5 8v8L12 20.5 3.5 16z"/><path d="M3.5 8 12 12.5 20.5 8M12 12.5v8"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
+    coin: '<circle cx="12" cy="12" r="8.5"/><path d="M14.8 9.2c-.5-.9-1.5-1.3-2.8-1.3-1.6 0-2.7.8-2.7 2 0 2.8 5.6 1.4 5.6 4.2 0 1.2-1.2 2-2.9 2-1.3 0-2.4-.5-3-1.5M12 6.5v1.4M12 16.1v1.4"/>',
     gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
     x: '<path d="M6 6l12 12M18 6 6 18"/>',
     check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
@@ -154,14 +155,14 @@
       (demo ? '<div class="quick"><small>Demostración con datos ficticios. Elige cómo entrar:</small><button class="btn sec" data-a="demo" data-pin="123456">Entrar como administrador</button><button class="btn sec" data-a="demo" data-pin="111111">Entrar como vendedor</button></div>' : '') +
       '</div>';
   }
-  var TITULOS = { inicio: 'Inicio', pedidos: 'Pedidos', clientes: 'Clientes', inventario: 'Inventario', ajustes: 'Ajustes' };
+  var TITULOS = { costos: 'Costos y planes', inicio: 'Inicio', pedidos: 'Pedidos', clientes: 'Clientes', inventario: 'Inventario', ajustes: 'Ajustes' };
   function tabBtn(r, nombre, icono) { return '<button class="tab" data-a="ir" data-r="' + r + '"' + (S.ruta === r ? ' aria-current="page"' : '') + '>' + ic(icono) + '<span>' + nombre + '</span></button>' }
   function railBtn(r, nombre, icono) { return '<button class="nav" data-a="ir" data-r="' + r + '"' + (S.ruta === r ? ' aria-current="page"' : '') + '>' + ic(icono) + '<span>' + nombre + '</span></button>' }
   function shell(inner) {
     var adm = isAdmin(), u = S.user;
     var demo = S.mode === 'demo' ? '<div class="demo"><span>Demostración con datos ficticios. No se guarda nada en tu hoja de Google.</span><button data-a="demoreset">Reiniciar demo</button></div>' : '';
     return '<div class="shell"><aside class="rail"><div class="brand"><div class="tile"><img src="../img/logo-gea-carbon.svg" alt=""></div><div><b>Panel GEA</b><small>GEA Carbón | ECOCOCO</small></div></div>' +
-      railBtn('inicio', 'Inicio', 'home') + railBtn('pedidos', 'Pedidos', 'ped') + railBtn('clientes', 'Clientes', 'users') + (adm ? railBtn('inventario', 'Inventario', 'box') : '') + railBtn('ajustes', 'Ajustes', 'gear') +
+      railBtn('inicio', 'Inicio', 'home') + railBtn('pedidos', 'Pedidos', 'ped') + railBtn('clientes', 'Clientes', 'users') + (adm ? railBtn('inventario', 'Inventario', 'box') + railBtn('costos', 'Costos', 'coin') : '') + railBtn('ajustes', 'Ajustes', 'gear') +
       '<button class="btn" data-a="nuevoped">' + ic('plus') + ' Nuevo pedido</button>' +
       '<div class="who"><div class="avatar">' + esc(inicial(u.nombre)) + '</div><div>' + esc(u.nombre) + '<br><small>' + (adm ? 'Administrador' : 'Vendedor') + '</small></div></div></aside>' +
       '<div><header class="top"><div class="tile"><img src="../img/logo-gea-carbon.svg" alt=""></div><h1>' + TITULOS[S.ruta] + '<small>' + esc(fecha(hoy())) + '</small></h1><button class="avatar" data-a="ir" data-r="ajustes" aria-label="Ajustes y cuenta de ' + esc(u.nombre) + '">' + esc(inicial(u.nombre)) + '</button></header>' + demo +
@@ -172,7 +173,7 @@
     var app = $('#app');
     if (!S.user) { app.innerHTML = loginHTML(aviso); var f = $('#f-login'); if (f) f.addEventListener('submit', entrar); return }
     if (!S.snap) { app.innerHTML = shell(S.errCarga ? '<div class="err">' + esc(S.errCarga) + '</div><button class="btn" data-a="recargar">Reintentar</button>' : '<div class="skel" style="height:260px"></div><div class="skel"></div><div class="skel"></div>'); return }
-    var v = { inicio: vInicio, pedidos: vPedidos, clientes: vClientes, inventario: vInventario, ajustes: vAjustes }[S.ruta] || vInicio;
+    var v = { inicio: vInicio, pedidos: vPedidos, clientes: vClientes, inventario: vInventario, costos: vCostos, ajustes: vAjustes }[S.ruta] || vInicio;
     var keep = window.scrollY;
     app.innerHTML = shell(v());
     if (S.ruta === 'inicio' && S.intro) { S.intro = false; setTimeout(function () { var h = $('.hero'); if (h) h.classList.remove('go') }, 2200) }
@@ -221,6 +222,7 @@
   function vInicio() {
     var sn = S.snap, R = C.resumen(sn), adm = isAdmin(), art = sn.inventario.filter(function (a) { return a.tipo === 'producto' })[0], stock = art ? art.stock : 0, min = art ? art.stock_min : 0;
     var izq = (adm ? hero(stock, R.comprometidoKg, min) : heroVend(R, Math.max(0, stock - R.comprometidoKg))) + figs(R) +
+      (adm ? tarjetaCostos() : '') +
       '<div class="sec-h"><h2>Ventas de los últimos 14 días</h2><span class="num">' + Q(R.serie.reduce(function (a, s) { return a + s.q }, 0), 0) + '</span></div>' + chart(R.serie);
     var der = '<div class="sec-h" style="margin-top:0"><h2>' + (adm ? 'Por entregar' : 'Mis pedidos por entregar') + '</h2><span>' + R.porEntregar.length + (R.porEntregar.length === 1 ? ' pedido' : ' pedidos') + ' · ' + K(R.comprometidoKg) + '</span></div>' +
       lista(R.porEntregar.slice(0, 5).map(function (p) { return pedRow(p, true) }), 'Todo entregado', 'Cuando se registre un pedido nuevo, aparece aquí.');
@@ -302,6 +304,70 @@
     }
     h += '<div class="btn-row"><button class="btn sec" data-a="salir">' + ic('out') + ' Cerrar sesión</button></div><p style="text-align:center;color:var(--suave);font-size:13px;margin-top:16px">Panel GEA · versión 1</p>';
     return h;
+  }
+
+
+  /* --- costos y contingencia (solo administrador) --- */
+  function qk(x) { return x === null || x === undefined ? '—' : 'Q' + x.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
+  function tarjetaCostos() {
+    var R = C.costos(S.snap), alta = R.alertas.filter(function (a) { return a.nivel === 'alta' }).length;
+    return '<button class="row" data-a="ir" data-r="costos" style="margin-bottom:6px"><span class="bar ' + (alta ? 'cobrar' : 'ok') + '"></span><span><div class="t">Costos y planes</div><div class="s">' + (R.costoKg !== null ? 'Cada kg te cuesta ' + qk(R.costoKg) + (R.margenPct !== null ? ' · margen ' + Math.round(R.margenPct * 100) + ' %' : '') : 'Registra tus gastos para calcular el costo por kg') + '</div></span><span class="r">' + (alta ? '<span class="chip c-cobrar">' + alta + (alta === 1 ? ' alerta' : ' alertas') + '</span>' : '<span class="chip c-ok">Al día</span>') + '</span></button>';
+  }
+  function simHTML(R) {
+    var o = C.simular(R, S.sim), mal = o.delta < -0.5, bien = o.delta > 0.5;
+    return '<div class="kv"><span>Ventas en 30 días</span><b>' + Q(o.ventas, 0) + '</b></div><div class="kv"><span>Gastos en 30 días</span><b>' + Q(o.gastos, 0) + '</b></div><div class="kv"><span>Utilidad en 30 días</span><b style="color:' + (o.utilidad < 0 ? 'var(--alerta)' : 'var(--bosque)') + '">' + Q(o.utilidad, 0) + '</b></div>' +
+      '<div class="kv"><span>Cambio frente a hoy</span><b style="color:' + (mal ? 'var(--alerta)' : bien ? 'var(--bosque)' : 'inherit') + '">' + (o.delta >= 0 ? '+' : '−') + Q(Math.abs(o.delta), 0) + '</b></div>' +
+      '<div class="kv"><span>Para no perder necesitarías vender</span><b>' + (o.equilibrioKg === null ? '—' : Math.round(o.equilibrioKg) + ' kg al mes') + '</b></div>';
+  }
+  function slider(k, label, min, max, step) {
+    var v = S.sim[k];
+    return '<label class="fld"><span>' + label + ' <b id="sv-' + k + '">' + (v > 0 ? '+' : '') + v + ' %</b></span><input type="range" data-sim="' + k + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + v + '" aria-label="' + esc(label) + '"></label>';
+  }
+  function resumenTexto(R) {
+    var L = ['Resumen de costos GEA Carbón (últimos 30 días, ' + fecha(R.hasta) + ')', 'Producción: ' + Math.round(R.kgProd) + ' kg de briquetas', 'Ventas entregadas: ' + Q(R.ventas, 0) + ' (' + Math.round(R.kgVend) + ' kg, precio promedio ' + qk(R.precioProm) + ' por kg)',
+      'Gastos: ' + Q(R.gastos.total, 0) + ' (fijos ' + Q(R.gastos.fijo, 0) + ', variables ' + Q(R.gastos.variable, 0) + ')', 'Costo por kg: ' + qk(R.costoKg) + ' · margen por kg: ' + qk(R.margenKg) + (R.margenPct !== null ? ' (' + Math.round(R.margenPct * 100) + ' %)' : ''),
+      'Utilidad: ' + Q(R.utilidad, 0) + ' · cobrado: ' + Q(R.cobrado, 0) + ' · por cobrar: ' + Q(R.porCobrar, 0), 'Punto de equilibrio: ' + (R.equilibrioKg === null ? 'sin datos' : Math.round(R.equilibrioKg) + ' kg al mes')];
+    if (R.cascaraDias !== null) L.push('Cáscara en bodega: para unos ' + Math.floor(R.cascaraDias) + ' días');
+    if (R.inversion > 0) L.push('Inversión en equipo: ' + Q(R.inversion, 0) + ' · recuperado ' + Math.round((R.recuperado || 0) * 100) + ' %');
+    L.push('Gastos por categoría: ' + R.porCategoria.map(function (c) { return c.categoria + ' ' + Q(c.q, 0) }).join(', '));
+    if (R.alertas.length) L.push('Alertas: ' + R.alertas.map(function (a) { return a.t }).join('; '));
+    L.push('', 'Con estos números, ¿qué plan de contingencia y qué estrategias me recomiendas?');
+    return L.join('\n');
+  }
+  function vCostos() {
+    if (!isAdmin()) return '<div class="vacio"><b>Esta sección es del administrador</b></div>';
+    var R = C.costos(S.snap), h = '', tot = R.gastos.total || 1;
+    h += '<section class="hero"><div class="lab">Cada kilo te cuesta</div><div class="big num">' + (R.costoKg === null ? '—' : qk(R.costoKg)) + '</div><div class="sub">' +
+      (R.costoKg === null ? 'Registra una producción y tus gastos para calcularlo.' : (R.precioProm !== null ? 'Vendes a ' + qk(R.precioProm) + ' en promedio, ganas ' + qk(R.margenKg) + ' por kg (' + Math.round(R.margenPct * 100) + ' %)' : 'Aún no hay ventas entregadas en 30 días')) + '</div>' +
+      '<div class="legend" style="margin-top:14px"><span>Estimado con los últimos 30 días. Mejora con cada gasto que registres.</span></div></section>';
+    h += '<div class="figs"><div class="fig"><div class="l">Utilidad</div><div class="v num" style="color:' + (R.utilidad < 0 ? 'var(--alerta)' : 'inherit') + '">' + Q(R.utilidad, 0) + '</div><div class="k num">30 días</div></div><div class="fig"><div class="l">Gastos</div><div class="v num">' + Q(R.gastos.total, 0) + '</div><div class="k num">' + Q(R.gastos.fijo, 0) + ' fijos</div></div><div class="fig"><div class="l">Equilibrio</div><div class="v num">' + (R.equilibrioKg === null ? '—' : Math.round(R.equilibrioKg)) + '</div><div class="k num">kg al mes</div></div></div>';
+    h += '<div class="btn-row two" style="margin:6px 0 4px"><button class="btn" data-a="gasto">' + ic('plus') + ' Registrar gasto</button><button class="btn sec" data-a="compartir">Copiar resumen</button></div>';
+    h += '<div class="sec-h"><h2>Alertas</h2></div><div class="list">' + (R.alertas.length ? R.alertas.map(function (a) { return '<div class="row" style="cursor:default"><span class="bar ' + (a.nivel === 'alta' ? 'cobrar' : a.nivel === 'media' ? 'pend' : 'ok') + '"></span><span><div class="t">' + esc(a.t) + '</div><div class="s">' + esc(a.d) + '</div></span><span></span></div>' }).join('') : '<div class="vacio"><b>Sin alertas</b>Con los datos registrados, todo está en orden.</div>') + '</div>';
+    h += '<div class="sec-h"><h2>En qué se va el dinero</h2><span>30 días</span></div><div class="list">' + (R.porCategoria.length ? R.porCategoria.map(function (c) { return '<div class="hbar"><div><span>' + esc(c.categoria) + ' <small style="color:var(--suave)">· ' + c.tipo.toLowerCase() + '</small></span><b class="num">' + Q(c.q, 0) + ' · ' + Math.round(c.q / tot * 100) + ' %</b></div><i style="width:' + Math.max(4, c.q / (R.porCategoria[0].q || 1) * 100) + '%"></i></div>' }).join('') : '<div class="vacio"><b>Aún no hay gastos</b>Toca "Registrar gasto" para anotar el primero.</div>') + '</div>';
+    if (R.inversion > 0) h += '<div class="sec-h"><h2>Inversión en la planta</h2></div><div class="stock"><div class="h"><b>' + Q(R.inversion, 0) + ' invertidos</b><span class="num">' + Math.round((R.recuperado || 0) * 100) + '<small>% recuperado</small></span></div><div class="gauge"><i style="width:' + Math.round((R.recuperado || 0) * 100) + '%"></i></div><small class="m">Faltan ' + Q(R.falta, 0) + ' por recuperar con las utilidades acumuladas.</small></div>';
+    h += '<div class="sec-h"><h2>Simulador de contingencia</h2></div><div class="card"><p style="color:var(--suave);font-size:15px;margin-bottom:12px">Mueve las barras para ver qué le pasaría a tu utilidad si cambian las condiciones.</p>' +
+      slider('cascara', 'Precio de la cáscara', -50, 100, 5) + slider('ventas', 'Cantidad que vendes', -80, 100, 5) + slider('precio', 'Precio de venta', -30, 30, 5) + slider('fijos', 'Gastos fijos (mano de obra, etc.)', -50, 100, 5) +
+      '<div id="simout" style="margin-top:6px">' + simHTML(R) + '</div><div class="btn-row" style="margin-top:12px"><button class="btn ghost" data-a="simrst">Volver a los números reales</button></div></div>';
+    var gs = (S.snap.gastos || []).filter(function (g) { return g.estado !== 'Anulado' }).slice().reverse().slice(0, 12);
+    h += '<div class="sec-h"><h2>Últimos gastos</h2></div><div class="list">' + (gs.length ? gs.map(function (g) { return '<button class="row" data-a="vergasto" data-id="' + esc(g.id) + '"><span class="bar ' + (g.tipo === 'Inversión' ? 'pend' : 'ok') + '"></span><span><div class="t">' + esc(g.concepto || g.categoria) + '</div><div class="s">' + esc(g.categoria) + ' · ' + esc(fecha(g.fecha)) + '</div></span><span class="r"><b class="num">' + Q(g.monto) + '</b></span></button>' }).join('') : '<div class="vacio"><b>Sin gastos todavía</b></div>') + '</div>';
+    return h;
+  }
+  function gastoSheet() {
+    openSheet(shHead('Registrar gasto', 'Cada compra o pago que anotes afina tu costo por kg') + '<div class="sh-b"><label class="fld"><span>Categoría</span><select id="gc">' + C.CATEGORIAS.map(function (c) { return '<option value="' + esc(c[0]) + '" data-t="' + c[1] + '">' + esc(c[0]) + '</option>' }).join('') + '</select></label>' +
+      fld('Monto (Q)', 'gm', '', { mode: 'decimal' }) + fld('Concepto', 'gn', '', { ph: 'Ej. 6,200 kg de cáscara, recibo de luz' }) + '<div class="fld" id="gtw"><span>Tipo de gasto</span>' + segHTML('gt', ['Variable', 'Fijo'], 'Variable') + '<small>Variable: sube con lo que produces (cáscara, empaque). Fijo: se paga igual produzcas o no (mano de obra).</small></div>' +
+      fld('Proveedor (opcional)', 'gp', '', {}) + fld('Fecha', 'gf', S.snap.hoy, { type: 'date' }) + '</div><div class="sh-f"><button class="btn" data-a="guardargasto">Guardar gasto</button></div>');
+  }
+  function guardarGasto(btn) {
+    var sh = $('.sheet'), fin = ocupado(btn);
+    api('gasto.registrar', { categoria: $('#gc', sh).value, monto: val(sh, 'gm'), concepto: val(sh, 'gn'), tipo: segVal(sh, 'gt'), proveedor: val(sh, 'gp'), fecha: val(sh, 'gf') }).then(function (res) { fin(); if (!res.ok) return setErr(sh, res.error); aplicar(res); closeSheet(); render(); toast('Gasto guardado', true) });
+  }
+  function verGasto(id) {
+    var g = (S.snap.gastos || []).filter(function (x) { return x.id === id })[0]; if (!g) return;
+    openSheet(shHead(g.concepto || g.categoria, esc(g.categoria) + ' · ' + esc(fecha(g.fecha))) + '<div class="sh-b"><div class="kv"><span>Monto</span><b class="d" style="font-size:24px">' + Q(g.monto) + '</b></div><div class="kv"><span>Tipo</span><b>' + esc(g.tipo) + '</b></div>' + (g.proveedor ? '<div class="kv"><span>Proveedor</span><b>' + esc(g.proveedor) + '</b></div>' : '') + '<div class="kv"><span>Registró</span><b>' + esc(g.registrado_por) + '</b></div></div><div class="sh-f"><button class="btn danger" data-a="anulargasto" data-id="' + esc(g.id) + '">Anular este gasto</button></div>');
+  }
+  function copiar(texto) {
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(texto);
+    return new Promise(function (ok, no) { var t = document.createElement('textarea'); t.value = texto; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); ok() } catch (e) { no(e) } t.remove() });
   }
 
   /* ---------- formularios ---------- */
@@ -519,6 +585,12 @@
       case 'guardarmov': guardarMov(el); break;
       case 'guardarprecios': guardarPrecios(el); break;
       case 'guardarcfg': guardarCfg(el); break;
+      case 'gasto': gastoSheet(); break;
+      case 'guardargasto': guardarGasto(el); break;
+      case 'vergasto': verGasto(id); break;
+      case 'anulargasto': var f2 = ocupado(el, 'Anulando…'); api('gasto.anular', { id: id }).then(function (res) { f2(); if (!res.ok) return setErr($('.sheet'), res.error); aplicar(res); closeSheet(); render(); toast('Gasto anulado', true) }); break;
+      case 'simrst': S.sim = { cascara: 0, ventas: 0, precio: 0, fijos: 0 }; render(); break;
+      case 'compartir': copiar(resumenTexto(C.costos(S.snap))).then(function () { toast('Resumen copiado. Pégalo en tu conversación con Claude.', true) }, function () { toast('No se pudo copiar') }); break;
     }
   });
   document.addEventListener('input', function (e) {
@@ -528,11 +600,12 @@
     else if (t.id === 'pq' && d) { d.q = t.value; var o = $('#opts'); if (o) o.innerHTML = opcionesCli(d.q) }
     else if (t.hasAttribute && t.hasAttribute('data-q') && d) { d.items[t.getAttribute('data-q')] = Math.max(0, Math.floor(num(t.value))); avisoMin(); var tg = t.closest('.prod'); if (tg && isAdmin()) { /* campo de precio aparece al soltar */ } }
     else if (t.hasAttribute && t.hasAttribute('data-pr') && d) { d.precios[t.getAttribute('data-pr')] = t.value; avisoMin() }
+    else if (t.hasAttribute && t.hasAttribute('data-sim')) { var k = t.getAttribute('data-sim'); S.sim[k] = num(t.value); var sv = $('#sv-' + k); if (sv) sv.textContent = (S.sim[k] > 0 ? '+' : '') + S.sim[k] + ' %'; var so = $('#simout'); if (so) so.innerHTML = simHTML(C.costos(S.snap)) }
     else if (t.id === 'pn' && d) d.nota = t.value;
     else if (t.id === 'pf' && d) { d.fecha = t.value; }
     else if (t.id === 'lb' || t.id === 'lc') { var b = num($('#lb').value), c = num($('#lc').value), r = $('#lrend'); if (r) r.textContent = b > 0 && c > 0 ? 'Rendimiento: ' + (b / c * 100).toFixed(1) + ' % de la cáscara se volvió briqueta.' : 'Escribe los kilos de briquetas y de cáscara para ver el rendimiento.' }
   });
-  document.addEventListener('change', function (e) { var t = e.target; if (t.hasAttribute && t.hasAttribute('data-q') && S.draft) pintarNuevo(); if (t.id === 'pf' && S.draft) pintarNuevo() });
+  document.addEventListener('change', function (e) { var t = e.target; if (t.id === 'gc') { var op = t.options[t.selectedIndex], tw = $('#gtw'), tp = op.getAttribute('data-t'); if (tw) { tw.style.display = tp === 'Inversión' ? 'none' : ''; if (tp !== 'Inversión') tw.querySelectorAll('[data-a=seg]').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-v') === tp ? 'true' : 'false') }) } } if (t.hasAttribute && t.hasAttribute('data-q') && S.draft) pintarNuevo(); if (t.id === 'pf' && S.draft) pintarNuevo() });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && SH) closeSheet() });
 
   /* ---------- arranque ---------- */
