@@ -14,6 +14,7 @@
     tecnologia:{c:'bt-t',img:'',l1:'GEA '+(es?'TECNOLOGÍA':'TECHNOLOGY'),l2:es?'Preparando la planta…':'Preparing the plant…',l3:es?'hornos · molino · prensa · planta':'furnaces · mill · press · plant'}
   }[T];
   if(!C)return;
+  window.geaCambio=[prev||'carbon',T];
   d.classList.add('bt-on');
   var go=function(){
     if(document.querySelector('.bt'))return;

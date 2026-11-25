@@ -67,6 +67,64 @@
   }
   window.geaSonidoMarca = sonA;
 
+
+  /* ---------- Sonido tecnológico (sin marimba): barrido + pulsos de datos + arpegio sintético + campana FM ---------- */
+  function blip(c, out, f, t, v, pan) {
+    var o = c.createOscillator(), g = c.createGain(), last = out;
+    o.type = 'sine'; o.frequency.value = f; eg(c, g, t, 0.002, v, 0.07); o.connect(g);
+    if (c.createStereoPanner) { var p = c.createStereoPanner(); p.pan.value = pan || 0; g.connect(p); p.connect(out) } else g.connect(out);
+    o.start(t); o.stop(t + 0.12);
+  }
+  function secuencia(c, out, notas, t, paso, v, tipo, corte) {
+    notas.forEach(function (f, i) {
+      var o = c.createOscillator(), lp = c.createBiquadFilter(), g = c.createGain(), tt = t + i * paso;
+      o.type = tipo || 'triangle'; o.frequency.value = f; lp.type = 'lowpass'; lp.frequency.value = corte || 3800; lp.Q.value = 3;
+      eg(c, g, tt, 0.004, v * (0.75 + 0.25 * i / Math.max(1, notas.length - 1)), 0.16); o.connect(lp); lp.connect(g); g.connect(out); o.start(tt); o.stop(tt + 0.22);
+    });
+  }
+  function barrido(c, out, t, dur, v, de, a) {
+    var n = ruido(c, dur + 0.1), bp = c.createBiquadFilter(), g = c.createGain();
+    bp.type = 'bandpass'; bp.Q.value = 2.5; bp.frequency.setValueAtTime(de, t); bp.frequency.exponentialRampToValueAtTime(a, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + dur * 0.92); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.08);
+    n.connect(bp); bp.connect(g); g.connect(out); n.start(t); n.stop(t + dur + 0.1);
+  }
+  function campanaFM(c, out, f, t, v, d) {
+    var o = c.createOscillator(), m = c.createOscillator(), mg = c.createGain(), g = c.createGain();
+    o.type = 'sine'; o.frequency.value = f; m.type = 'sine'; m.frequency.value = f * 3.5;
+    mg.gain.setValueAtTime(f * 1.6, t); mg.gain.exponentialRampToValueAtTime(f * 0.05, t + d * 0.7);
+    m.connect(mg); mg.connect(o.frequency); eg(c, g, t, 0.003, v, d); o.connect(g); g.connect(out);
+    o.start(t); m.start(t); o.stop(t + d + 0.05); m.stop(t + d + 0.05);
+  }
+  var PENTA = [329.63, 415.30, 493.88, 659.25, 830.61, 987.77, 1318.51, 1661.22];
+  /* Inicio: «sistema en línea» (primera apertura de la app o del sitio) */
+  function sonT(c, dest, t0) {
+    var m = bus(c, dest, 0.3, 2.0, 1.15), v = c.createGain(); v.gain.value = 1; v.connect(m); eco(c, v, m, 0.16, 0.32, 0.38);
+    tono(c, m, 'sine', 55, t0, 0.25, 0.22, 0.9);                       /* arranque grave */
+    barrido(c, m, t0 + 0.05, 0.95, 0.5, 300, 7000);
+    [1760, 2349, 2093, 2794, 3136, 2637, 3520].forEach(function (f, i) { blip(c, v, f, t0 + 0.12 + i * 0.12, 0.12, (i % 2 ? 0.6 : -0.6)) });
+    secuencia(c, v, PENTA.concat([1975.53]), t0 + 0.5, 0.085, 0.16, 'triangle', 4200);
+    var T = t0 + 1.35;                                                   /* confirmación */
+    campanaFM(c, m, 659.25, T, 0.30, 2.0); campanaFM(c, m, 987.77, T + 0.02, 0.22, 2.0); campanaFM(c, m, 1318.51, T + 0.04, 0.2, 1.8);
+    pad(c, m, [164.81, 246.94, 329.63, 493.88], T - 0.1, 0.5, 0.03, 2.4, 2600);
+    tono(c, m, 'sine', 82.41, T, 0.25, 0.2, 1.8);
+    [[3951.07, 0.35], [5274.0, 0.5], [4698.6, 0.65]].forEach(function (x) { blip(c, m, x[0], T + x[1], 0.05, 0) });
+  }
+  /* Hacia GEA Consultora: «conectando sistemas» (más rápido y ascendente) */
+  function sonCons(c, dest, t0) {
+    var m = bus(c, dest, 0.28, 1.8, 1.15), v = c.createGain(); v.gain.value = 1; v.connect(m); eco(c, v, m, 0.14, 0.3, 0.36);
+    tono(c, m, 'sine', 65.41, t0, 0.18, 0.2, 0.7);
+    barrido(c, m, t0, 0.62, 0.45, 400, 8000);
+    [2093, 2637, 3136, 2349, 3520, 3136, 4186].forEach(function (f, i) { blip(c, v, f, t0 + 0.06 + i * 0.07, 0.11, (i % 2 ? 0.7 : -0.7)) });
+    secuencia(c, v, PENTA, t0 + 0.2, 0.062, 0.15, 'triangle', 4600);
+    var T = t0 + 0.78;
+    campanaFM(c, m, 880, T, 0.28, 1.6); campanaFM(c, m, 1318.51, T + 0.02, 0.2, 1.5); campanaFM(c, m, 1975.53, T + 0.04, 0.14, 1.3);
+    pad(c, m, [220, 329.63, 440, 659.25], T - 0.1, 0.35, 0.026, 1.7, 3000);
+    [[4186, 0.25], [5587.7, 0.4]].forEach(function (x) { blip(c, m, x[0], T + x[1], 0.045, 0) });
+  }
+  window.geaSonidoTech = sonT; window.geaSonidoConsultora = sonCons;
+  var QUE = 'T';
+  var SONS = { T: sonT, C: sonCons, M: sonA };
+
   /* ---------- Voz femenina, lenta y cálida ---------- */
   var TXT = EN ? 'Welcome to... Jea... Eco Coco.' : 'Bienvenido a... Jea... Eco Coco.';
   function base() {
@@ -122,7 +180,7 @@
   function tocar(vozEn) {
     if (!ctx || parado) return;
     var t0 = ctx.currentTime + 0.05;
-    try { sonA(ctx, ctx.destination, t0) } catch (e) {}
+    try { SONS[QUE](ctx, ctx.destination, t0) } catch (e) {}
     try { window.geaTrack && geaTrack('sonido_bienvenida', {}) } catch (e) {}
   }
   function iniciar(esperaChime, vozEn, ventana) {
@@ -154,6 +212,10 @@
     pintaSp();
     b.addEventListener('click', function () { var s = on(); put(KEY, s ? '0' : '1'); if (s) parar(); else { parado = false; try { if (!ctx) ctx = new AC(); ctx.resume && ctx.resume().then(function () { tocar(1.2) }) } catch (e) {} } pintaSp(); pintaPie() });
     splash.appendChild(b);
+  } else if (window.geaCambio) {
+    /* Cambio de ambiente: hacia Consultora/Tecnología suena tecnológico; de vuelta a ECOCOCO, la marimba de la marca */
+    QUE = window.geaCambio[1] === 'carbon' ? 'M' : 'C';
+    iniciar(0.2, 0, 3);
   } else if (inicio && !sget(SKEY)) {
     sput(SKEY, '1');
     iniciar(0.6, 2.4, 3);
