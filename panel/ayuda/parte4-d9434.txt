@@ -1,0 +1,74 @@
+/* ---------- sesiones ---------- */
+function firmar_(texto) {
+  var secreto = PropertiesService.getScriptProperties().getProperty('SECRETO');
+  return Utilities.base64EncodeWebSafe(Utilities.computeHmacSha256Signature(texto, secreto));
+}
+function crearToken_(u) {
+  var carga = Utilities.base64EncodeWebSafe(JSON.stringify({ u: u.nombre, r: u.rol, e: Date.now() + DIAS_SESION * 86400000 }));
+  return carga + '.' + firmar_(carga);
+}
+function verificar_(token) {
+  if (!token || String(token).indexOf('.') < 0) return null;
+  var p = String(token).split('.');
+  if (firmar_(p[0]) !== p[1]) return null;
+  try {
+    var d = JSON.parse(Utilities.newBlob(Utilities.base64DecodeWebSafe(p[0])).getDataAsString());
+    if (!d.e || d.e < Date.now()) return null;
+    var u = usuarios_().filter(function (x) { return x.nombre === d.u && x.activo !== 'No' })[0];
+    return u ? { nombre: u.nombre, rol: u.rol } : null;
+  } catch (e) { return null }
+}
+function usuarios_() {
+  var h = hoja_('Usuarios'), cab = PanelCore.SCHEMA.Usuarios;
+  if (!h || h.getLastRow() < 2) return [];
+  return h.getRange(2, 1, h.getLastRow() - 1, cab.length).getValues().map(function (f) {
+    return { nombre: String(f[0]).trim(), rol: String(f[1]).trim().toLowerCase() === 'admin' ? 'admin' : 'vendedor', pin: String(f[2]).trim(), activo: String(f[3]).trim() };
+  }).filter(function (u) { return u.nombre });
+}
+function entrar_(req) {
+  var cache = CacheService.getScriptCache();
+  var fallos = parseInt(cache.get('fallos') || '0', 10);
+  if (fallos >= 8) return { ok: false, error: 'Demasiados intentos. Espera 10 minutos y vuelve a probar.', code: 'bloqueo' };
+  var pin = String(req.pin || '').trim();
+  var u = pin.length >= 4 ? usuarios_().filter(function (x) { return x.pin === pin && x.activo !== 'No' })[0] : null;
+  if (!u) { cache.put('fallos', String(fallos + 1), 600); return { ok: false, error: 'Clave incorrecta. Revísala e inténtalo de nuevo.', code: 'clave' } }
+  cache.remove('fallos');
+  return { ok: true, data: { token: crearToken_(u), user: { nombre: u.nombre, rol: u.rol } } };
+}
+
+/* ---------- entrada web ---------- */
+function ahora_() {
+  var d = new Date();
+  return { today: Utilities.formatDate(d, ZONA, 'yyyy-MM-dd'), now: Utilities.formatDate(d, ZONA, 'yyyy-MM-dd HH:mm') };
+}
+function responder_(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}
+function doGet() { return ContentService.createTextOutput('Panel GEA activo.') }
+function doPost(e) {
+  var salida;
+  try {
+    var req = JSON.parse(e.postData.contents);
+    salida = ruta_(req);
+  } catch (err) {
+    salida = { ok: false, error: 'Algo falló en el servidor. Inténtalo otra vez. (' + err.message + ')', code: 'servidor' };
+  }
+  return responder_(salida);
+}
+function ruta_(req) {
+  if (req.action === 'ping') return { ok: true, data: 'Panel GEA' };
+  if (req.action === 'login') return entrar_(req);
+  var user = verificar_(req.token);
+  if (!user) return { ok: false, error: 'Tu sesión venció. Entra de nuevo con tu clave.', code: 'auth' };
+  var lock = LockService.getScriptLock();
+  lock.waitLock(25000);
+  try {
+    var db = leer_({}), t = ahora_();
+    var id = PropertiesService.getScriptProperties().getProperty('HOJA');
+    var url = id ? SpreadsheetApp.openById(id).getUrl() : '';
+    var res = PanelCore.handle(db, req, { user: user, today: t.today, now: t.now, sheetUrl: url });
+    if (res.ok && res.ops && res.ops.length) aplicar_(res.ops, db);
+    delete res.ops;
+    return res;
+  } finally { lock.releaseLock() }
+}
