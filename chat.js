@@ -27,7 +27,7 @@ var TECRE=/horno|pir[oó]lisis|molino|prensa|m[aá]quina|maquinaria|equipo indus
 function pagTema(){var t=document.documentElement.getAttribute('data-tema');return t==='consultora'?'c':t==='tecnologia'?'t':''}
 var cur='',rdy=false;
 function tema(m){if(m===true)m='c';if(m===false)m='';cur=m;box.classList.toggle('tema-c',m==='c');btn.classList.toggle('tema-c',m==='c');box.classList.toggle('tema-t',m==='t');btn.classList.toggle('tema-t',m==='t');var n=m==='c'?L('Asistente GEA Consultora','GEA Consultora assistant'):m==='t'?L('Asistente GEA Tecnología','GEA Technology assistant'):L('Asistente ECOCOCO','ECOCOCO assistant');if(tt.firstChild)tt.firstChild.textContent=n;box.setAttribute('aria-label',n);btn.title=n;if(rdy){buildSug();if(!hist.length)render()}}
-function temaTxt(t){var a=SRVRE.test(t),b=CARRE.test(t),q=TECRE.test(t);if(a&&!q)tema('c');else if(q&&!a)tema('t');else if(b&&!a&&!q)tema('')}
+function temaTxt(t){if(pagTema())return;var a=SRVRE.test(t),b=CARRE.test(t),q=TECRE.test(t);if(a&&!q)tema('c');else if(q&&!a)tema('t');else if(b&&!a&&!q)tema('')}
 if(pagTema())tema(pagTema());
 var x=el('button','chat-x','×');x.type='button';x.setAttribute('aria-label',L('Cerrar','Close'));hd.appendChild(tt);
 hd.appendChild(x);
@@ -129,10 +129,12 @@ function add(role,text,fk){
   log.appendChild(m);log.scrollTop=log.scrollHeight;return m;
 }
 function render(){
+  var _sn=speakNext;speakNext=false;   /* el saludo y el historial nunca se leen en voz alta */
   log.textContent='';
   if(!hist.length){add('assistant',cur==='c'?L('Hola, soy el asistente de GEA Consultora. Cuéntame de tu negocio y qué necesitas: ¿una página, atención a tus clientes, registro de clientes o avisos?','Hi, I\'m the GEA Consultora assistant. Tell me about your business and what you need: a website, customer service, a customer register or alerts?'):cur==='t'?L('Hola, soy el asistente de tecnología de GEA. Pregúntame por los hornos, el molino, la prensa o cómo avanza la planta.','Hi, I\'m the GEA technology assistant. Ask me about the furnaces, the mill, the press or how the plant is progressing.'):L('Hola, soy tu asesor de ECOCOCO. Cuéntame qué buscas y te oriento: ¿es para tu casa, para un restaurante o para revender?','Hi, I\'m your ECOCOCO advisor. Tell me what you\'re looking for and I\'ll guide you: is it for your home, a restaurant or to resell?'));
     sug.hidden=false}
   else{hist.forEach(function(h){add(h.role,h.content)});sug.hidden=true}
+  speakNext=_sn;
 }
 var CH={
 '':[[L('¿Cuánto cuesta?','How much is it?'),L('¿Cuánto cuesta cada presentación?','How much does each size cost?')],
