@@ -68,62 +68,76 @@
   window.geaSonidoMarca = sonA;
 
 
-  /* ---------- Sonido tecnológico (sin marimba): barrido + pulsos de datos + arpegio sintético + campana FM ---------- */
-  function blip(c, out, f, t, v, pan) {
-    var o = c.createOscillator(), g = c.createGain(), last = out;
-    o.type = 'sine'; o.frequency.value = f; eg(c, g, t, 0.002, v, 0.07); o.connect(g);
-    if (c.createStereoPanner) { var p = c.createStereoPanner(); p.pan.value = pan || 0; g.connect(p); p.connect(out) } else g.connect(out);
-    o.start(t); o.stop(t + 0.12);
+  /* ---------- Logos sonoros (síntesis en el dispositivo, sin voz ni percusión) ---------- */
+  function maestro(c, dest, t0, dur) { /* garantiza la duración exacta: fundido final */
+    var g = c.createGain(); g.gain.setValueAtTime(1, t0); g.gain.setValueAtTime(1, t0 + dur - 0.4); g.gain.linearRampToValueAtTime(0.0001, t0 + dur); g.connect(dest); return g;
   }
-  function secuencia(c, out, notas, t, paso, v, tipo, corte) {
-    notas.forEach(function (f, i) {
-      var o = c.createOscillator(), lp = c.createBiquadFilter(), g = c.createGain(), tt = t + i * paso;
-      o.type = tipo || 'triangle'; o.frequency.value = f; lp.type = 'lowpass'; lp.frequency.value = corte || 3800; lp.Q.value = 3;
-      eg(c, g, tt, 0.004, v * (0.75 + 0.25 * i / Math.max(1, notas.length - 1)), 0.16); o.connect(lp); lp.connect(g); g.connect(out); o.start(tt); o.stop(tt + 0.22);
+  function piano(c, out, f, t, v) { /* nota de piano cristalina: parciales ligeramente inarmónicos + golpe de martillo suave */
+    [[1, 1, 2.2], [2, .5, 1.5], [3, .28, 1.0], [4, .16, .7], [5, .09, .5], [6, .05, .35]].forEach(function (p) {
+      tono(c, out, 'sine', f * p[0] * (1 + 0.0005 * p[0] * p[0]), t, 0.004, v * p[1], p[2]);
     });
+    var n = ruido(c, 0.05), hp = c.createBiquadFilter(), g = c.createGain(); hp.type = 'highpass'; hp.frequency.value = 3500;
+    eg(c, g, t, 0.001, v * 0.12, 0.03); n.connect(hp); hp.connect(g); g.connect(out); n.start(t); n.stop(t + 0.05);
   }
-  function barrido(c, out, t, dur, v, de, a) {
-    var n = ruido(c, dur + 0.1), bp = c.createBiquadFilter(), g = c.createGain();
-    bp.type = 'bandpass'; bp.Q.value = 2.5; bp.frequency.setValueAtTime(de, t); bp.frequency.exponentialRampToValueAtTime(a, t + dur);
-    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + dur * 0.92); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.08);
-    n.connect(bp); bp.connect(g); g.connect(out); n.start(t); n.stop(t + dur + 0.1);
+  function vidrio(c, out, f, t, v, d) { /* tono de sintetizador tipo cristal */
+    tono(c, out, 'sine', f, t, 0.012, v, d); tono(c, out, 'sine', f * 2, t, 0.012, v * 0.34, d * 0.7);
+    tono(c, out, 'sine', f * 3.01, t, 0.01, v * 0.15, d * 0.45); tono(c, out, 'sine', f * 4.2, t, 0.008, v * 0.05, d * 0.3);
+  }
+  function calido(c, out, fr, t, a, v, d, corte) { /* resonancia armónica profunda y cálida */
+    fr.forEach(function (f, i) {
+      var o = c.createOscillator(), lp = c.createBiquadFilter(), g = c.createGain(); o.type = i % 2 ? 'sine' : 'triangle'; o.frequency.value = f; o.detune.value = i % 2 ? 4 : -4;
+      lp.type = 'lowpass'; lp.frequency.value = corte; g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(v, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      o.connect(lp); lp.connect(g); g.connect(out); o.start(t); o.stop(t + d + 0.05);
+    });
   }
   function campanaFM(c, out, f, t, v, d) {
     var o = c.createOscillator(), m = c.createOscillator(), mg = c.createGain(), g = c.createGain();
     o.type = 'sine'; o.frequency.value = f; m.type = 'sine'; m.frequency.value = f * 3.5;
     mg.gain.setValueAtTime(f * 1.6, t); mg.gain.exponentialRampToValueAtTime(f * 0.05, t + d * 0.7);
-    m.connect(mg); mg.connect(o.frequency); eg(c, g, t, 0.003, v, d); o.connect(g); g.connect(out);
+    m.connect(mg); mg.connect(o.frequency); eg(c, g, t, 0.002, v, d); o.connect(g); g.connect(out);
     o.start(t); m.start(t); o.stop(t + d + 0.05); m.stop(t + d + 0.05);
   }
-  var PENTA = [329.63, 415.30, 493.88, 659.25, 830.61, 987.77, 1318.51, 1661.22];
-  /* Inicio: «sistema en línea» (primera apertura de la app o del sitio) */
-  function sonT(c, dest, t0) {
-    var m = bus(c, dest, 0.3, 2.0, 1.15), v = c.createGain(); v.gain.value = 1; v.connect(m); eco(c, v, m, 0.16, 0.32, 0.38);
-    tono(c, m, 'sine', 55, t0, 0.25, 0.22, 0.9);                       /* arranque grave */
-    barrido(c, m, t0 + 0.05, 0.95, 0.5, 300, 7000);
-    [1760, 2349, 2093, 2794, 3136, 2637, 3520].forEach(function (f, i) { blip(c, v, f, t0 + 0.12 + i * 0.12, 0.12, (i % 2 ? 0.6 : -0.6)) });
-    secuencia(c, v, PENTA.concat([1975.53]), t0 + 0.5, 0.085, 0.16, 'triangle', 4200);
-    var T = t0 + 1.35;                                                   /* confirmación */
-    campanaFM(c, m, 659.25, T, 0.30, 2.0); campanaFM(c, m, 987.77, T + 0.02, 0.22, 2.0); campanaFM(c, m, 1318.51, T + 0.04, 0.2, 1.8);
-    pad(c, m, [164.81, 246.94, 329.63, 493.88], T - 0.1, 0.5, 0.03, 2.4, 2600);
-    tono(c, m, 'sine', 82.41, T, 0.25, 0.2, 1.8);
-    [[3951.07, 0.35], [5274.0, 0.5], [4698.6, 0.65]].forEach(function (x) { blip(c, m, x[0], T + x[1], 0.05, 0) });
+  function notaDigital(c, out, f, t, v) { /* nota digital precisa: triángulo + pulso filtrado + destello FM */
+    var lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3400; lp.Q.value = 2.5; lp.connect(out);
+    tono(c, lp, 'triangle', f, t, 0.004, v, 0.55); tono(c, lp, 'square', f, t, 0.004, v * 0.28, 0.22); campanaFM(c, out, f * 2, t, v * 0.25, 0.7);
   }
-  /* Hacia GEA Consultora: «conectando sistemas» (más rápido y ascendente) */
-  function sonCons(c, dest, t0) {
-    var m = bus(c, dest, 0.28, 1.8, 1.15), v = c.createGain(); v.gain.value = 1; v.connect(m); eco(c, v, m, 0.14, 0.3, 0.36);
-    tono(c, m, 'sine', 65.41, t0, 0.18, 0.2, 0.7);
-    barrido(c, m, t0, 0.62, 0.45, 400, 8000);
-    [2093, 2637, 3136, 2349, 3520, 3136, 4186].forEach(function (f, i) { blip(c, v, f, t0 + 0.06 + i * 0.07, 0.11, (i % 2 ? 0.7 : -0.7)) });
-    secuencia(c, v, PENTA, t0 + 0.2, 0.062, 0.15, 'triangle', 4600);
-    var T = t0 + 0.78;
-    campanaFM(c, m, 880, T, 0.28, 1.6); campanaFM(c, m, 1318.51, T + 0.02, 0.2, 1.5); campanaFM(c, m, 1975.53, T + 0.04, 0.14, 1.3);
-    pad(c, m, [220, 329.63, 440, 659.25], T - 0.1, 0.35, 0.026, 1.7, 3000);
-    [[4186, 0.25], [5587.7, 0.4]].forEach(function (x) { blip(c, m, x[0], T + x[1], 0.045, 0) });
+  function oleada(c, out, t, dur, v) { /* expansión espacial: ruido estéreo que se abre y sube */
+    [-1, 1].forEach(function (lado, k) {
+      var n = ruido(c, dur + 0.1), bp = c.createBiquadFilter(), g = c.createGain(), pn = c.createStereoPanner ? c.createStereoPanner() : null;
+      bp.type = 'bandpass'; bp.Q.value = 1.6; bp.frequency.setValueAtTime(500, t + k * 0.03); bp.frequency.exponentialRampToValueAtTime(6500, t + dur);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + dur * 0.95); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.04);
+      n.connect(bp); bp.connect(g); if (pn) { pn.pan.setValueAtTime(lado * 0.15, t); pn.pan.linearRampToValueAtTime(lado * 0.95, t + dur); g.connect(pn); pn.connect(out) } else g.connect(out);
+      n.start(t); n.stop(t + dur + 0.1);
+    });
   }
-  window.geaSonidoTech = sonT; window.geaSonidoConsultora = sonCons;
-  var QUE = 'T';
-  var SONS = { T: sonT, C: sonCons, M: sonA };
+  /* ECOCOCO · 2,5 s: nota de piano cristalina, dos tonos de cristal ascendentes y resonancia profunda */
+  function sonEco(c, dest, t0) {
+    var M = maestro(c, dest, t0, 2.5), m = bus(c, M, 0.42, 2.0, 1.1), v = c.createGain(); v.gain.value = 1; v.connect(m);
+    piano(c, v, 493.88, t0, 0.34);                                           /* si4 */
+    vidrio(c, m, 659.25, t0 + 0.30, 0.17, 1.6);                              /* mi5 */
+    vidrio(c, m, 987.77, t0 + 0.60, 0.15, 1.6);                              /* si5 (ascendente) */
+    calido(c, m, [82.41, 123.47, 164.81, 207.65], t0 + 0.2, 0.7, 0.07, 2.3, 700);
+    tono(c, m, 'sine', 41.2, t0 + 0.3, 0.5, 0.12, 2.0);
+    tono(c, m, 'sine', 3951.07, t0 + 0.95, 0.006, 0.018, 0.9);               /* brillo final, apenas perceptible */
+  }
+  /* GEA Consultora · 3 s: pulso electrónico profundo, tres notas digitales ascendentes, expansión espacial e impacto cristalino */
+  function sonConsultora(c, dest, t0) {
+    var M = maestro(c, dest, t0, 3.0), m = bus(c, M, 0.46, 2.4, 1.1), v = c.createGain(); v.gain.value = 1; v.connect(m); eco(c, v, m, 0.18, 0.3, 0.32);
+    var o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(150, t0); o.frequency.exponentialRampToValueAtTime(52, t0 + 0.3);
+    eg(c, g, t0, 0.012, 0.5, 0.75); o.connect(g); g.connect(M); o.start(t0); o.stop(t0 + 0.8);   /* pulso profundo */
+    tono(c, m, 'sine', 55, t0 + 0.05, 0.15, 0.2, 1.3);
+    [[659.25, 0.55, 0.15], [987.77, 0.85, 0.18], [1318.51, 1.15, 0.2]].forEach(function (x) { notaDigital(c, v, x[0], t0 + x[1], x[2]) });
+    oleada(c, m, t0 + 1.3, 0.95, 0.2);
+    calido(c, m, [164.81, 246.94, 329.63, 415.30], t0 + 1.3, 0.95, 0.055, 1.7, 3800);
+    var T = t0 + 2.25;                                                       /* impacto cristalino */
+    campanaFM(c, m, 1318.51, T, 0.3, 1.1); campanaFM(c, m, 1975.53, T + 0.005, 0.2, 0.9); campanaFM(c, m, 2637.02, T + 0.01, 0.1, 0.7);
+    tono(c, M, 'sine', 82.41, T, 0.006, 0.34, 0.6);
+    var n = ruido(c, 0.04), hp = c.createBiquadFilter(), gg = c.createGain(); hp.type = 'highpass'; hp.frequency.value = 5000; eg(c, gg, T, 0.001, 0.12, 0.03); n.connect(hp); hp.connect(gg); gg.connect(m); n.start(T); n.stop(T + 0.04);
+  }
+  window.geaSonidoEco = sonEco; window.geaSonidoConsultora = sonConsultora;
+  var QUE = document.documentElement.getAttribute('data-tema') === 'consultora' ? 'C' : 'M';
+  var SONS = { M: sonEco, C: sonConsultora };
+  function vol() { var n = parseInt(get('gea-vol'), 10); return isNaN(n) ? 0.85 : Math.max(0, Math.min(100, n)) / 100 }
 
   /* ---------- Voz femenina, lenta y cálida ---------- */
   var TXT = EN ? 'Welcome to... Jea... Eco Coco.' : 'Bienvenido a... Jea... Eco Coco.';
@@ -180,7 +194,7 @@
   function tocar(vozEn) {
     if (!ctx || parado) return;
     var t0 = ctx.currentTime + 0.05;
-    try { SONS[QUE](ctx, ctx.destination, t0) } catch (e) {}
+    try { var mv = ctx.createGain(); mv.gain.value = vol(); mv.connect(ctx.destination); SONS[QUE](ctx, mv, t0) } catch (e) {}
     try { window.geaTrack && geaTrack('sonido_bienvenida', {}) } catch (e) {}
   }
   function iniciar(esperaChime, vozEn, ventana) {
@@ -213,8 +227,8 @@
     b.addEventListener('click', function () { var s = on(); put(KEY, s ? '0' : '1'); if (s) parar(); else { parado = false; try { if (!ctx) ctx = new AC(); ctx.resume && ctx.resume().then(function () { tocar(1.2) }) } catch (e) {} } pintaSp(); pintaPie() });
     splash.appendChild(b);
   } else if (window.geaCambio) {
-    /* Cambio de ambiente: hacia Consultora/Tecnología suena tecnológico; de vuelta a ECOCOCO, la marimba de la marca */
-    QUE = window.geaCambio[1] === 'carbon' ? 'M' : 'C';
+    /* Cambio de ambiente: logo sonoro de Consultora al entrar a ella; el de ECOCOCO en cualquier otro caso */
+    QUE = window.geaCambio[1] === 'consultora' ? 'C' : 'M';
     iniciar(0.2, 0, 3);
   } else if (inicio && !sget(SKEY)) {
     sput(SKEY, '1');
@@ -240,4 +254,9 @@
     p.appendChild(pieBtn); lang.parentNode.insertBefore(p, lang); pintaPie();
   }
   if (AC) { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pie); else pie() }
+
+  /* API para el panel de configuración */
+  window.geaSonidoSet = function (si) { put(KEY, si ? '1' : '0'); pintaPie(); if (si) { parado = false } else parar() };
+  window.geaProbarSonido = function () { parado = false; try { if (!ctx) ctx = new AC(); (ctx.resume ? ctx.resume() : Promise.resolve()).then(function () { tocar(0) }) } catch (e) {} };
+  window.geaSonidoOn = on;
 })();

@@ -1,12 +1,17 @@
 /* Cambio de ambiente: cada sección (carbón, servicios digitales, tecnología) arranca con su propia paleta y emblema.
    Se muestra al llegar desde una sección de otro ambiente (no al recargar ni al moverse dentro del mismo ambiente). */
 (function(){try{
-  var d=document.documentElement,T=d.getAttribute('data-tema')||'carbon',prev=null;
+  /* Ajustes del visitante (panel de configuración): tamaño de texto y animaciones se aplican antes de pintar */
+  var d=document.documentElement,sinAnim=false;
+  try{var _fs=parseInt(localStorage.getItem('gea-fs')||'0',10);if(_fs>0&&_fs<3)d.style.fontSize=['','112.5%','125%'][_fs]}catch(e){}
+  try{if(localStorage.getItem('gea-anim')==='0'){sinAnim=true;d.classList.add('sin-anim');d.className=d.className.replace(/\s*splash-on/g,'')}}catch(e){}
+  var T=d.getAttribute('data-tema')||'carbon',prev=null;
   try{prev=sessionStorage.getItem('gea-tema')}catch(e){}
   try{sessionStorage.setItem('gea-tema',T)}catch(e){}
   var n=(performance.getEntriesByType&&performance.getEntriesByType('navigation')[0])||{};
   if(n.type==='reload'||prev===T||(T==='carbon'&&prev===null))return;
-  if(matchMedia('(prefers-reduced-motion: reduce)').matches||/splash/.test(d.className))return;
+  window.geaCambio=[prev||'carbon',T];   /* lo lee welcome.js para elegir el logo sonoro */
+  if(sinAnim||matchMedia('(prefers-reduced-motion: reduce)').matches||/splash/.test(d.className))return;
   var es=(d.lang||'es').slice(0,2)!=='en',B=es?'':'../';
   var C={
     carbon:{c:'bt-k',img:'img/logo-gea-carbon.svg',w:56,h:64,l1:'ECOCOCO',l2:es?'Carbón de cáscara de coco':'Coconut shell charcoal',l3:es?'Retalhuleu · Guatemala':'Retalhuleu · Guatemala'},
@@ -14,7 +19,6 @@
     tecnologia:{c:'bt-t',img:'',l1:'GEA '+(es?'TECNOLOGÍA':'TECHNOLOGY'),l2:es?'Preparando la planta…':'Preparing the plant…',l3:es?'hornos · molino · prensa · planta':'furnaces · mill · press · plant'}
   }[T];
   if(!C)return;
-  window.geaCambio=[prev||'carbon',T];
   d.classList.add('bt-on');
   var go=function(){
     if(document.querySelector('.bt'))return;

@@ -44,6 +44,7 @@ var mu=null;
 if(TTS){mu=el('button','chat-mu');mu.type='button';
   var paintMu=function(){mu.innerHTML=ic(muted?'volx':'vol',20);mu.title=muted?L('Voz silenciada: toca para activar','Voice muted: tap to turn on'):L('Voz activada: toca para silenciar','Voice on: tap to mute');mu.setAttribute('aria-label',mu.title);mu.setAttribute('aria-pressed',muted?'true':'false')};
   paintMu();hd.insertBefore(mu,x);
+  window.addEventListener('gea-chat-mute',function(){try{muted=localStorage.getItem('gea-chat-mute')==='1'}catch(e){}paintMu();if(muted)stopSpeak()});
   mu.addEventListener('click',function(){muted=!muted;try{localStorage.setItem('gea-chat-mute',muted?'1':'0')}catch(e){}paintMu();if(muted)stopSpeak();note(muted?L('Voz silenciada. Las respuestas no se leerán solas.','Voice muted. Answers will not be read aloud automatically.'):L('Voz activada: si preguntas por voz, la respuesta se leerá.','Voice on: if you ask by voice, the answer will be read aloud.'))})}
 var mic=null;
 if(SR){mic=el('button','chat-mic');mic.type='button';mic.setAttribute('aria-label',L('Hablar con el asistente (micrófono)','Speak to the assistant (microphone)'));mic.title=L('Hablar','Speak');
