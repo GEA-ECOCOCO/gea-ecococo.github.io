@@ -1,28 +1,3 @@
-/* ---------- acciones ---------- */
-var ACCIONES = {};
-var MUTA = {};
-function accion(nombre, muta, fn) { ACCIONES[nombre] = fn; if (muta) MUTA[nombre] = true }
-
-accion('bootstrap', false, function () { return {} });
-
-accion('cliente.guardar', true, function (db, req, ctx, ops) {
-  var c = req.cliente || {}, nombre = s(c.nombre);
-  if (!nombre) throw PE('Escribe el nombre del cliente.');
-  var tipo = TIPOS.indexOf(c.tipo) >= 0 ? c.tipo : 'Tienda';
-  var tel = s(c.telefono).replace(/[^\d+]/g, '');
-  if (tel && tel.replace(/\D/g, '').length < 8) throw PE('El teléfono parece incompleto. Revisa que tenga 8 dígitos.');
-  var dup = db.Clientes.filter(function (x) { return x.nombre.toLowerCase() === nombre.toLowerCase() && String(x.id) !== String(c.id || '') })[0];
-  if (dup) throw PE('Ya existe un cliente llamado "' + dup.nombre + '". Si es otra tienda, agrega la zona al nombre.');
-  var campos = { nombre: nombre, tipo: tipo, contacto: s(c.contacto), telefono: tel, zona: s(c.zona), direccion: s(c.direccion), notas: s(c.notas) };
-  if (c.id) {
-    var ex = find(db.Clientes, c.id); if (!ex) throw PE('No encontramos ese cliente.', 'no_existe');
-    if (ctx.user.rol === 'admin' && c.estado) campos.estado = c.estado === 'Inactivo' ? 'Inactivo' : 'Activo';
-    return { cliente: upd(db, ops, 'Clientes', ex, campos) };
-  }
-  campos.id = nextId(db.Clientes, 'CLI-', 3); campos.estado = 'Activo'; campos.creado = ctx.today; campos.creado_por = ctx.user.nombre;
-  return { cliente: add(db, ops, 'Clientes', campos) };
-});
-
 accion('pedido.crear', true, function (db, req, ctx, ops) {
   var cli = find(db.Clientes, req.cliente_id);
   if (!cli) throw PE('Elige el cliente del pedido.');
@@ -110,4 +85,45 @@ accion('inventario.mover', true, function (db, req, ctx, ops) {
   if (tipo !== 'Entrada' && !motivo) throw PE('Escribe el motivo, para que después se entienda el movimiento.');
   var cant = tipo === 'Entrada' ? q : tipo === 'Salida' ? -q : q;
   return { movimiento: mov(db, ops, ctx, art, tipo, cant, motivo || 'Compra o ingreso', '', isDate(req.fecha) ? req.fecha : null) };
+});
+
+accion('produccion.registrar', true, function (db, req, ctx, ops) {
+  need(ctx, 'admin');
+  var br = n(req.briquetas_kg), ca = n(req.cascara_kg), ag = n(req.aglutinante_kg);
+  if (br <= 0) throw PE('Escribe cuántos kilos de briquetas salieron.');
+  if (ca < 0 || ag < 0) throw PE('Los kilos de insumos no pueden ser negativos.');
+  var fecha = isDate(req.fecha) ? req.fecha : ctx.today;
+  var lote = add(db, ops, 'Lotes', {
+    id: nextId(db.Lotes, 'LOT-', 4), fecha: fecha, cascara_kg: ca, aglutinante_kg: ag, briquetas_kg: br,
+    rendimiento: ca > 0 ? r2(br / ca * 100) : '', notas: s(req.notas), registrado_por: ctx.user.nombre
+  });
+  var art = articuloProducto(db), c = find(db.Inventario, ART_CASCARA), a = find(db.Inventario, ART_AGLUT);
+  if (art) mov(db, ops, ctx, art, 'Producción', br, 'Lote ' + lote.id, lote.id, fecha);
+  if (c && ca > 0) mov(db, ops, ctx, c, 'Producción', -ca, 'Usada en ' + lote.id, lote.id, fecha);
+  if (a && ag > 0) mov(db, ops, ctx, a, 'Producción', -ag, 'Usado en ' + lote.id, lote.id, fecha);
+  return { lote: lote };
+});
+
+accion('producto.guardar', true, function (db, req, ctx, ops) {
+  need(ctx, 'admin');
+  var p = find(db.Productos, req.id);
+  if (!p) throw PE('No encontramos ese producto.', 'no_existe');
+  var patch = {};
+  ['precio_tienda', 'precio_mayorista', 'precio_publico'].forEach(function (k) {
+    if (req[k] !== undefined && req[k] !== '') { var v = n(req[k]); if (v < 0) throw PE('Los precios no pueden ser negativos.'); patch[k] = r2(v) }
+  });
+  return { producto: upd(db, ops, 'Productos', p, patch) };
+});
+
+accion('config.guardar', true, function (db, req, ctx, ops) {
+  need(ctx, 'admin');
+  var permitidas = ['comision_por_kg', 'whatsapp_admin', 'pedido_minimo_kg', 'nombre_negocio'], vals = req.valores || {};
+  permitidas.forEach(function (k) {
+    if (vals[k] === undefined) return;
+    var v = k === 'whatsapp_admin' ? s(vals[k]).replace(/\D/g, '') : (k === 'nombre_negocio' ? s(vals[k]) : n(vals[k]));
+    if (k === 'whatsapp_admin' && v && v.length < 8) throw PE('El número de WhatsApp parece incompleto.');
+    var row = db.Config.filter(function (r) { return r.clave === k })[0];
+    if (row) upd(db, ops, 'Config', row, { valor: v }, 'clave'); else add(db, ops, 'Config', { clave: k, valor: v });
+  });
+  return {};
 });

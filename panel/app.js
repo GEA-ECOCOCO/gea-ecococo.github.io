@@ -4,7 +4,7 @@
   var C = window.PanelCore, CFG = window.PANEL_CFG || {};
   var qs = new URLSearchParams(location.search);
   var DEMO = qs.get('demo') === '1' || !CFG.url;
-  var S = { sim: { cascara: 0, ventas: 0, precio: 0, fijos: 0 }, mode: DEMO ? 'demo' : 'live', token: null, user: null, snap: null, ruta: 'inicio', cargando: false, filtro: 'todos', q: '', qc: '', limite: 40, draft: null, intro: true };
+  var S = { chat: [], pensando: false, sim: { cascara: 0, ventas: 0, precio: 0, fijos: 0 }, mode: DEMO ? 'demo' : 'live', token: null, user: null, snap: null, ruta: 'inicio', cargando: false, filtro: 'todos', q: '', qc: '', limite: 40, draft: null, intro: true };
   var SH = null;
   var LS = {
     get: function (k) { try { return localStorage.getItem(k) } catch (e) { return null } },
@@ -33,6 +33,7 @@
     users: '<circle cx="9" cy="8" r="3.4"/><path d="M2.8 20c.4-3.4 3-5.4 6.2-5.4s5.8 2 6.2 5.4"/><path d="M16 5a3.2 3.2 0 0 1 0 6M18 14.8c2 .6 3.1 2.3 3.4 5.2"/>',
     box: '<path d="M3.5 8 12 3.5 20.5 8v8L12 20.5 3.5 16z"/><path d="M3.5 8 12 12.5 20.5 8M12 12.5v8"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
+    spark: '<path d="M12 3.5 13.8 9l5.7 1.8-5.7 1.8L12 18l-1.8-5.4L4.5 10.8 10.2 9z"/><path d="M18.5 15.5l.6 1.8 1.8.6-1.8.6-.6 1.8-.6-1.8-1.8-.6 1.8-.6z"/>',
     coin: '<circle cx="12" cy="12" r="8.5"/><path d="M14.8 9.2c-.5-.9-1.5-1.3-2.8-1.3-1.6 0-2.7.8-2.7 2 0 2.8 5.6 1.4 5.6 4.2 0 1.2-1.2 2-2.9 2-1.3 0-2.4-.5-3-1.5M12 6.5v1.4M12 16.1v1.4"/>',
     gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
     x: '<path d="M6 6l12 12M18 6 6 18"/>',
@@ -64,6 +65,7 @@
       if (pin === '111111') return { ok: true, data: { token: 'demo', user: { nombre: 'Wilson', rol: 'vendedor' } } };
       return { ok: false, error: 'Clave incorrecta. En la demostración usa 123456 (administrador) o 111111 (vendedor).', code: 'clave' };
     }
+    if (req.action === 'ia.preguntar') return { ok: true, data: { respuesta: 'Esto es una demostración: aquí tu asistente de IA analizaría tus números reales y te respondería con recomendaciones. En tu panel conectado a Google, esta pregunta (“' + req.pregunta + '”) se contestaría con tus datos de ventas, costos e inventario.' } };
     var res = C.handle(demoDb(), req, { user: S.user, today: hoy(), now: hoy() + ' ' + new Date().toTimeString().slice(0, 5), sheetUrl: 'https://docs.google.com/spreadsheets' });
     delete res.ops; demoGuardar();
     return res;
@@ -155,14 +157,14 @@
       (demo ? '<div class="quick"><small>Demostración con datos ficticios. Elige cómo entrar:</small><button class="btn sec" data-a="demo" data-pin="123456">Entrar como administrador</button><button class="btn sec" data-a="demo" data-pin="111111">Entrar como vendedor</button></div>' : '') +
       '</div>';
   }
-  var TITULOS = { costos: 'Costos y planes', inicio: 'Inicio', pedidos: 'Pedidos', clientes: 'Clientes', inventario: 'Inventario', ajustes: 'Ajustes' };
+  var TITULOS = { asistente: 'Asistente', costos: 'Costos y planes', inicio: 'Inicio', pedidos: 'Pedidos', clientes: 'Clientes', inventario: 'Inventario', ajustes: 'Ajustes' };
   function tabBtn(r, nombre, icono) { return '<button class="tab" data-a="ir" data-r="' + r + '"' + (S.ruta === r ? ' aria-current="page"' : '') + '>' + ic(icono) + '<span>' + nombre + '</span></button>' }
   function railBtn(r, nombre, icono) { return '<button class="nav" data-a="ir" data-r="' + r + '"' + (S.ruta === r ? ' aria-current="page"' : '') + '>' + ic(icono) + '<span>' + nombre + '</span></button>' }
   function shell(inner) {
     var adm = isAdmin(), u = S.user;
     var demo = S.mode === 'demo' ? '<div class="demo"><span>Demostración con datos ficticios. No se guarda nada en tu hoja de Google.</span><button data-a="demoreset">Reiniciar demo</button></div>' : '';
     return '<div class="shell"><aside class="rail"><div class="brand"><div class="tile"><img src="../img/logo-gea-carbon.svg" alt=""></div><div><b>Panel GEA</b><small>GEA Carbón | ECOCOCO</small></div></div>' +
-      railBtn('inicio', 'Inicio', 'home') + railBtn('pedidos', 'Pedidos', 'ped') + railBtn('clientes', 'Clientes', 'users') + (adm ? railBtn('inventario', 'Inventario', 'box') + railBtn('costos', 'Costos', 'coin') : '') + railBtn('ajustes', 'Ajustes', 'gear') +
+      railBtn('inicio', 'Inicio', 'home') + railBtn('pedidos', 'Pedidos', 'ped') + railBtn('clientes', 'Clientes', 'users') + (adm ? railBtn('inventario', 'Inventario', 'box') + railBtn('costos', 'Costos', 'coin') + railBtn('asistente', 'Asistente', 'spark') : '') + railBtn('ajustes', 'Ajustes', 'gear') +
       '<button class="btn" data-a="nuevoped">' + ic('plus') + ' Nuevo pedido</button>' +
       '<div class="who"><div class="avatar">' + esc(inicial(u.nombre)) + '</div><div>' + esc(u.nombre) + '<br><small>' + (adm ? 'Administrador' : 'Vendedor') + '</small></div></div></aside>' +
       '<div><header class="top"><div class="tile"><img src="../img/logo-gea-carbon.svg" alt=""></div><h1>' + TITULOS[S.ruta] + '<small>' + esc(fecha(hoy())) + '</small></h1><button class="avatar" data-a="ir" data-r="ajustes" aria-label="Ajustes y cuenta de ' + esc(u.nombre) + '">' + esc(inicial(u.nombre)) + '</button></header>' + demo +
@@ -173,7 +175,7 @@
     var app = $('#app');
     if (!S.user) { app.innerHTML = loginHTML(aviso); var f = $('#f-login'); if (f) f.addEventListener('submit', entrar); return }
     if (!S.snap) { app.innerHTML = shell(S.errCarga ? '<div class="err">' + esc(S.errCarga) + '</div><button class="btn" data-a="recargar">Reintentar</button>' : '<div class="skel" style="height:260px"></div><div class="skel"></div><div class="skel"></div>'); return }
-    var v = { inicio: vInicio, pedidos: vPedidos, clientes: vClientes, inventario: vInventario, costos: vCostos, ajustes: vAjustes }[S.ruta] || vInicio;
+    var v = { inicio: vInicio, pedidos: vPedidos, clientes: vClientes, inventario: vInventario, costos: vCostos, asistente: vAsistente, ajustes: vAjustes }[S.ruta] || vInicio;
     var keep = window.scrollY;
     app.innerHTML = shell(v());
     if (S.ruta === 'inicio' && S.intro) { S.intro = false; setTimeout(function () { var h = $('.hero'); if (h) h.classList.remove('go') }, 2200) }
@@ -222,7 +224,7 @@
   function vInicio() {
     var sn = S.snap, R = C.resumen(sn), adm = isAdmin(), art = sn.inventario.filter(function (a) { return a.tipo === 'producto' })[0], stock = art ? art.stock : 0, min = art ? art.stock_min : 0;
     var izq = (adm ? hero(stock, R.comprometidoKg, min) : heroVend(R, Math.max(0, stock - R.comprometidoKg))) + figs(R) +
-      (adm ? tarjetaCostos() : '') +
+      (adm ? tarjetaCostos() + tarjetaAsistente() : '') +
       '<div class="sec-h"><h2>Ventas de los últimos 14 días</h2><span class="num">' + Q(R.serie.reduce(function (a, s) { return a + s.q }, 0), 0) + '</span></div>' + chart(R.serie);
     var der = '<div class="sec-h" style="margin-top:0"><h2>' + (adm ? 'Por entregar' : 'Mis pedidos por entregar') + '</h2><span>' + R.porEntregar.length + (R.porEntregar.length === 1 ? ' pedido' : ' pedidos') + ' · ' + K(R.comprometidoKg) + '</span></div>' +
       lista(R.porEntregar.slice(0, 5).map(function (p) { return pedRow(p, true) }), 'Todo entregado', 'Cuando se registre un pedido nuevo, aparece aquí.');
@@ -368,6 +370,60 @@
   function copiar(texto) {
     if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(texto);
     return new Promise(function (ok, no) { var t = document.createElement('textarea'); t.value = texto; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); ok() } catch (e) { no(e) } t.remove() });
+  }
+
+  /* --- asistente con IA (solo administrador) --- */
+  function tarjetaAsistente() {
+    return '<button class="row" data-a="ir" data-r="asistente" style="margin-bottom:6px"><span class="bar ok"></span><span><div class="t">Pregúntale a tu asistente</div><div class="s">Ventas, ganancias, quién te debe y qué hacer, en lenguaje normal</div></span><span class="r"><span class="chip c-ok">IA</span></span></button>';
+  }
+  var PREG = [['hoy', 'Ventas de hoy'], ['mes', 'Ventas del mes'], ['ganancia', 'Mi ganancia'], ['debe', 'Quién me debe'], ['bodega', 'Bodega']];
+  function respuestaLocal(k) {
+    var sn = S.snap, R = C.resumen(sn), K2 = C.costos(sn), art = sn.inventario.filter(function (a) { return a.tipo === 'producto' })[0];
+    if (k === 'hoy') return 'Hoy vendiste ' + Q(R.hoy.q) + ' (' + K(R.hoy.kg) + ') y cobraste ' + Q(R.cobradoHoy) + '. Tienes ' + R.porEntregar.length + (R.porEntregar.length === 1 ? ' pedido' : ' pedidos') + ' por entregar (' + K(R.comprometidoKg) + ').';
+    if (k === 'mes') return 'En lo que va del mes has entregado ' + Q(R.mes.q) + ' (' + K(R.mes.kg) + ') y has cobrado ' + Q(R.cobradoMes) + '. En los últimos 7 días llevas ' + Q(R.semana.q) + '.';
+    if (k === 'ganancia') {
+      if (K2.nGastos30 === 0) return 'En 30 días vendiste ' + Q(K2.ventas) + ', pero no hay gastos registrados, así que todavía no puedo calcular tu ganancia. Anota tus gastos en la sección Costos.';
+      return 'En los últimos 30 días vendiste ' + Q(K2.ventas) + ' y gastaste ' + Q(K2.gastos.total) + ': tu utilidad es ' + Q(K2.utilidad) + '. ' + (K2.costoKg !== null ? 'Cada kilo te cuesta ' + qk(K2.costoKg) + (K2.margenPct !== null ? ' y ganas un margen de ' + Math.round(K2.margenPct * 100) + ' %.' : '.') : '') + ' Es un estimado: depende de que hayas anotado todos los gastos.';
+    }
+    if (k === 'debe') {
+      if (!R.porCobrarLista.length) return 'Nadie te debe nada ahora mismo. Todo lo entregado está cobrado.';
+      return 'Tienes ' + Q(R.porCobrar) + ' por cobrar en ' + R.nPorCobrar + (R.nPorCobrar === 1 ? ' pedido' : ' pedidos') + ':\n' + R.porCobrarLista.slice(0, 6).map(function (p) { return '• ' + p.cliente + ': ' + Q(p.saldo) + ' (entregado ' + fechaRel(p.fecha_entrega) + ')' }).join('\n');
+    }
+    if (k === 'bodega') {
+      var cas = sn.inventario.filter(function (a) { return a.id === 'INV-02' })[0];
+      return 'En bodega hay ' + K(art ? art.stock : 0) + ' de briquetas; ' + K(R.comprometidoKg) + ' ya están comprometidos para pedidos pendientes, quedan ' + K(Math.max(0, (art ? art.stock : 0) - R.comprometidoKg)) + ' libres.' + (cas ? ' De cáscara hay ' + K(cas.stock) + (K2.cascaraDias !== null ? ', para unos ' + Math.floor(K2.cascaraDias) + ' días.' : '.') : '');
+    }
+    return '';
+  }
+  function contextoIA() {
+    var sn = S.snap, R = C.resumen(sn), L = ['Fecha de hoy: ' + sn.hoy, 'Ventas hoy: ' + Q(R.hoy.q) + ' (' + R.hoy.kg + ' kg). Últimos 7 días: ' + Q(R.semana.q) + '. Mes: ' + Q(R.mes.q) + ' (' + R.mes.kg + ' kg). Cobrado hoy: ' + Q(R.cobradoHoy) + ', en el mes: ' + Q(R.cobradoMes) + '.', 'Por cobrar: ' + Q(R.porCobrar) + (R.porCobrarLista.length ? ' → ' + R.porCobrarLista.slice(0, 10).map(function (p) { return p.cliente + ' ' + Q(p.saldo) + ' (entregado ' + p.fecha_entrega + ')' }).join('; ') : ''),
+      'Por entregar: ' + R.porEntregar.length + ' pedidos, ' + R.comprometidoKg + ' kg' + (R.porEntregar.length ? ' → ' + R.porEntregar.slice(0, 8).map(function (p) { return p.cliente + ' ' + p.kg + ' kg para ' + p.fecha_entrega }).join('; ') : ''),
+      'Mejores clientes (30 días): ' + (R.top.map(function (c) { return c.cliente + ' ' + Q(c.q) }).join('; ') || 'sin datos'),
+      'Inventario: ' + sn.inventario.map(function (a) { return a.nombre + ' ' + a.stock + ' ' + a.unidad + ' (mínimo ' + a.stock_min + ')' }).join('; ')];
+    L.push(resumenTexto(C.costos(sn)).replace(/\n\n.*$/s, ''));
+    var gs = (sn.gastos || []).filter(function (g) { return g.estado !== 'Anulado' }).slice(-15);
+    if (gs.length) L.push('Últimos gastos: ' + gs.map(function (g) { return g.fecha + ' ' + g.categoria + ' ' + Q(g.monto) + (g.concepto ? ' (' + g.concepto + ')' : '') }).join('; '));
+    return L.join('\n').slice(0, 7000);
+  }
+  function burbujas() {
+    return S.chat.map(function (m) { return '<div class="cb ' + (m.r === 'u' ? 'u' : 'a') + '">' + esc(m.t).replace(/\n/g, '<br>') + '</div>' }).join('') + (S.pensando ? '<div class="cb a pens"><i></i><i></i><i></i></div>' : '');
+  }
+  function vAsistente() {
+    if (!isAdmin()) return '<div class="vacio"><b>Esta sección es del administrador</b></div>';
+    return '<div class="chat"><div class="cb a">Hola, soy tu asistente de GEA Carbón. Toca una pregunta rápida o escribe la tuya. Mis respuestas salen de los datos que tienes registrados aquí.</div><div id="cbs">' + burbujas() + '</div></div>' +
+      '<div class="chips" role="group" aria-label="Preguntas rápidas">' + PREG.map(function (q) { return '<button data-a="pregrapida" data-k="' + q[0] + '">' + q[1] + '</button>' }).join('') + '</div>' +
+      '<form id="f-ia" class="ia-in"><input id="ia-q" type="text" placeholder="Ej. ¿Qué hago si sube la cáscara?" autocomplete="off" aria-label="Escribe tu pregunta"><button class="btn" type="submit" aria-label="Enviar">' + ic('spark') + '</button></form>' +
+      '<p style="color:var(--suave);font-size:13px;margin:10px 2px">Las preguntas rápidas se responden al instante. Las que escribes las analiza una IA con tus números; puede equivocarse, revisa las cifras importantes en tus pantallas.</p>';
+  }
+  function chatAdd(r, t) { S.chat.push({ r: r, t: t }); if (S.chat.length > 40) S.chat.shift() }
+  function chatPintar() { var c = $('#cbs'); if (c) { c.innerHTML = burbujas(); window.scrollTo(0, document.body.scrollHeight) } }
+  function preguntarIA(q) {
+    q = (q || '').trim(); if (!q || S.pensando) return;
+    chatAdd('u', q); S.pensando = true; chatPintar();
+    var hist = S.chat.slice(-9, -1).map(function (m) { return { role: m.r === 'u' ? 'user' : 'assistant', content: m.t } });
+    api('ia.preguntar', { pregunta: q, contexto: contextoIA(), historial: hist }).then(function (res) {
+      S.pensando = false; chatAdd('a', res.ok ? res.data.respuesta : (res.error || 'No pude responder ahora. Inténtalo de nuevo.')); chatPintar();
+    });
   }
 
   /* ---------- formularios ---------- */
@@ -585,6 +641,7 @@
       case 'guardarmov': guardarMov(el); break;
       case 'guardarprecios': guardarPrecios(el); break;
       case 'guardarcfg': guardarCfg(el); break;
+      case 'pregrapida': var kk = el.getAttribute('data-k'); chatAdd('u', PREG.filter(function (x) { return x[0] === kk })[0][1]); chatAdd('a', respuestaLocal(kk)); chatPintar(); break;
       case 'gasto': gastoSheet(); break;
       case 'guardargasto': guardarGasto(el); break;
       case 'vergasto': verGasto(id); break;
@@ -606,6 +663,7 @@
     else if (t.id === 'lb' || t.id === 'lc') { var b = num($('#lb').value), c = num($('#lc').value), r = $('#lrend'); if (r) r.textContent = b > 0 && c > 0 ? 'Rendimiento: ' + (b / c * 100).toFixed(1) + ' % de la cáscara se volvió briqueta.' : 'Escribe los kilos de briquetas y de cáscara para ver el rendimiento.' }
   });
   document.addEventListener('change', function (e) { var t = e.target; if (t.id === 'gc') { var op = t.options[t.selectedIndex], tw = $('#gtw'), tp = op.getAttribute('data-t'); if (tw) { tw.style.display = tp === 'Inversión' ? 'none' : ''; if (tp !== 'Inversión') tw.querySelectorAll('[data-a=seg]').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-v') === tp ? 'true' : 'false') }) } } if (t.hasAttribute && t.hasAttribute('data-q') && S.draft) pintarNuevo(); if (t.id === 'pf' && S.draft) pintarNuevo() });
+  document.addEventListener('submit', function (e) { if (e.target.id === 'f-ia') { e.preventDefault(); var i = $('#ia-q'); var q = i.value; i.value = ''; preguntarIA(q) } });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && SH) closeSheet() });
 
   /* ---------- arranque ---------- */

@@ -1,47 +1,3 @@
-function pinAzar_() { return String(100000 + Math.floor(Math.random() * 900000)) }
-function cerrarTodasLasSesiones() { PropertiesService.getScriptProperties().setProperty('SECRETO', Utilities.getUuid() + Utilities.getUuid()) }
-
-/* ---------- lectura y escritura de hojas ---------- */
-function hoja_(nombre) {
-  var id = PropertiesService.getScriptProperties().getProperty('HOJA');
-  var ss = id ? SpreadsheetApp.openById(id) : SpreadsheetApp.getActiveSpreadsheet();
-  return ss.getSheetByName(nombre);
-}
-function valor_(v) {
-  if (v instanceof Date) return Utilities.formatDate(v, ZONA, 'yyyy-MM-dd');
-  return v === null || v === undefined ? '' : v;
-}
-function leer_(db) {
-  Object.keys(PanelCore.SCHEMA).forEach(function (t) {
-    var h = hoja_(t), cab = PanelCore.SCHEMA[t], filas = [];
-    if (h && h.getLastRow() > 1) {
-      var vals = h.getRange(2, 1, h.getLastRow() - 1, cab.length).getValues();
-      vals.forEach(function (fila, i) {
-        var o = {}, vacia = true;
-        cab.forEach(function (c, k) { o[c] = valor_(fila[k]); if (o[c] !== '') vacia = false });
-        if (!vacia) { Object.defineProperty(o, '__fila', { value: i + 2, enumerable: false, writable: true }); filas.push(o) }
-      });
-    }
-    db[t] = filas;
-  });
-  return db;
-}
-function aplicar_(ops, db) {
-  var cache = {};
-  ops.forEach(function (op) {
-    var t = op.t, cab = PanelCore.SCHEMA[t], h = cache[t] || (cache[t] = hoja_(t));
-    var arr = cab.map(function (c) { var v = op.row[c]; return v === undefined || v === null ? '' : v });
-    if (op.op === 'add') {
-      h.appendRow(arr);
-    } else {
-      var clave = op.key || 'id', k = cab.indexOf(clave), fila = 0;
-      var col = h.getRange(2, k + 1, Math.max(h.getLastRow() - 1, 1), 1).getValues();
-      for (var i = 0; i < col.length; i++) if (String(col[i][0]) === String(op.row[clave])) { fila = i + 2; break }
-      if (fila) h.getRange(fila, 1, 1, cab.length).setValues([arr]); else h.appendRow(arr);
-    }
-  });
-}
-
 /* ---------- sesiones ---------- */
 function firmar_(texto) {
   var secreto = PropertiesService.getScriptProperties().getProperty('SECRETO');
@@ -99,11 +55,47 @@ function doPost(e) {
   }
   return responder_(salida);
 }
+
+/* ---------- asistente con IA (solo administrador) ---------- */
+function iaPreguntar_(req, user) {
+  if (user.rol !== 'admin') return { ok: false, error: 'El asistente es solo para el administrador.', code: 'permiso' };
+  var props = PropertiesService.getScriptProperties(), clave = props.getProperty('CLAVE_IA');
+  if (!clave) return { ok: false, error: 'Falta conectar la clave de IA. En Apps Script: Configuración del proyecto > Propiedades de la secuencia de comandos > agrega CLAVE_IA.', code: 'ia' };
+  var pregunta = String(req.pregunta || '').trim().slice(0, 600);
+  if (!pregunta) return { ok: false, error: 'Escribe tu pregunta.', code: 'datos' };
+  var limite = parseInt(props.getProperty('LIMITE_IA_DIA') || '40', 10), dia = ahora_().today, llave = 'IA_' + dia, usadas = parseInt(props.getProperty(llave) || '0', 10);
+  if (usadas >= limite) return { ok: false, error: 'Llegaste al límite de ' + limite + ' preguntas de hoy. Mañana se renueva.', code: 'limite' };
+  var msgs = [];
+  (req.historial || []).slice(-8).forEach(function (m) { if (m && (m.role === 'user' || m.role === 'assistant') && m.content) msgs.push({ role: m.role, content: String(m.content).slice(0, 1500) }) });
+  while (msgs.length && msgs[0].role !== 'user') msgs.shift();
+  if (msgs.length && msgs[msgs.length - 1].role === 'user' && msgs[msgs.length - 1].content === pregunta) msgs.pop();
+  var sistema = 'Eres el asistente financiero y de operaciones de GEA Carbón (briquetas de cáscara de coco, ECOCOCO) en Retalhuleu, Guatemala, y hablas con Manolo, el dueño. Responde en español sencillo y directo, con la conclusión o la cifra primero y después una explicación corta. Usa quetzales (Q). '
+    + 'Usa ÚNICAMENTE los datos del contexto; no inventes cifras. Si falta un dato, dilo y di qué debe registrar para poder responder. Las ganancias y el costo por kg son estimados que dependen de los gastos registrados; aclara cuando sea relevante. '
+    + 'Cuando pida planes o estrategias, da pocas acciones concretas, baratas y fabricables o ejecutables localmente, en orden de prioridad, y evita complejidad que no tenga justificación económica. Máximo 180 palabras, sin tablas.\n\nDATOS ACTUALES DEL NEGOCIO:\n' + String(req.contexto || '').slice(0, 7000);
+  msgs.push({ role: 'user', content: pregunta });
+  var r;
+  try {
+    r = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', { method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+      headers: { 'x-api-key': clave, 'anthropic-version': '2023-06-01' },
+      payload: JSON.stringify({ model: props.getProperty('MODELO_IA') || 'claude-haiku-5-5', max_tokens: 700, system: sistema, messages: msgs }) });
+  } catch (e) { return { ok: false, error: 'No se pudo contactar a la IA. Inténtalo de nuevo.', code: 'ia' } }
+  var code = r.getResponseCode(), cuerpo = {};
+  try { cuerpo = JSON.parse(r.getContentText()) } catch (e) {}
+  if (code !== 200) {
+    var det = cuerpo && cuerpo.error && cuerpo.error.message ? cuerpo.error.message : 'error ' + code;
+    return { ok: false, error: (code === 401 ? 'La clave de IA no es válida. ' : code === 429 ? 'La IA está saturada o sin crédito. ' : 'La IA no respondió. ') + '(' + det + ')', code: 'ia' };
+  }
+  props.setProperty(llave, String(usadas + 1));
+  var texto = (cuerpo.content || []).map(function (b) { return b.text || '' }).join('').trim();
+  return { ok: true, data: { respuesta: texto || 'No obtuve respuesta. Inténtalo de nuevo.' } };
+}
+
 function ruta_(req) {
   if (req.action === 'ping') return { ok: true, data: 'Panel GEA' };
   if (req.action === 'login') return entrar_(req);
   var user = verificar_(req.token);
   if (!user) return { ok: false, error: 'Tu sesión venció. Entra de nuevo con tu clave.', code: 'auth' };
+  if (req.action === 'ia.preguntar') return iaPreguntar_(req, user);
   var lock = LockService.getScriptLock();
   lock.waitLock(25000);
   try {

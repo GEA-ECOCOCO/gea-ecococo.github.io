@@ -108,3 +108,28 @@ function snapshot(db, ctx) {
     sheetUrl: admin ? (ctx.sheetUrl || '') : ''
   });
 }
+
+/* ---------- acciones ---------- */
+var ACCIONES = {};
+var MUTA = {};
+function accion(nombre, muta, fn) { ACCIONES[nombre] = fn; if (muta) MUTA[nombre] = true }
+
+accion('bootstrap', false, function () { return {} });
+
+accion('cliente.guardar', true, function (db, req, ctx, ops) {
+  var c = req.cliente || {}, nombre = s(c.nombre);
+  if (!nombre) throw PE('Escribe el nombre del cliente.');
+  var tipo = TIPOS.indexOf(c.tipo) >= 0 ? c.tipo : 'Tienda';
+  var tel = s(c.telefono).replace(/[^\d+]/g, '');
+  if (tel && tel.replace(/\D/g, '').length < 8) throw PE('El teléfono parece incompleto. Revisa que tenga 8 dígitos.');
+  var dup = db.Clientes.filter(function (x) { return x.nombre.toLowerCase() === nombre.toLowerCase() && String(x.id) !== String(c.id || '') })[0];
+  if (dup) throw PE('Ya existe un cliente llamado "' + dup.nombre + '". Si es otra tienda, agrega la zona al nombre.');
+  var campos = { nombre: nombre, tipo: tipo, contacto: s(c.contacto), telefono: tel, zona: s(c.zona), direccion: s(c.direccion), notas: s(c.notas) };
+  if (c.id) {
+    var ex = find(db.Clientes, c.id); if (!ex) throw PE('No encontramos ese cliente.', 'no_existe');
+    if (ctx.user.rol === 'admin' && c.estado) campos.estado = c.estado === 'Inactivo' ? 'Inactivo' : 'Activo';
+    return { cliente: upd(db, ops, 'Clientes', ex, campos) };
+  }
+  campos.id = nextId(db.Clientes, 'CLI-', 3); campos.estado = 'Activo'; campos.creado = ctx.today; campos.creado_por = ctx.user.nombre;
+  return { cliente: add(db, ops, 'Clientes', campos) };
+});
