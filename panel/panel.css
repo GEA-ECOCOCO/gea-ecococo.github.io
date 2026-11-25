@@ -259,3 +259,4 @@ button.row:hover{background:#fff}
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 .toast{pointer-events:none}
 body.lock .toast{bottom:auto;top:calc(16px + env(safe-area-inset-top,0px));transform:translate(-50%,-20px)}body.lock .toast.on{transform:translate(-50%,0)}
+.tabs.six{grid-template-columns:1fr 1fr 70px 1fr 1fr 1fr;padding-left:2px;padding-right:2px}.tabs.six .tab{font-size:11.5px;padding:7px 1px}
