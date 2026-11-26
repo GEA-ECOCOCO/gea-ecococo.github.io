@@ -675,13 +675,14 @@
   function mesTxt(m) { return MES_N[parseInt(m.slice(5, 7), 10) - 1] }
   function colorNivel(n) { return n === 'ok' ? 'var(--bosque)' : n === 'atencion' ? '#D9A441' : 'var(--alerta)' }
   function tarjetaSAT() {
-    var F = S.snap.fiscal; if (!F) return '';
+    var F = S.snap.fiscal;
+    if (!F) return '<button class="row" data-a="ir" data-r="impuestos" style="margin-bottom:6px"><span class="bar cobrar"></span><span><div class="t">Impuestos SAT</div><div class="s">Falta actualizar el código de Google (Apps Script)</div></span><span class="r"><span class="chip c-cobrar">!</span></span></button>';
     var msg = F.nivel === 'excedido' ? 'Superaste el tope anual: habla con tu contador' : F.nivel === 'critico' ? 'Estás por llegar al tope anual' : F.nivel === 'atencion' ? 'Ya usaste ' + F.pct + ' % del tope anual' : 'Facturado ' + F.año + ': ' + Q(F.facturado, 0) + ' de ' + Q(F.limite, 0);
     var sf = F.sinFacturar.length;
     return '<button class="row" data-a="ir" data-r="impuestos" style="margin-bottom:6px"><span class="bar ' + (F.nivel === 'ok' ? (sf ? 'pend' : 'ok') : 'cobrar') + '"></span><span><div class="t">Impuestos SAT</div><div class="s">' + esc(msg) + (sf ? ' · ' + sf + ' sin factura' : '') + '</div></span><span class="r">' + (F.nivel !== 'ok' ? '<span class="chip c-cobrar">!</span>' : '') + '</span></button>';
   }
   function vImpuestos() {
-    var F = S.snap.fiscal; if (!F) return '<div class="card"><p>Solo el administrador ve esta sección.</p></div>';
+    var F = S.snap.fiscal; if (!F) return '<div class="card"><h3>Falta un paso en Google</h3><p style="color:var(--suave)">El panel ya trae la sección de impuestos, pero tu código de Apps Script todavía es el anterior. Pega el código nuevo y publica una versión nueva: Implementar → Administrar implementaciones → ✏ → Nueva versión → Implementar. Luego recarga el panel.</p></div>';
     var mesAct = S.snap.hoy.slice(0, 7), M = F.meses.filter(function (m) { return m.mes === mesAct })[0] || { ventas: 0, impuesto: 0, docs: 0 };
     var prev = F.meses.filter(function (m) { return m.mes < mesAct && m.ventas > 0 }).slice(-1)[0];
     var h = '<div class="note"><b>Régimen: Pequeño contribuyente.</b> Esta pantalla te ordena la información para la SAT. No sustituye a tu contador: confirma con la SAT o con él el tope, el porcentaje y las fechas.</div>';
