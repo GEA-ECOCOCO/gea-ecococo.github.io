@@ -161,7 +161,7 @@
 
   /* ---------- reportes financieros para banco: estado de resultados y flujo de caja ----------
      Se arman con lo que registras en el panel. Son estimaciones de administración, no estados financieros auditados. */
-  var PROY = ['proy_saldo_inicial', 'proy_kg_mes', 'proy_precio_kg', 'proy_costo_kg', 'proy_fijos_mes', 'proy_crec_pct'];
+  var PROY = ['proy_saldo_inicial', 'proy_kg_mes', 'proy_precio_kg', 'proy_costo_kg', 'proy_fijos_mes', 'proy_crec_pct', 'bal_efectivo', 'bal_inv_otros', 'bal_deprec', 'bal_deudas', 'bal_proveedores', 'cred_monto', 'cred_tasa', 'cred_plazo'];
   var VENTA_CAT = { 'Comisiones de venta': 1, 'Transporte y fletes': 1 };
   function mesSig(m) { var y = parseInt(m.slice(0, 4), 10), k = parseInt(m.slice(5, 7), 10); k++; if (k > 12) { k = 1; y++ } return y + '-' + (k < 10 ? '0' : '') + k }
   function mesAnt(m, d) { var y = parseInt(m.slice(0, 4), 10), k = parseInt(m.slice(5, 7), 10) - d; while (k < 1) { k += 12; y-- } return y + '-' + (k < 10 ? '0' : '') + k }
@@ -199,7 +199,29 @@
       var ing = r2(kg * sup.proy_precio_kg), cv = r2(kg * sup.proy_costo_kg), fj = r2(sup.proy_fijos_mes), imp = r2(ing * pc.tasa / 100), fl = r2(ing - cv - fj - imp);
       saldo = r2(saldo + fl); proy.push({ mes: mm, kg: r2(kg), ingresos: ing, costoVentas: cv, fijos: fj, impuesto: imp, flujo: fl, saldo: saldo });
     }
-    return { hasta: hoy, tasa: pc.tasa, meses: hist, proyeccion: proy, supuestos: sup, propios: propio, auto: auto };
+    // antigüedad de saldos por cobrar
+    var ag = { b: [0, 0, 0, 0], nb: [0, 0, 0, 0], total: 0, lista: [] }, d1 = new Date(hoy + 'T00:00:00Z');
+    db.Pedidos.forEach(function (p) {
+      if (p.estado !== 'Entregado' || n(p.saldo) <= 0.004) return;
+      var f = String(p.fecha_entrega || p.fecha).slice(0, 10), dias = Math.max(0, Math.round((d1 - new Date(f + 'T00:00:00Z')) / 864e5)), k = dias <= 15 ? 0 : dias <= 30 ? 1 : dias <= 60 ? 2 : 3;
+      ag.b[k] = r2(ag.b[k] + n(p.saldo)); ag.nb[k]++; ag.total = r2(ag.total + n(p.saldo)); ag.lista.push({ id: p.id, cliente: p.cliente, dias: dias, saldo: r2(n(p.saldo)) });
+    });
+    ag.lista.sort(function (a, b) { return b.dias - a.dias }); ag.lista = ag.lista.slice(0, 10);
+    // balance general simplificado
+    var stP = stockMap(db), art = articuloProducto(db), kgBod = art ? Math.max(0, n(stP[art.id])) : 0, invFin = r2(kgBod * sup.proy_costo_kg), inversion = 0;
+    db.Gastos.forEach(function (g) { if (g.estado !== 'Anulado' && g.tipo === 'Inversión') inversion += n(g.monto) });
+    var efectivo = r2(n(cfgAll.bal_efectivo)), invOtros = r2(n(cfgAll.bal_inv_otros)), deprec = r2(n(cfgAll.bal_deprec)), activoFijo = r2(Math.max(0, inversion - deprec));
+    var circ = r2(efectivo + ag.total + invFin + invOtros), activo = r2(circ + activoFijo), deudas = r2(n(cfgAll.bal_deudas)), prov = r2(n(cfgAll.bal_proveedores)), pasivo = r2(deudas + prov);
+    var bal = { efectivo: efectivo, porCobrar: ag.total, inventarioFinal: invFin, kgBodega: r2(kgBod), inventarioOtros: invOtros, activoCirculante: circ, inversion: r2(inversion), depreciacion: deprec, activoFijo: activoFijo, activo: activo, deudas: deudas, proveedores: prov, pasivo: pasivo, patrimonio: r2(activo - pasivo) };
+    // proyección de pago del crédito (cuota nivelada)
+    var mo = n(cfgAll.cred_monto), ta = n(cfgAll.cred_tasa), pl = Math.round(n(cfgAll.cred_plazo)), cr = null;
+    if (mo > 0 && pl > 0) {
+      var rm = ta / 1200, cuota = rm > 0 ? mo * rm / (1 - Math.pow(1 + rm, -pl)) : mo / pl, sal = mo, tabla = [];
+      for (i = 1; i <= Math.min(pl, 12); i++) { var it = sal * rm, cp = cuota - it; sal = Math.max(0, sal - cp); tabla.push({ n: i, cuota: r2(cuota), interes: r2(it), capital: r2(cp), saldo: r2(sal) }) }
+      var fprom = proy.reduce(function (t, x) { return t + x.flujo }, 0) / (proy.length || 1);
+      cr = { monto: r2(mo), tasa: ta, plazo: pl, cuota: r2(cuota), total: r2(cuota * pl), intereses: r2(cuota * pl - mo), flujoProm: r2(fprom), cobertura: cuota > 0 ? r2(fprom / cuota) : 0, tabla: tabla };
+    }
+    return { hasta: hoy, tasa: pc.tasa, meses: hist, proyeccion: proy, supuestos: sup, propios: propio, auto: auto, antiguedad: ag, balance: bal, credito: cr };
   }
 
   /* ---------- lo que ve cada usuario ---------- */

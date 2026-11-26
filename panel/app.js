@@ -741,44 +741,67 @@
   /* ---------- reportes para el banco (solo administrador) ---------- */
   var MES_C = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
   function mesCorto(m) { return MES_C[parseInt(m.slice(5, 7), 10) - 1] + ' ' + m.slice(2, 4) }
+  function fmtVal(v, f) { f = f || 'q'; if (f === 'n') return Math.round(v).toLocaleString('en-US'); if (f === 'p') return (Math.round(v * 100) / 100) + ' %'; if (f === 'x') return (Math.round(v * 100) / 100) + ' veces'; if (f === 'q2') return Q(v, 2); return Q(v, 0) }
   function repModelo() {
     var Rp = S.snap.reportes; if (!Rp) return null;
-    var H = Rp.meses, P = Rp.proyeccion, sum = function (a, k) { return a.reduce(function (t, x) { return t + num(x[k]) }, 0) };
-    function fila(l, arr, k, b, tot) { var v = arr.map(function (x) { return num(x[k]) }); if (tot !== false) v.push(sum(arr, k)); return { l: l, v: v, b: !!b } }
+    var H = Rp.meses, P = Rp.proyeccion, B = Rp.balance, AG = Rp.antiguedad, CR = Rp.credito, sum = function (a, k) { return a.reduce(function (t, x) { return t + num(x[k]) }, 0) };
+    function fila(l, arr, k, b, fmt) { var v = arr.map(function (x) { return num(x[k]) }); v.push(sum(arr, k)); return { l: l, v: v, b: !!b, fmt: fmt } }
+    function una(l, v, b, fmt) { return { l: l, v: [v], b: !!b, fmt: fmt } }
     var ch = H.map(function (x) { return mesCorto(x.mes) }).concat(['Total 12 meses']), cp = P.map(function (x) { return mesCorto(x.mes) }).concat(['Total 6 meses']);
-    return [
+    var M = [
       { t: 'Estado de resultados (estimado, últimos 12 meses)', n: 'Ventas = pedidos entregados. Costo de ventas = materia prima, empaque, combustible y electricidad. El impuesto es el ' + Rp.tasa + ' % de las ventas (pequeño contribuyente).', cols: ch, filas: [
         fila('Ventas', H, 'ventas', true), fila('Costo de ventas', H, 'costoVentas'), fila('Utilidad bruta', H, 'utilBruta', true), fila('Gastos de operación', H, 'gastosOp'), fila('Utilidad operativa', H, 'utilOper', true),
-        fila('Impuesto estimado', H, 'impuesto'), fila('Utilidad neta estimada', H, 'utilNeta', true), fila('Kilos vendidos', H, 'kg')] },
-      { t: 'Flujo de caja histórico (últimos 12 meses)', n: 'Entradas = cobros registrados. Salidas = gastos pagados. La inversión en equipo se muestra aparte. El acumulado parte de cero en el primer mes; no incluye el saldo de banco.', cols: H.map(function (x) { return mesCorto(x.mes) }).concat(['Total 12 meses']), filas: [
+        fila('Impuesto estimado', H, 'impuesto'), fila('Utilidad neta estimada', H, 'utilNeta', true), fila('Kilos vendidos', H, 'kg', false, 'n')] },
+      { t: 'Balance general simplificado (al ' + S.snap.hoy + ')', n: 'Cuentas por cobrar y activo fijo salen de lo que registras. Efectivo, deudas y proveedores los escribes tú. El inventario son los kilos en bodega por el costo de ventas por kilo. Tu contador lo ajusta.', cols: ['Monto'], filas: [
+        una('Efectivo y bancos', B.efectivo), una('Cuentas por cobrar', B.porCobrar), una('Inventario de producto terminado (' + Math.round(B.kgBodega) + ' kg)', B.inventarioFinal), una('Otros inventarios (materia prima)', B.inventarioOtros), una('Activo circulante', B.activoCirculante, true),
+        una('Inversión en equipo', B.inversion), una('(–) Depreciación acumulada', -B.depreciacion), una('Activo fijo neto', B.activoFijo, true), una('TOTAL ACTIVO', B.activo, true),
+        una('Préstamos y deudas', B.deudas), una('Cuentas por pagar a proveedores', B.proveedores), una('TOTAL PASIVO', B.pasivo, true), una('PATRIMONIO (activo menos pasivo)', B.patrimonio, true)] },
+      { t: 'Flujo de caja histórico (últimos 12 meses)', n: 'Entradas = cobros registrados. Salidas = gastos pagados. La inversión en equipo se muestra aparte. El acumulado parte de cero en el primer mes; no incluye el saldo de banco.', cols: ch, filas: [
         fila('Cobros recibidos', H, 'cobros', true), fila('Gastos pagados', H, 'salidas'), fila('Inversión en equipo', H, 'inversion'), fila('Flujo neto del mes', H, 'flujo', true), { l: 'Flujo acumulado', v: H.map(function (x) { return num(x.acumulado) }).concat([num(H[H.length - 1].acumulado)]), b: false }] },
       { t: 'Flujo de caja proyectado (próximos 6 meses)', n: 'Proyección con los supuestos de abajo: kilos por mes, precio, costo por kilo, gastos fijos y crecimiento mensual. Supone que se cobra en el mismo mes de la venta.', cols: cp, filas: [
-        fila('Kilos', P, 'kg'), fila('Ingresos', P, 'ingresos', true), fila('Costo de ventas', P, 'costoVentas'), fila('Gastos fijos', P, 'fijos'), fila('Impuesto estimado', P, 'impuesto'), fila('Flujo neto del mes', P, 'flujo', true),
-        { l: 'Saldo proyectado (con saldo inicial)', v: P.map(function (x) { return num(x.saldo) }).concat([num(P[P.length - 1].saldo)]), b: false }] }
+        fila('Kilos', P, 'kg', false, 'n'), fila('Ingresos', P, 'ingresos', true), fila('Costo de ventas', P, 'costoVentas'), fila('Gastos fijos', P, 'fijos'), fila('Impuesto estimado', P, 'impuesto'), fila('Flujo neto del mes', P, 'flujo', true),
+        { l: 'Saldo proyectado (con saldo inicial)', v: P.map(function (x) { return num(x.saldo) }).concat([num(P[P.length - 1].saldo)]), b: false }] },
+      { t: 'Antigüedad de saldos por cobrar', n: 'Lo que te deben los clientes por pedidos ya entregados, según los días desde la entrega.', cols: ['Monto', 'Pedidos'], filas: [
+        { l: 'Al día (0 a 15 días)', v: [AG.b[0], AG.nb[0]], fmt: ['q', 'n'] }, { l: '16 a 30 días', v: [AG.b[1], AG.nb[1]], fmt: ['q', 'n'] }, { l: '31 a 60 días', v: [AG.b[2], AG.nb[2]], fmt: ['q', 'n'] }, { l: 'Más de 60 días', v: [AG.b[3], AG.nb[3]], fmt: ['q', 'n'] },
+        { l: 'Total por cobrar', v: [AG.total, AG.nb.reduce(function (t, x) { return t + x }, 0)], b: true, fmt: ['q', 'n'] }] }
     ];
+    if (CR) {
+      M.push({ t: 'Proyección de pago del crédito', n: 'Cuota nivelada mensual. La cobertura compara tu flujo neto mensual proyectado (antes del crédito) con la cuota; un banco suele buscar que sea mayor que 1.', cols: ['Valor'], filas: [
+        una('Monto solicitado', CR.monto), una('Tasa de interés anual', CR.tasa, false, 'p'), una('Plazo en meses', CR.plazo, false, 'n'), una('Cuota mensual', CR.cuota, true, 'q2'), una('Total a pagar', CR.total), una('Intereses totales', CR.intereses),
+        una('Flujo neto mensual proyectado (promedio, antes del crédito)', CR.flujoProm), una('Cobertura de la cuota', CR.cobertura, true, 'x')] });
+      M.push({ t: 'Calendario de pagos (primeros ' + CR.tabla.length + ' meses)', n: '', cols: ['Cuota', 'Interés', 'Capital', 'Saldo'], filas: CR.tabla.map(function (x) { return { l: 'Mes ' + x.n, v: [x.cuota, x.interes, x.capital, x.saldo], fmt: 'q2' } }) });
+    }
+    return M;
   }
+  function celdaFmt(f, i) { return Array.isArray(f.fmt) ? f.fmt[i] : f.fmt }
   function tablaRep(sec) {
     return '<div style="overflow-x:auto;margin:0 -4px"><table style="border-collapse:collapse;font-size:13px;min-width:100%;white-space:nowrap"><thead><tr><th style="text-align:left;padding:6px 8px;position:sticky;left:0;background:var(--card,#fff)"></th>' + sec.cols.map(function (c) { return '<th style="text-align:right;padding:6px 8px">' + esc(c) + '</th>' }).join('') + '</tr></thead><tbody>' +
-      sec.filas.map(function (f) { return '<tr style="border-top:1px solid var(--ceniza-2)' + (f.b ? ';font-weight:700' : '') + '"><td style="padding:6px 8px;position:sticky;left:0;background:var(--card,#fff)">' + esc(f.l) + '</td>' + f.v.map(function (v, i) { return '<td class="num" style="text-align:right;padding:6px 8px' + (i === f.v.length - 1 ? ';font-weight:700' : '') + (v < 0 ? ';color:var(--alerta)' : '') + '">' + (f.l === 'Kilos' || f.l === 'Kilos vendidos' ? Math.round(v).toLocaleString('en-US') : Q(v, 0)) + '</td>' }).join('') + '</tr>' }).join('') + '</tbody></table></div>';
+      sec.filas.map(function (f) { return '<tr style="border-top:1px solid var(--ceniza-2)' + (f.b ? ';font-weight:700' : '') + '"><td style="padding:6px 8px;position:sticky;left:0;background:var(--card,#fff);white-space:normal;min-width:150px">' + esc(f.l) + '</td>' + f.v.map(function (v, i) { return '<td class="num" style="text-align:right;padding:6px 8px' + (i === f.v.length - 1 && f.v.length > 4 ? ';font-weight:700' : '') + (v < 0 ? ';color:var(--alerta)' : '') + '">' + fmtVal(v, celdaFmt(f, i)) + '</td>' }).join('') + '</tr>' }).join('') + '</tbody></table></div>';
   }
   function tarjetaBanco() {
-    var ok = !!S.snap.reportes;
-    return '<button class="row" data-a="ir" data-r="reportes" style="margin-bottom:6px"><span class="bar ' + (ok ? 'pend' : 'cobrar') + '"></span><span><div class="t">Reportes para el banco</div><div class="s">' + (ok ? 'Estado de resultados y flujo de caja, para tu carpeta de crédito' : 'Falta actualizar el código de Google (Apps Script)') + '</div></span><span class="r">' + (ok ? '' : '<span class="chip c-cobrar">!</span>') + '</span></button>';
+    var ok = !!S.snap.reportes && !!S.snap.reportes.balance;
+    return '<button class="row" data-a="ir" data-r="reportes" style="margin-bottom:6px"><span class="bar ' + (ok ? 'pend' : 'cobrar') + '"></span><span><div class="t">Reportes para el banco</div><div class="s">' + (ok ? 'Resultados, balance, flujo de caja, cuentas por cobrar y pago del crédito' : 'Falta actualizar el código de Google (Apps Script)') + '</div></span><span class="r">' + (ok ? '' : '<span class="chip c-cobrar">!</span>') + '</span></button>';
   }
+  function campoCfg(k, label, Rp, ph) { var tiene = Rp.propios[k]; return '<label class="fld"><span>' + label + '</span><input data-cfg="' + k + '" inputmode="decimal" value="' + (tiene ? num(Rp.supuestos[k]) : '') + '" placeholder="' + (ph !== undefined ? ph : num(Rp.auto[k])) + '"></label>' }
   function vReportes() {
-    var M = repModelo(); if (!M) return '<div class="card"><h3>Falta un paso en Google</h3><p style="color:var(--suave)">Pega el código nuevo en Apps Script y publica una versión nueva (Implementar → Administrar implementaciones → ✏ → Nueva versión → Implementar). Luego recarga el panel.</p></div>';
-    var Rp = S.snap.reportes, h = '<div class="note"><b>Informe de administración, no auditado.</b> Se arma con lo que registras en el panel. Para el banco, normalmente lo firma tu contador: pásale este informe y el acceso de solo lectura.</div>';
-    M.forEach(function (s) { h += '<div class="card"><h3>' + esc(s.t) + '</h3><p style="color:var(--suave);font-size:14px;margin-bottom:10px">' + esc(s.n) + '</p>' + tablaRep(s) + '</div>'; });
-    var cam = [['proy_saldo_inicial', 'Saldo inicial de caja y banco (Q)'], ['proy_kg_mes', 'Kilos que vendes por mes'], ['proy_precio_kg', 'Precio promedio por kilo (Q)'], ['proy_costo_kg', 'Costo de ventas por kilo (Q)'], ['proy_fijos_mes', 'Gastos fijos por mes (Q)'], ['proy_crec_pct', 'Crecimiento de ventas por mes (%)']];
-    h += '<div class="card"><h3>Supuestos de la proyección</h3><p style="color:var(--suave);font-size:14px;margin-bottom:10px">Si dejas un campo vacío, el panel usa el promedio de tus últimos 3 meses (el número gris). Escribe tus metas para proyectar con ellas.</p>' +
-      cam.map(function (c) { return '<label class="fld"><span>' + c[1] + '</span><input id="py-' + c[0] + '" inputmode="decimal" value="' + (Rp.propios[c[0]] ? num(Rp.supuestos[c[0]]) : '') + '" placeholder="' + num(Rp.auto[c[0]]) + '"></label>' }).join('') + '<button class="btn sm" data-a="guardarproy">Guardar supuestos</button></div>';
+    var M = repModelo(); if (!M || !S.snap.reportes.balance) return '<div class="card"><h3>Falta un paso en Google</h3><p style="color:var(--suave)">Pega el código nuevo en Apps Script y publica una versión nueva (Implementar → Administrar implementaciones → ✏ → Nueva versión → Implementar). Luego recarga el panel.</p></div>';
+    var Rp = S.snap.reportes, h = '<div class="note"><b>Informe de administración, no auditado.</b> Se arma con lo que registras en el panel. Para el banco lo firma tu contador: pásale este informe y dale el acceso de solo lectura.</div>';
+    M.forEach(function (s) { h += '<div class="card"><h3>' + esc(s.t) + '</h3>' + (s.n ? '<p style="color:var(--suave);font-size:14px;margin-bottom:10px">' + esc(s.n) + '</p>' : '') + tablaRep(s) + '</div>'; });
+    var ag = Rp.antiguedad.lista;
+    if (ag.length) h += '<div class="card"><h3>Saldos más antiguos por cobrar</h3>' + ag.slice(0, 8).map(function (x) { return '<div class="kv"><span>' + esc(x.cliente) + ' · ' + esc(x.id) + '<small style="display:block;color:var(--suave)">' + x.dias + ' días desde la entrega</small></span><b>' + Q(x.saldo) + '</b></div>' }).join('') + '</div>';
+    h += '<div class="card"><h3>Proyección de flujo de caja: supuestos</h3><p style="color:var(--suave);font-size:14px;margin-bottom:10px">Si dejas un campo vacío, el panel usa el promedio de tus últimos 3 meses (el número gris).</p>' +
+      campoCfg('proy_saldo_inicial', 'Saldo inicial de caja y banco (Q)', Rp) + campoCfg('proy_kg_mes', 'Kilos que vendes por mes', Rp) + campoCfg('proy_precio_kg', 'Precio promedio por kilo (Q)', Rp) + campoCfg('proy_costo_kg', 'Costo de ventas por kilo (Q)', Rp) + campoCfg('proy_fijos_mes', 'Gastos fijos por mes (Q)', Rp) + campoCfg('proy_crec_pct', 'Crecimiento de ventas por mes (%)', Rp) + '</div>';
+    h += '<div class="card"><h3>Datos para el balance general</h3><p style="color:var(--suave);font-size:14px;margin-bottom:10px">Lo que el panel no puede saber: escríbelo tal como está hoy.</p>' +
+      campoCfg('bal_efectivo', 'Efectivo y saldo en bancos hoy (Q)', Rp, '0') + campoCfg('bal_inv_otros', 'Valor de cáscara y otros materiales en bodega (Q)', Rp, '0') + campoCfg('bal_deprec', 'Depreciación acumulada del equipo (Q)', Rp, '0') + campoCfg('bal_deudas', 'Préstamos y deudas que tienes hoy (Q)', Rp, '0') + campoCfg('bal_proveedores', 'Lo que debes a proveedores (Q)', Rp, '0') + '</div>';
+    h += '<div class="card"><h3>Crédito que piensas pedir</h3><p style="color:var(--suave);font-size:14px;margin-bottom:10px">Con estos tres datos se calcula la cuota y qué tanto la cubre tu flujo.</p>' +
+      campoCfg('cred_monto', 'Monto del crédito (Q)', Rp, '0') + campoCfg('cred_tasa', 'Tasa de interés anual (%)', Rp, '0') + campoCfg('cred_plazo', 'Plazo en meses', Rp, '0') + '<button class="btn sm" data-a="guardarproy">Guardar datos y supuestos</button></div>';
     h += '<div class="card"><h3>Para tu carpeta bancaria</h3><div class="btn-row" style="flex-direction:column;gap:8px"><button class="btn" data-a="repimprimir">Ver e imprimir o guardar en PDF</button><button class="btn sec" data-a="repcsv">Descargar en Excel (CSV)</button></div></div>';
     return h;
   }
   function guardarProy(btn) {
     var fin = ocupado(btn), v = {};
-    ['proy_saldo_inicial', 'proy_kg_mes', 'proy_precio_kg', 'proy_costo_kg', 'proy_fijos_mes', 'proy_crec_pct'].forEach(function (k) { v[k] = $('#py-' + k).value });
-    api('config.guardar', { valores: v }).then(function (res) { fin(); if (!res.ok) return toast(res.error); aplicar(res); render(); toast('Supuestos guardados', true) });
+    document.querySelectorAll('input[data-cfg]').forEach(function (e) { v[e.getAttribute('data-cfg')] = e.value });
+    api('config.guardar', { valores: v }).then(function (res) { fin(); if (!res.ok) return toast(res.error); aplicar(res); render(); toast('Datos guardados', true) });
   }
   function repCSV() {
     var M = repModelo(); if (!M) return;
@@ -789,10 +812,10 @@
   }
   function repImprimir() {
     var M = repModelo(); if (!M) return;
-    var css = 'body{font:12px/1.4 Calibri,Arial,sans-serif;color:#1a1a1a;margin:24px}h1{font-size:20px;margin:0}h2{font-size:14px;margin:22px 0 4px}p{margin:2px 0 8px;color:#555}table{border-collapse:collapse;width:100%;font-size:10.5px}th,td{padding:4px 6px;text-align:right;border-bottom:1px solid #ddd;white-space:nowrap}th:first-child,td:first-child{text-align:left}.b td{font-weight:700}.neg{color:#b00020}.firmas{display:flex;gap:40px;margin-top:50px}.firmas div{flex:1;border-top:1px solid #333;padding-top:4px;text-align:center;min-height:120px}.firmas small{display:block;text-align:left;margin-top:16px;font-size:11px;line-height:2}.nota{margin-top:18px;font-size:11px;color:#555}button{padding:10px 16px;font-size:14px;margin-bottom:12px}@media print{button{display:none}body{margin:10mm}}@page{size:landscape}';
-    var h = '<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reportes financieros</title><style>' + css + '</style></head><body><button onclick="window.print()">Imprimir o guardar como PDF</button><h1>' + esc(S.snap.config.nombre_negocio || 'GEA') + '</h1><p>Estado de resultados y flujo de caja · al ' + esc(hoy()) + ' · cifras en quetzales (Q)</p>';
+    var css = 'body{font:12px/1.4 Calibri,Arial,sans-serif;color:#1a1a1a;margin:24px}h1{font-size:20px;margin:0}h2{font-size:14px;margin:22px 0 4px;break-after:avoid}p{margin:2px 0 8px;color:#555}table{border-collapse:collapse;width:100%;font-size:10.5px;break-inside:avoid}th,td{padding:4px 6px;text-align:right;border-bottom:1px solid #ddd;white-space:nowrap}th:first-child,td:first-child{text-align:left;white-space:normal}.b td{font-weight:700}.neg{color:#b00020}.firmas{display:flex;gap:40px;margin-top:50px;break-inside:avoid}.firmas div{flex:1;border-top:1px solid #333;padding-top:4px;text-align:center;min-height:120px}.firmas small{display:block;text-align:left;margin-top:16px;font-size:11px;line-height:2}.nota{margin-top:18px;font-size:11px;color:#555}button{padding:10px 16px;font-size:14px;margin-bottom:12px}@media print{button{display:none}body{margin:10mm}}@page{size:landscape}';
+    var h = '<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reportes financieros</title><style>' + css + '</style></head><body><button onclick="window.print()">Imprimir o guardar como PDF</button><h1>' + esc(S.snap.config.nombre_negocio || 'GEA') + '</h1><p>Informe financiero de administración · al ' + esc(hoy()) + ' · cifras en quetzales (Q)</p>';
     M.forEach(function (s) {
-      h += '<h2>' + esc(s.t) + '</h2><p>' + esc(s.n) + '</p><table><thead><tr><th></th>' + s.cols.map(function (c) { return '<th>' + esc(c) + '</th>' }).join('') + '</tr></thead><tbody>' + s.filas.map(function (f) { return '<tr' + (f.b ? ' class="b"' : '') + '><td>' + esc(f.l) + '</td>' + f.v.map(function (v) { return '<td' + (v < 0 ? ' class="neg"' : '') + '>' + (/^Kilos/.test(f.l) ? Math.round(v).toLocaleString('en-US') : Q(v, 0)) + '</td>' }).join('') + '</tr>' }).join('') + '</tbody></table>';
+      h += '<h2>' + esc(s.t) + '</h2>' + (s.n ? '<p>' + esc(s.n) + '</p>' : '') + '<table><thead><tr><th></th>' + s.cols.map(function (c) { return '<th>' + esc(c) + '</th>' }).join('') + '</tr></thead><tbody>' + s.filas.map(function (f) { return '<tr' + (f.b ? ' class="b"' : '') + '><td>' + esc(f.l) + '</td>' + f.v.map(function (v, i) { return '<td' + (v < 0 ? ' class="neg"' : '') + '>' + fmtVal(v, celdaFmt(f, i)) + '</td>' }).join('') + '</tr>' }).join('') + '</tbody></table>';
     });
     h += '<p class="nota">Informe de administración preparado con los registros del sistema de la empresa. No es información auditada. Las proyecciones dependen de los supuestos indicados y no garantizan resultados.</p><div class="firmas"><div>Firma del propietario o representante legal<small>Nombre: ______________________________<br>Fecha: ____ / ____ / ________</small></div><div>Firma y sello del contador<small>Nombre: ______________________________<br>No. de registro: __________________<br>Fecha: ____ / ____ / ________</small></div></div></body></html>';
     var w = window.open(URL.createObjectURL(new Blob([h], { type: 'text/html;charset=utf-8' })), '_blank');
