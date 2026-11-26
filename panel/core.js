@@ -159,6 +159,49 @@
       impuestoAño: r2(total * cfg.tasa / 100) };
   }
 
+  /* ---------- reportes financieros para banco: estado de resultados y flujo de caja ----------
+     Se arman con lo que registras en el panel. Son estimaciones de administración, no estados financieros auditados. */
+  var PROY = ['proy_saldo_inicial', 'proy_kg_mes', 'proy_precio_kg', 'proy_costo_kg', 'proy_fijos_mes', 'proy_crec_pct'];
+  var VENTA_CAT = { 'Comisiones de venta': 1, 'Transporte y fletes': 1 };
+  function mesSig(m) { var y = parseInt(m.slice(0, 4), 10), k = parseInt(m.slice(5, 7), 10); k++; if (k > 12) { k = 1; y++ } return y + '-' + (k < 10 ? '0' : '') + k }
+  function mesAnt(m, d) { var y = parseInt(m.slice(0, 4), 10), k = parseInt(m.slice(5, 7), 10) - d; while (k < 1) { k += 12; y-- } return y + '-' + (k < 10 ? '0' : '') + k }
+  function reportes(db, hoy) {
+    var cfgAll = cfgObj(db), pc = pcCfg(cfgAll), mAct = hoy.slice(0, 7), meses = [], i, M = {};
+    for (i = 11; i >= 0; i--) meses.push(mesAnt(mAct, i));
+    meses.forEach(function (m) { M[m] = { mes: m, ventas: 0, kg: 0, costoVentas: 0, gastosOp: 0, impuesto: 0, cobros: 0, salidas: 0, inversion: 0 } });
+    db.Pedidos.forEach(function (p) {
+      if (p.estado !== 'Entregado') return;
+      var m = String(p.fecha_entrega || p.fecha).slice(0, 7); if (M[m]) { M[m].ventas += n(p.total); M[m].kg += n(p.kg) }
+    });
+    db.Gastos.forEach(function (g) {
+      if (g.estado === 'Anulado') return;
+      var m = String(g.fecha).slice(0, 7), x = M[m]; if (!x) return; var q = n(g.monto);
+      if (g.tipo === 'Inversión') { x.inversion += q; return }
+      x.salidas += q;
+      if (g.tipo === 'Variable' && !VENTA_CAT[g.categoria]) x.costoVentas += q; else x.gastosOp += q;
+    });
+    db.Cobros.forEach(function (c) { var m = String(c.fecha).slice(0, 7); if (M[m]) M[m].cobros += n(c.monto) });
+    var acum = 0, hist = meses.map(function (m) {
+      var x = M[m]; ['ventas', 'kg', 'costoVentas', 'gastosOp', 'impuesto', 'cobros', 'salidas', 'inversion'].forEach(function (k) { x[k] = r2(x[k]) });
+      x.impuesto = r2(x.ventas * pc.tasa / 100); x.utilBruta = r2(x.ventas - x.costoVentas); x.utilOper = r2(x.utilBruta - x.gastosOp); x.utilNeta = r2(x.utilOper - x.impuesto);
+      x.flujo = r2(x.cobros - x.salidas - x.inversion); acum = r2(acum + x.flujo); x.acumulado = acum; return x;
+    });
+    // supuestos de proyección: lo que escribas en Ajustes manda; si está vacío, promedio de los últimos 3 meses con datos
+    var ult = hist.slice(-3), kg3 = 0, v3 = 0, cv3 = 0, f3 = 0, nm = 0;
+    ult.forEach(function (x) { if (x.ventas > 0 || x.salidas > 0) nm++; kg3 += x.kg; v3 += x.ventas; cv3 += x.costoVentas; f3 += x.gastosOp });
+    nm = nm || 1;
+    var auto = { proy_kg_mes: r2(kg3 / nm), proy_precio_kg: kg3 > 0 ? r2(v3 / kg3) : 0, proy_costo_kg: kg3 > 0 ? r2(cv3 / kg3) : 0, proy_fijos_mes: r2(f3 / nm), proy_saldo_inicial: 0, proy_crec_pct: 0 };
+    var sup = {}, propio = {};
+    PROY.forEach(function (k) { var v = cfgAll[k]; var tiene = v !== undefined && v !== '' && v !== null; propio[k] = tiene; sup[k] = tiene ? n(v) : auto[k] });
+    var proy = [], saldo = sup.proy_saldo_inicial, kg = sup.proy_kg_mes, mm = mAct;
+    for (i = 1; i <= 6; i++) {
+      mm = mesSig(mm); if (i > 1) kg = kg * (1 + sup.proy_crec_pct / 100);
+      var ing = r2(kg * sup.proy_precio_kg), cv = r2(kg * sup.proy_costo_kg), fj = r2(sup.proy_fijos_mes), imp = r2(ing * pc.tasa / 100), fl = r2(ing - cv - fj - imp);
+      saldo = r2(saldo + fl); proy.push({ mes: mm, kg: r2(kg), ingresos: ing, costoVentas: cv, fijos: fj, impuesto: imp, flujo: fl, saldo: saldo });
+    }
+    return { hasta: hoy, tasa: pc.tasa, meses: hist, proyeccion: proy, supuestos: sup, propios: propio, auto: auto };
+  }
+
   /* ---------- lo que ve cada usuario ---------- */
   function snapshot(db, ctx) {
     var admin = ctx.user.rol === 'admin', cont = ctx.user.rol === 'contador', st = stockMap(db);
@@ -179,6 +222,7 @@
       usuarios: admin ? db.Usuarios.map(function (u) { return { nombre: u.nombre, rol: u.rol, activo: u.activo === 'No' ? 'No' : 'Sí' } }) : [],
       sheetUrl: admin ? (ctx.sheetUrl || '') : '',
       fiscal: admin ? fiscal(db, ctx.today) : null,
+      reportes: admin ? reportes(db, ctx.today) : null,
       accesos: admin ? (db.Accesos || []).slice(-80).reverse() : []
     });
   }
@@ -377,10 +421,10 @@
 
   accion('config.guardar', true, function (db, req, ctx, ops) {
     need(ctx, 'admin');
-    var permitidas = ['comision_por_kg', 'whatsapp_admin', 'pedido_minimo_kg', 'nombre_negocio', 'bolsas_mayoreo', 'precio_bolsa_mayoreo', 'bolsas_volumen', 'precio_bolsa_volumen', 'bultos_volumen', 'precio_bulto_volumen', 'limite_pc', 'tasa_pc'], vals = req.valores || {};
+    var permitidas = ['comision_por_kg', 'whatsapp_admin', 'pedido_minimo_kg', 'nombre_negocio', 'bolsas_mayoreo', 'precio_bolsa_mayoreo', 'bolsas_volumen', 'precio_bolsa_volumen', 'bultos_volumen', 'precio_bulto_volumen', 'limite_pc', 'tasa_pc'].concat(PROY), vals = req.valores || {};
     permitidas.forEach(function (k) {
       if (vals[k] === undefined) return;
-      var v = k === 'whatsapp_admin' ? s(vals[k]).replace(/\D/g, '') : (k === 'nombre_negocio' ? s(vals[k]) : n(vals[k]));
+      var v = k === 'whatsapp_admin' ? s(vals[k]).replace(/\D/g, '') : (k === 'nombre_negocio' ? s(vals[k]) : (PROY.indexOf(k) >= 0 && s(vals[k]) === '' ? '' : n(vals[k])));
       if (k === 'whatsapp_admin' && v && v.length < 8) throw PE('El número de WhatsApp parece incompleto.');
       var row = db.Config.filter(function (r) { return r.clave === k })[0];
       if (row) upd(db, ops, 'Config', row, { valor: v }, 'clave'); else add(db, ops, 'Config', { clave: k, valor: v });
@@ -632,7 +676,7 @@
   }
 
   root.PanelCore = {
-    SCHEMA: SCHEMA, fiscal: fiscal, nitNorm: nitNorm, TIPOS: TIPOS, METODOS: METODOS, handle: handle, defaultDb: defaultDb, demoDb: demoDb, resumen: resumen,
+    SCHEMA: SCHEMA, fiscal: fiscal, reportes: reportes, nitNorm: nitNorm, TIPOS: TIPOS, METODOS: METODOS, handle: handle, defaultDb: defaultDb, demoDb: demoDb, resumen: resumen,
     stockMap: stockMap, precioUnit: precioUnit, addDays: addDays, cfgObj: cfgObj, ART_PRODUCTO: ART_PRODUCTO, PRECIO: PRECIO, CATEGORIAS: CATEGORIAS, costos: costos, simular: simular
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

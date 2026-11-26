@@ -180,7 +180,7 @@
       (demo ? '<div class="quick"><small>Demostración con datos ficticios. Elige cómo entrar:</small><button class="btn sec" data-a="demo" data-pin="123456">Entrar como administrador</button><button class="btn sec" data-a="demo" data-pin="111111">Entrar como vendedor</button></div>' : '') +
       '</div>';
   }
-  var TITULOS = { asistente: 'Asistente', costos: 'Costos y planes', inicio: 'Inicio', pedidos: 'Pedidos', clientes: 'Clientes', inventario: 'Inventario', ajustes: 'Ajustes', impuestos: 'Impuestos SAT' };
+  var TITULOS = { asistente: 'Asistente', costos: 'Costos y planes', inicio: 'Inicio', pedidos: 'Pedidos', clientes: 'Clientes', inventario: 'Inventario', ajustes: 'Ajustes', impuestos: 'Impuestos SAT', reportes: 'Reportes para el banco' };
   function tabBtn(r, nombre, icono) { return '<button class="tab" data-a="ir" data-r="' + r + '"' + (S.ruta === r ? ' aria-current="page"' : '') + '>' + ic(icono) + '<span>' + nombre + '</span></button>' }
   function railBtn(r, nombre, icono) { return '<button class="nav" data-a="ir" data-r="' + r + '"' + (S.ruta === r ? ' aria-current="page"' : '') + '>' + ic(icono) + '<span>' + nombre + '</span></button>' }
   function shellConta(inner) {
@@ -204,7 +204,7 @@
     if (!S.user) { app.innerHTML = loginHTML(aviso); var f = $('#f-login'); if (f) f.addEventListener('submit', entrar); return }
     if (!S.snap) { app.innerHTML = shell(S.errCarga ? '<div class="err">' + esc(S.errCarga) + '</div><button class="btn" data-a="recargar">Reintentar</button>' : '<div class="skel" style="height:260px"></div><div class="skel"></div><div class="skel"></div>'); return }
     if (isConta()) S.ruta = 'impuestos';
-    var v = { inicio: vInicio, pedidos: vPedidos, clientes: vClientes, inventario: vInventario, costos: vCostos, asistente: vAsistente, ajustes: vAjustes, impuestos: vImpuestos }[S.ruta] || vInicio;
+    var v = { inicio: vInicio, pedidos: vPedidos, clientes: vClientes, inventario: vInventario, costos: vCostos, asistente: vAsistente, ajustes: vAjustes, impuestos: vImpuestos, reportes: vReportes }[S.ruta] || vInicio;
     var keep = window.scrollY;
     app.innerHTML = shell(v());
     if (S.ruta === 'inicio' && S.intro) { S.intro = false; setTimeout(function () { var h = $('.hero'); if (h) h.classList.remove('go') }, 2200) }
@@ -272,7 +272,7 @@
   function vInicio() {
     var sn = S.snap, R = C.resumen(sn), adm = isAdmin(), art = sn.inventario.filter(function (a) { return a.tipo === 'producto' })[0], stock = art ? art.stock : 0, min = art ? art.stock_min : 0;
     var izq = (adm ? hero(stock, R.comprometidoKg, min) : heroVend(R, Math.max(0, stock - R.comprometidoKg))) + figs(R) +
-      (adm ? tarjetaCostos() + tarjetaSAT() + tarjetaAsistente() : '') +
+      (adm ? tarjetaCostos() + tarjetaSAT() + tarjetaBanco() + tarjetaAsistente() : '') +
       '<div class="sec-h"><h2>Ventas de los últimos 14 días</h2><span class="num">' + Q(R.serie.reduce(function (a, s) { return a + s.q }, 0), 0) + '</span></div>' + chart(R.serie);
     var der = '<div class="sec-h" style="margin-top:0"><h2>' + (adm ? 'Por entregar' : 'Mis pedidos por entregar') + '</h2><span>' + R.porEntregar.length + (R.porEntregar.length === 1 ? ' pedido' : ' pedidos') + ' · ' + K(R.comprometidoKg) + '</span></div>' +
       lista(R.porEntregar.slice(0, 5).map(function (p) { return pedRow(p, true) }), 'Todo entregado', 'Cuando se registre un pedido nuevo, aparece aquí.');
@@ -738,6 +738,67 @@
     var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt], { type: 'text/csv;charset=utf-8' })); a.download = 'libro-de-' + k + '-' + F.año + '.csv'; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove() }, 500); toast('Archivo descargado', true);
   }
 
+  /* ---------- reportes para el banco (solo administrador) ---------- */
+  var MES_C = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  function mesCorto(m) { return MES_C[parseInt(m.slice(5, 7), 10) - 1] + ' ' + m.slice(2, 4) }
+  function repModelo() {
+    var Rp = S.snap.reportes; if (!Rp) return null;
+    var H = Rp.meses, P = Rp.proyeccion, sum = function (a, k) { return a.reduce(function (t, x) { return t + num(x[k]) }, 0) };
+    function fila(l, arr, k, b, tot) { var v = arr.map(function (x) { return num(x[k]) }); if (tot !== false) v.push(sum(arr, k)); return { l: l, v: v, b: !!b } }
+    var ch = H.map(function (x) { return mesCorto(x.mes) }).concat(['Total 12 meses']), cp = P.map(function (x) { return mesCorto(x.mes) }).concat(['Total 6 meses']);
+    return [
+      { t: 'Estado de resultados (estimado, últimos 12 meses)', n: 'Ventas = pedidos entregados. Costo de ventas = materia prima, empaque, combustible y electricidad. El impuesto es el ' + Rp.tasa + ' % de las ventas (pequeño contribuyente).', cols: ch, filas: [
+        fila('Ventas', H, 'ventas', true), fila('Costo de ventas', H, 'costoVentas'), fila('Utilidad bruta', H, 'utilBruta', true), fila('Gastos de operación', H, 'gastosOp'), fila('Utilidad operativa', H, 'utilOper', true),
+        fila('Impuesto estimado', H, 'impuesto'), fila('Utilidad neta estimada', H, 'utilNeta', true), fila('Kilos vendidos', H, 'kg')] },
+      { t: 'Flujo de caja histórico (últimos 12 meses)', n: 'Entradas = cobros registrados. Salidas = gastos pagados. La inversión en equipo se muestra aparte. El acumulado parte de cero en el primer mes; no incluye el saldo de banco.', cols: H.map(function (x) { return mesCorto(x.mes) }).concat(['Total 12 meses']), filas: [
+        fila('Cobros recibidos', H, 'cobros', true), fila('Gastos pagados', H, 'salidas'), fila('Inversión en equipo', H, 'inversion'), fila('Flujo neto del mes', H, 'flujo', true), { l: 'Flujo acumulado', v: H.map(function (x) { return num(x.acumulado) }).concat([num(H[H.length - 1].acumulado)]), b: false }] },
+      { t: 'Flujo de caja proyectado (próximos 6 meses)', n: 'Proyección con los supuestos de abajo: kilos por mes, precio, costo por kilo, gastos fijos y crecimiento mensual. Supone que se cobra en el mismo mes de la venta.', cols: cp, filas: [
+        fila('Kilos', P, 'kg'), fila('Ingresos', P, 'ingresos', true), fila('Costo de ventas', P, 'costoVentas'), fila('Gastos fijos', P, 'fijos'), fila('Impuesto estimado', P, 'impuesto'), fila('Flujo neto del mes', P, 'flujo', true),
+        { l: 'Saldo proyectado (con saldo inicial)', v: P.map(function (x) { return num(x.saldo) }).concat([num(P[P.length - 1].saldo)]), b: false }] }
+    ];
+  }
+  function tablaRep(sec) {
+    return '<div style="overflow-x:auto;margin:0 -4px"><table style="border-collapse:collapse;font-size:13px;min-width:100%;white-space:nowrap"><thead><tr><th style="text-align:left;padding:6px 8px;position:sticky;left:0;background:var(--card,#fff)"></th>' + sec.cols.map(function (c) { return '<th style="text-align:right;padding:6px 8px">' + esc(c) + '</th>' }).join('') + '</tr></thead><tbody>' +
+      sec.filas.map(function (f) { return '<tr style="border-top:1px solid var(--ceniza-2)' + (f.b ? ';font-weight:700' : '') + '"><td style="padding:6px 8px;position:sticky;left:0;background:var(--card,#fff)">' + esc(f.l) + '</td>' + f.v.map(function (v, i) { return '<td class="num" style="text-align:right;padding:6px 8px' + (i === f.v.length - 1 ? ';font-weight:700' : '') + (v < 0 ? ';color:var(--alerta)' : '') + '">' + (f.l === 'Kilos' || f.l === 'Kilos vendidos' ? Math.round(v).toLocaleString('en-US') : Q(v, 0)) + '</td>' }).join('') + '</tr>' }).join('') + '</tbody></table></div>';
+  }
+  function tarjetaBanco() {
+    var ok = !!S.snap.reportes;
+    return '<button class="row" data-a="ir" data-r="reportes" style="margin-bottom:6px"><span class="bar ' + (ok ? 'pend' : 'cobrar') + '"></span><span><div class="t">Reportes para el banco</div><div class="s">' + (ok ? 'Estado de resultados y flujo de caja, para tu carpeta de crédito' : 'Falta actualizar el código de Google (Apps Script)') + '</div></span><span class="r">' + (ok ? '' : '<span class="chip c-cobrar">!</span>') + '</span></button>';
+  }
+  function vReportes() {
+    var M = repModelo(); if (!M) return '<div class="card"><h3>Falta un paso en Google</h3><p style="color:var(--suave)">Pega el código nuevo en Apps Script y publica una versión nueva (Implementar → Administrar implementaciones → ✏ → Nueva versión → Implementar). Luego recarga el panel.</p></div>';
+    var Rp = S.snap.reportes, h = '<div class="note"><b>Informe de administración, no auditado.</b> Se arma con lo que registras en el panel. Para el banco, normalmente lo firma tu contador: pásale este informe y el acceso de solo lectura.</div>';
+    M.forEach(function (s) { h += '<div class="card"><h3>' + esc(s.t) + '</h3><p style="color:var(--suave);font-size:14px;margin-bottom:10px">' + esc(s.n) + '</p>' + tablaRep(s) + '</div>'; });
+    var cam = [['proy_saldo_inicial', 'Saldo inicial de caja y banco (Q)'], ['proy_kg_mes', 'Kilos que vendes por mes'], ['proy_precio_kg', 'Precio promedio por kilo (Q)'], ['proy_costo_kg', 'Costo de ventas por kilo (Q)'], ['proy_fijos_mes', 'Gastos fijos por mes (Q)'], ['proy_crec_pct', 'Crecimiento de ventas por mes (%)']];
+    h += '<div class="card"><h3>Supuestos de la proyección</h3><p style="color:var(--suave);font-size:14px;margin-bottom:10px">Si dejas un campo vacío, el panel usa el promedio de tus últimos 3 meses (el número gris). Escribe tus metas para proyectar con ellas.</p>' +
+      cam.map(function (c) { return '<label class="fld"><span>' + c[1] + '</span><input id="py-' + c[0] + '" inputmode="decimal" value="' + (Rp.propios[c[0]] ? num(Rp.supuestos[c[0]]) : '') + '" placeholder="' + num(Rp.auto[c[0]]) + '"></label>' }).join('') + '<button class="btn sm" data-a="guardarproy">Guardar supuestos</button></div>';
+    h += '<div class="card"><h3>Para tu carpeta bancaria</h3><div class="btn-row" style="flex-direction:column;gap:8px"><button class="btn" data-a="repimprimir">Ver e imprimir o guardar en PDF</button><button class="btn sec" data-a="repcsv">Descargar en Excel (CSV)</button></div></div>';
+    return h;
+  }
+  function guardarProy(btn) {
+    var fin = ocupado(btn), v = {};
+    ['proy_saldo_inicial', 'proy_kg_mes', 'proy_precio_kg', 'proy_costo_kg', 'proy_fijos_mes', 'proy_crec_pct'].forEach(function (k) { v[k] = $('#py-' + k).value });
+    api('config.guardar', { valores: v }).then(function (res) { fin(); if (!res.ok) return toast(res.error); aplicar(res); render(); toast('Supuestos guardados', true) });
+  }
+  function repCSV() {
+    var M = repModelo(); if (!M) return;
+    function cel(x) { x = String(x == null ? '' : x); return /[",\n]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x }
+    var out = [[S.snap.config.nombre_negocio || 'GEA'], ['Informe de administración, no auditado. Cifras en quetzales. Generado el ' + hoy()], []];
+    M.forEach(function (s) { out.push([s.t]); out.push([''].concat(s.cols)); s.filas.forEach(function (f) { out.push([f.l].concat(f.v.map(function (v) { return Math.round(v * 100) / 100 }))) }); out.push([]) });
+    var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + out.map(function (r) { return r.map(cel).join(',') }).join('\r\n')], { type: 'text/csv;charset=utf-8' })); a.download = 'reportes-financieros-' + hoy() + '.csv'; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove() }, 500); toast('Archivo descargado', true);
+  }
+  function repImprimir() {
+    var M = repModelo(); if (!M) return;
+    var css = 'body{font:12px/1.4 Calibri,Arial,sans-serif;color:#1a1a1a;margin:24px}h1{font-size:20px;margin:0}h2{font-size:14px;margin:22px 0 4px}p{margin:2px 0 8px;color:#555}table{border-collapse:collapse;width:100%;font-size:10.5px}th,td{padding:4px 6px;text-align:right;border-bottom:1px solid #ddd;white-space:nowrap}th:first-child,td:first-child{text-align:left}.b td{font-weight:700}.neg{color:#b00020}.firmas{display:flex;gap:40px;margin-top:50px}.firmas div{flex:1;border-top:1px solid #333;padding-top:4px;text-align:center}.nota{margin-top:18px;font-size:11px;color:#555}button{padding:10px 16px;font-size:14px;margin-bottom:12px}@media print{button{display:none}body{margin:10mm}}@page{size:landscape}';
+    var h = '<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reportes financieros</title><style>' + css + '</style></head><body><button onclick="window.print()">Imprimir o guardar como PDF</button><h1>' + esc(S.snap.config.nombre_negocio || 'GEA') + '</h1><p>Estado de resultados y flujo de caja · al ' + esc(hoy()) + ' · cifras en quetzales (Q)</p>';
+    M.forEach(function (s) {
+      h += '<h2>' + esc(s.t) + '</h2><p>' + esc(s.n) + '</p><table><thead><tr><th></th>' + s.cols.map(function (c) { return '<th>' + esc(c) + '</th>' }).join('') + '</tr></thead><tbody>' + s.filas.map(function (f) { return '<tr' + (f.b ? ' class="b"' : '') + '><td>' + esc(f.l) + '</td>' + f.v.map(function (v) { return '<td' + (v < 0 ? ' class="neg"' : '') + '>' + (/^Kilos/.test(f.l) ? Math.round(v).toLocaleString('en-US') : Q(v, 0)) + '</td>' }).join('') + '</tr>' }).join('') + '</tbody></table>';
+    });
+    h += '<p class="nota">Informe de administración preparado con los registros del sistema de la empresa. No es información auditada. Las proyecciones dependen de los supuestos indicados y no garantizan resultados.</p><div class="firmas"><div>Representante legal</div><div>Contador</div></div></body></html>';
+    var w = window.open(URL.createObjectURL(new Blob([h], { type: 'text/html;charset=utf-8' })), '_blank');
+    if (!w) toast('Tu navegador bloqueó la ventana. Permite ventanas emergentes para este sitio.');
+  }
+
   /* ---------- acceso ---------- */
   function dispositivoTxt() { try { var ua = navigator.userAgent || '', m = ua.match(/\(([^)]*)\)/), nav = /Brave/i.test(ua) ? 'Brave' : /Edg/i.test(ua) ? 'Edge' : /Firefox/i.test(ua) ? 'Firefox' : /Chrome/i.test(ua) ? 'Chrome' : /Safari/i.test(ua) ? 'Safari' : 'Navegador'; return nav + ' · ' + (m ? m[1] : ua).replace(/^Linux; /, '').replace(/; wv/, '') } catch (e) { return '' } }
   function entrar(e, pinForzado) {
@@ -800,6 +861,9 @@
       case 'anularfactura': var f3 = ocupado(el, 'Quitando…'); api('pedido.facturar', { id: id, anular: true }).then(function (res) { f3(); if (!res.ok) return setErr($('.sheet'), res.error); aplicar(res); closeSheet(); render(); toast('Factura quitada del registro', true) }); break;
       case 'csv': csvLibro(el.getAttribute('data-k')); break;
       case 'guardarpc': guardarPC(el); break;
+      case 'guardarproy': guardarProy(el); break;
+      case 'repcsv': repCSV(); break;
+      case 'repimprimir': repImprimir(); break;
       case 'pregrapida': var kk = el.getAttribute('data-k'); chatAdd('u', PREG.filter(function (x) { return x[0] === kk })[0][1]); chatAdd('a', respuestaLocal(kk)); chatPintar(); break;
       case 'gasto': gastoSheet(); break;
       case 'guardargasto': guardarGasto(el); break;
