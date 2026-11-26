@@ -404,7 +404,7 @@
         (u && !u.ok ? '<div class="note" style="background:#FDE8E4;color:#7A2316">' + esc(u.error || 'No se pudo completar.') + '</div>' : '') +
         (R.automatico === false ? '<div class="note">Para activarlo: en Apps Script elige la función <b>instalarRespaldo</b>, pulsa Ejecutar y acepta los permisos. Se hace una sola vez.</div>' : '');
     }
-    return '<div class="card"><h3>Respaldo de tus datos</h3><p style="color:var(--suave);font-size:15px;margin-bottom:8px">Guarda una copia completa de tu hoja de Google en la carpeta “Respaldos Panel GEA” de tu Drive y conserva las últimas ' + (R.max || 12) + '. Sirve si alguien borra o daña datos por error. La copia incluye las claves del equipo: no la compartas.</p>' + estado +
+    return '<div class="card"><h3>Respaldo de tus datos</h3><p style="color:var(--suave);font-size:15px;margin-bottom:8px">Guarda una copia completa de tu hoja de Google en la carpeta “Respaldos PANEL GEA” de tu Drive y conserva las últimas ' + (R.max || 12) + '. Sirve si alguien borra o daña datos por error. La copia incluye las claves del equipo: no la compartas.</p>' + estado +
       '<div class="btn-row" style="margin-top:12px"><button class="btn sm" data-a="respaldar"' + (R.cargando ? ' disabled' : '') + '>Respaldar ahora</button></div></div>';
   }
   function respaldarAhora(btn) {
