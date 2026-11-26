@@ -221,11 +221,7 @@
   var inicio = !!document.getElementById('lema');
   if (splash) {
     iniciar(0.15, 1.9, 3.4);
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'sp-snd';
-    function pintaSp() { var s = on(); b.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z"/>' + (s ? '<path d="M15.5 9a4.2 4.2 0 010 6M18.2 6.5a7.8 7.8 0 010 11"/>' : '<path d="M16 9.5l5 5M21 9.5l-5 5"/>') + '</svg>'; b.setAttribute('aria-label', s ? L('Silenciar la bienvenida', 'Mute the welcome sound') : L('Activar la bienvenida', 'Turn on the welcome sound')) }
-    pintaSp();
-    b.addEventListener('click', function () { var s = on(); put(KEY, s ? '0' : '1'); if (s) parar(); else { parado = false; try { if (!ctx) ctx = new AC(); ctx.resume && ctx.resume().then(function () { tocar(1.2) }) } catch (e) {} } pintaSp(); pintaPie() });
-    splash.appendChild(b);
+    /* Sin botón de bocina en la pantalla de apertura: el sonido se apaga desde el pie de página o Ajustes. */
   } else if (window.geaCambio) {
     /* Cambio de ambiente: logo sonoro de Consultora al entrar a ella; el de ECOCOCO en cualquier otro caso */
     QUE = window.geaCambio[1] === 'consultora' ? 'C' : 'M';
