@@ -26,6 +26,7 @@
   function waNum(t) { t = String(t || '').replace(/\D/g, ''); return t.length === 8 ? '502' + t : t }
   function $(sel, el) { return (el || document).querySelector(sel) }
   function isAdmin() { return S.user && S.user.rol === 'admin' }
+  function isConta() { return S.user && S.user.rol === 'contador' }
 
   var P = {
     home: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/>',
@@ -63,7 +64,8 @@
       var pin = String(req.pin || '').trim();
       if (pin === '123456') return { ok: true, data: { token: 'demo', user: { nombre: 'Manolo', rol: 'admin' } } };
       if (pin === '111111') return { ok: true, data: { token: 'demo', user: { nombre: 'Wilson', rol: 'vendedor' } } };
-      return { ok: false, error: 'Clave incorrecta. En la demostración usa 123456 (administrador) o 111111 (vendedor).', code: 'clave' };
+      if (pin === '222222') return { ok: true, data: { token: 'demo', user: { nombre: 'Contador', rol: 'contador' } } };
+      return { ok: false, error: 'Clave incorrecta. En la demostración usa 123456 (administrador), 111111 (vendedor) o 222222 (contador).', code: 'clave' };
     }
     if (req.action === 'ia.preguntar') return { ok: true, data: { respuesta: 'Esto es una demostración: aquí tu asistente de IA analizaría tus números reales y te respondería con recomendaciones. En tu panel conectado a Google, esta pregunta (“' + req.pregunta + '”) se contestaría con tus datos de ventas, costos e inventario.' } };
     var res = C.handle(demoDb(), req, { user: S.user, today: hoy(), now: hoy() + ' ' + new Date().toTimeString().slice(0, 5), sheetUrl: 'https://docs.google.com/spreadsheets' });
@@ -181,7 +183,12 @@
   var TITULOS = { asistente: 'Asistente', costos: 'Costos y planes', inicio: 'Inicio', pedidos: 'Pedidos', clientes: 'Clientes', inventario: 'Inventario', ajustes: 'Ajustes', impuestos: 'Impuestos SAT' };
   function tabBtn(r, nombre, icono) { return '<button class="tab" data-a="ir" data-r="' + r + '"' + (S.ruta === r ? ' aria-current="page"' : '') + '>' + ic(icono) + '<span>' + nombre + '</span></button>' }
   function railBtn(r, nombre, icono) { return '<button class="nav" data-a="ir" data-r="' + r + '"' + (S.ruta === r ? ' aria-current="page"' : '') + '>' + ic(icono) + '<span>' + nombre + '</span></button>' }
+  function shellConta(inner) {
+    var u = S.user, demo = S.mode === 'demo' ? '<div class="demo"><span>Demostración con datos ficticios. No se guarda nada en tu hoja de Google.</span><button data-a="demoreset">Reiniciar demo</button></div>' : '';
+    return '<div class="shell" style="display:block"><div><header class="top"><div class="tile"><img src="../img/logo-gea-carbon.svg" alt=""></div><h1>Impuestos SAT<small>' + esc(fecha(hoy())) + '</small></h1><button class="avatar" data-a="salir" aria-label="Cerrar sesión de ' + esc(u.nombre) + '">' + esc(inicial(u.nombre)) + '</button></header>' + demo + '<main class="view" id="vista" style="max-width:760px;margin:0 auto">' + inner + '</main></div></div>';
+  }
   function shell(inner) {
+    if (isConta()) return shellConta(inner);
     var adm = isAdmin(), u = S.user;
     var demo = S.mode === 'demo' ? '<div class="demo"><span>Demostración con datos ficticios. No se guarda nada en tu hoja de Google.</span><button data-a="demoreset">Reiniciar demo</button></div>' : '';
     return '<div class="shell"><aside class="rail"><div class="brand"><div class="tile"><img src="../img/logo-gea-carbon.svg" alt=""></div><div><b>Panel GEA</b><small>GEA Carbón | ECOCOCO</small></div></div>' +
@@ -196,6 +203,7 @@
     var app = $('#app');
     if (!S.user) { app.innerHTML = loginHTML(aviso); var f = $('#f-login'); if (f) f.addEventListener('submit', entrar); return }
     if (!S.snap) { app.innerHTML = shell(S.errCarga ? '<div class="err">' + esc(S.errCarga) + '</div><button class="btn" data-a="recargar">Reintentar</button>' : '<div class="skel" style="height:260px"></div><div class="skel"></div><div class="skel"></div>'); return }
+    if (isConta()) S.ruta = 'impuestos';
     var v = { inicio: vInicio, pedidos: vPedidos, clientes: vClientes, inventario: vInventario, costos: vCostos, asistente: vAsistente, ajustes: vAjustes, impuestos: vImpuestos }[S.ruta] || vInicio;
     var keep = window.scrollY;
     app.innerHTML = shell(v());
@@ -367,12 +375,13 @@
   function cardEquipo() {
     var us = S.snap.usuarios || [];
     return '<div class="card"><h3>Equipo y claves</h3><p style="color:var(--suave);font-size:15px;margin-bottom:12px">Quién puede entrar al panel. Cada clave son 6 números y es distinta para cada persona.</p>' +
-      us.map(function (u) { return '<button class="row" data-a="usuario" data-n="' + esc(u.nombre) + '"><span class="ini">' + esc(inicial(u.nombre)) + '</span><span><div class="t">' + esc(u.nombre) + '</div><div class="s">' + (u.rol === 'admin' ? 'Administrador' : 'Vendedor') + '</div></span><span class="r"><span class="chip ' + (u.activo === 'No' ? 'c-can' : 'c-ok') + '">' + (u.activo === 'No' ? 'Desactivado' : 'Activo') + '</span></span></button>' }).join('') +
-      '<div style="margin-top:12px"><button class="btn sm" data-a="usuarionuevo">' + ic('plus') + ' Agregar vendedor</button></div></div>';
+      us.map(function (u) { return '<button class="row" data-a="usuario" data-n="' + esc(u.nombre) + '"><span class="ini">' + esc(inicial(u.nombre)) + '</span><span><div class="t">' + esc(u.nombre) + '</div><div class="s">' + (u.rol === 'admin' ? 'Administrador' : u.rol === 'contador' ? 'Contador · solo lectura' : 'Vendedor') + '</div></span><span class="r"><span class="chip ' + (u.activo === 'No' ? 'c-can' : 'c-ok') + '">' + (u.activo === 'No' ? 'Desactivado' : 'Activo') + '</span></span></button>' }).join('') +
+      '<div class="btn-row" style="margin-top:12px"><button class="btn sm" data-a="usuarionuevo">' + ic('plus') + ' Agregar vendedor</button><button class="btn sm sec" data-a="contadornuevo">' + ic('plus') + ' Agregar contador</button></div></div>';
   }
-  function usuarioSheet(nombre) {
+  function usuarioSheet(nombre, rolNuevo) {
     var u = nombre ? (S.snap.usuarios || []).filter(function (x) { return x.nombre === nombre })[0] : null, nuevo = !u;
-    openSheet(shHead(nuevo ? 'Agregar vendedor' : u.nombre, nuevo ? 'Podrá registrar pedidos y clientes con su clave' : (u.rol === 'admin' ? 'Administrador' : 'Vendedor')) + '<div class="sh-b">' +
+    var conta = nuevo ? rolNuevo === 'contador' : u.rol === 'contador';
+    openSheet(shHead(nuevo ? (conta ? 'Agregar contador' : 'Agregar vendedor') : u.nombre, nuevo ? (conta ? 'Solo verá y descargará los libros de impuestos' : 'Podrá registrar pedidos y clientes con su clave') : (u.rol === 'admin' ? 'Administrador' : conta ? 'Contador · solo lectura' : 'Vendedor')) + '<div class="sh-b"><input type="hidden" id="un-r" value="' + (conta ? 'contador' : 'vendedor') + '">' +
       (nuevo ? fld('Nombre', 'un-n', '', { ph: 'Ej. Luis Pérez', max: 30 }) : '<input type="hidden" id="un-n" value="' + esc(u.nombre) + '">') +
       fld(nuevo ? 'Clave de 6 números' : 'Clave nueva (déjala vacía para no cambiarla)', 'un-p', '', { mode: 'numeric', max: 6, ph: '000000' }) +
       '<div class="btn-row" style="margin:-4px 0 14px"><button type="button" class="btn sec sm" data-a="genpin">Generar una clave al azar</button></div>' +
@@ -380,7 +389,7 @@
       '<p style="color:var(--suave);font-size:14px">Entrégale la clave en persona o por mensaje privado. Nadie más debe verla.</p></div><div class="sh-f"><button class="btn" data-a="guardarusuario">Guardar</button></div>');
   }
   function guardarUsuario(btn) {
-    var sh = $('.sheet'), fin = ocupado(btn), est = segVal(sh, 'un-a'), usr = { nombre: val(sh, 'un-n'), pin: val(sh, 'un-p') };
+    var sh = $('.sheet'), fin = ocupado(btn), est = segVal(sh, 'un-a'), usr = { nombre: val(sh, 'un-n'), pin: val(sh, 'un-p'), rol: val(sh, 'un-r') };
     if (est) usr.activo = est === 'Desactivado' ? 'No' : 'Sí';
     api('usuario.guardar', { usuario: usr }).then(function (res) { fin(); if (!res.ok) return setErr(sh, res.error); aplicar(res); closeSheet(); render(); toast('Equipo actualizado', true) });
   }
@@ -682,7 +691,7 @@
     return '<button class="row" data-a="ir" data-r="impuestos" style="margin-bottom:6px"><span class="bar ' + (F.nivel === 'ok' ? (sf ? 'pend' : 'ok') : 'cobrar') + '"></span><span><div class="t">Impuestos SAT</div><div class="s">' + esc(msg) + (sf ? ' · ' + sf + ' sin factura' : '') + '</div></span><span class="r">' + (F.nivel !== 'ok' ? '<span class="chip c-cobrar">!</span>' : '') + '</span></button>';
   }
   function vImpuestos() {
-    var F = S.snap.fiscal; if (!F) return '<div class="card"><h3>Falta un paso en Google</h3><p style="color:var(--suave)">El panel ya trae la sección de impuestos, pero tu código de Apps Script todavía es el anterior. Pega el código nuevo y publica una versión nueva: Implementar → Administrar implementaciones → ✏ → Nueva versión → Implementar. Luego recarga el panel.</p></div>';
+    var conta = isConta(), F = S.snap.fiscal; if (!F) return '<div class="card"><h3>Falta un paso en Google</h3><p style="color:var(--suave)">El panel ya trae la sección de impuestos, pero tu código de Apps Script todavía es el anterior. Pega el código nuevo y publica una versión nueva: Implementar → Administrar implementaciones → ✏ → Nueva versión → Implementar. Luego recarga el panel.</p></div>';
     var mesAct = S.snap.hoy.slice(0, 7), M = F.meses.filter(function (m) { return m.mes === mesAct })[0] || { ventas: 0, impuesto: 0, docs: 0 };
     var prev = F.meses.filter(function (m) { return m.mes < mesAct && m.ventas > 0 }).slice(-1)[0];
     var h = '<div class="note"><b>Régimen: Pequeño contribuyente.</b> Esta pantalla te ordena la información para la SAT. No sustituye a tu contador: confirma con la SAT o con él el tope, el porcentaje y las fechas.</div>';
@@ -691,10 +700,11 @@
       '<div class="kv"><span>Facturado en el año</span><b>' + Q(F.facturado) + ' · ' + F.pct + ' %</b></div><div class="kv"><span>Tope configurado</span><b>' + Q(F.limite) + '</b></div><div class="kv"><span>Te falta para llegar</span><b>' + Q(F.restante) + '</b></div><div class="kv"><span>Ritmo actual (proyección del año)</span><b style="color:' + (F.proyeccion > F.limite ? 'var(--alerta)' : 'inherit') + '">' + Q(F.proyeccion, 0) + '</b></div>' + (alerta ? '<div class="note" style="margin:12px 0 0;background:#FDE8E4;color:#7A2316">' + esc(alerta) + '</div>' : '') + '</div>';
     h += '<div class="card"><h3>Impuesto estimado (' + F.tasa + ' % de lo facturado)</h3><div class="kv"><span>' + esc(mesTxt(mesAct)) + ' (' + M.docs + (M.docs === 1 ? ' factura' : ' facturas') + ')</span><b>' + Q(M.impuesto) + '</b></div>' + (prev ? '<div class="kv"><span>Último mes cerrado: ' + esc(mesTxt(prev.mes)) + '</span><b>' + Q(prev.impuesto) + '</b></div>' : '') + '<div class="kv"><span>Acumulado del año</span><b>' + Q(F.impuestoAño) + '</b></div><small style="color:var(--suave)">Declara y paga en la SAT el mes siguiente. Confirma con tu contador la fecha límite y el formulario.</small></div>';
     var sf = F.sinFacturar.map(function (id) { return pedidoById(id) }).filter(Boolean);
-    h += '<div class="sec-h"><h2>Entregado sin factura</h2><span class="num">' + Q(F.sinFacturarQ) + '</span></div>' + lista(sf.slice(-8).reverse().map(function (p) { return pedRow(p, true) }), 'Todo está facturado', 'Cada pedido entregado tiene su factura registrada.');
+    if (conta) h += '<div class="card"><div class="kv"><span>Entregado sin factura registrada</span><b>' + F.sinFacturar.length + (F.sinFacturar.length === 1 ? ' pedido' : ' pedidos') + ' · ' + Q(F.sinFacturarQ) + '</b></div></div>'; else h += '<div class="sec-h"><h2>Entregado sin factura</h2><span class="num">' + Q(F.sinFacturarQ) + '</span></div>' + lista(sf.slice(-8).reverse().map(function (p) { return pedRow(p, true) }), 'Todo está facturado', 'Cada pedido entregado tiene su factura registrada.');
     h += '<div class="sec-h"><h2>Mes por mes</h2></div><div class="card"><div style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:6px 8px;font-size:14px"><b>Mes</b><b>Facturado</b><b>Impuesto</b><b>Gastos</b>' +
       F.meses.filter(function (m) { return m.mes <= mesAct }).map(function (m) { return '<span>' + esc(mesTxt(m.mes)) + '</span><span class="num">' + Q(m.ventas, 0) + '</span><span class="num">' + Q(m.impuesto, 0) + '</span><span class="num">' + Q(m.compras, 0) + (m.sinDoc ? ' <i title="gastos sin comprobante" style="color:var(--alerta)">·' + m.sinDoc + '</i>' : '') + '</span>' }).join('') + '</div><small style="color:var(--suave);display:block;margin-top:10px">El punto rojo cuenta gastos sin factura o recibo anotado.</small></div>';
     h += '<div class="card"><h3>Libros para tu contador</h3><p style="color:var(--suave);font-size:15px;margin-bottom:12px">Descarga el año en un archivo que abre Excel. Incluye fecha, serie y número de factura, NIT y monto.</p><div class="btn-row"><button class="btn sec" data-a="csv" data-k="ventas">Libro de ventas ' + F.año + '</button><button class="btn sec" data-a="csv" data-k="compras">Libro de compras ' + F.año + '</button></div></div>';
+    if (conta) return h + '<div class="btn-row"><button class="btn sec" data-a="salir">' + ic('out') + ' Cerrar sesión</button></div>';
     h += '<div class="card"><h3>Cifras que usa el panel</h3>' + '<label class="fld"><span>Tope anual de ventas facturadas (Q)</span><input id="pc-lim" inputmode="decimal" value="' + F.limite + '"><small>Referencia: 125 salarios mínimos mensuales no agrícolas. Cámbialo cuando la SAT publique el nuevo valor.</small></label><label class="fld"><span>Porcentaje del impuesto (%)</span><input id="pc-tasa" inputmode="decimal" value="' + F.tasa + '"></label><button class="btn sm" data-a="guardarpc">Guardar cifras</button></div>';
     return h;
   }
@@ -772,6 +782,7 @@
       case 'guardarvol': guardarVol(el); break;
       case 'usuario': usuarioSheet(el.getAttribute('data-n')); break;
       case 'usuarionuevo': usuarioSheet(''); break;
+      case 'contadornuevo': usuarioSheet('', 'contador'); break;
       case 'guardarusuario': guardarUsuario(el); break;
       case 'genpin': var pe = $('#un-p'); if (pe) pe.value = String(100000 + Math.floor(Math.random() * 900000)); break;
       case 'guardarcfg': guardarCfg(el); break;

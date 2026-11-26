@@ -160,7 +160,8 @@
 
   /* ---------- lo que ve cada usuario ---------- */
   function snapshot(db, ctx) {
-    var admin = ctx.user.rol === 'admin', st = stockMap(db);
+    var admin = ctx.user.rol === 'admin', cont = ctx.user.rol === 'contador', st = stockMap(db);
+    if (cont) { var cg = cfgObj(db); return copy({ user: ctx.user, hoy: ctx.today, config: { nombre_negocio: cg.nombre_negocio, limite_pc: cg.limite_pc, tasa_pc: cg.tasa_pc }, productos: [], clientes: [], pedidos: [], cobros: [], inventario: [], movimientos: [], lotes: [], gastos: [], usuarios: [], sheetUrl: '', fiscal: fiscal(db, ctx.today) }) }
     var peds = db.Pedidos.filter(function (p) { return admin || p.vendedor === ctx.user.nombre });
     var inv = db.Inventario.filter(function (a) { return a.activo !== 'No' && (admin || a.tipo === 'producto') })
       .map(function (a) { var c = copy(a); c.stock = st[a.id] || 0; return c });
@@ -394,7 +395,7 @@
     if (pin && db.Usuarios.some(function (x) { return String(x.pin) === pin && (!ex || x.nombre !== ex.nombre) })) throw PE('Esa clave ya la usa otra persona. Elige otra.');
     if (!ex) {
       if (!pin) throw PE('Pon una clave de 6 números para la persona nueva.');
-      var nuevo = add(db, ops, 'Usuarios', { nombre: nombre, rol: u.rol === 'admin' ? 'admin' : 'vendedor', pin: pin, activo: 'Sí' });
+      var nuevo = add(db, ops, 'Usuarios', { nombre: nombre, rol: u.rol === 'admin' ? 'admin' : (u.rol === 'contador' ? 'contador' : 'vendedor'), pin: pin, activo: 'Sí' });
       return { usuario: { nombre: nuevo.nombre, rol: nuevo.rol, activo: nuevo.activo } };
     }
     if (activo === 'No' && ex.nombre === ctx.user.nombre) throw PE('No puedes desactivarte a ti mismo.');
@@ -453,6 +454,7 @@
     var fn = ACCIONES[req && req.action];
     if (!fn) return { ok: false, error: 'Acción no válida.', code: 'accion' };
     var ops = [];
+    if (ctx.user && ctx.user.rol === 'contador' && req.action !== 'bootstrap') return { ok: false, error: 'Tu acceso es solo de lectura.', code: 'permiso', ops: [] };
     ctx.geo = geoValida(req && (req.geo || (req.web && req.web.geo)));
     ctx._lug = undefined;
     try {
@@ -560,7 +562,7 @@
     function rnd() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296 }
     function pick(a) { return a[Math.floor(rnd() * a.length)] }
     var db = defaultDb(), admin = { nombre: 'Manolo', rol: 'admin' }, vend = { nombre: 'Wilson', rol: 'vendedor' };
-    db.Usuarios = [{ nombre: 'Manolo', rol: 'admin', pin: '123456', activo: 'Sí' }, { nombre: 'Wilson', rol: 'vendedor', pin: '111111', activo: 'Sí' }];
+    db.Usuarios = [{ nombre: 'Manolo', rol: 'admin', pin: '123456', activo: 'Sí' }, { nombre: 'Wilson', rol: 'vendedor', pin: '111111', activo: 'Sí' }, { nombre: 'Contador', rol: 'contador', pin: '222222', activo: 'Sí' }];
     var clientes = [
       ['Tienda La Bendición', 'Tienda', 'Rosa Méndez', '5512-3401', 'Zona 1, Retalhuleu'], ['Abarrotes El Ahorro', 'Tienda', 'Carlos Pérez', '5598-2210', 'Zona 2, Retalhuleu'],
       ['Comercial San Judas', 'Tienda', 'Marta López', '4455-9087', 'Champerico'], ['Tienda Doña Lupe', 'Tienda', 'Guadalupe Ixcol', '5021-7743', 'Zona 4, Retalhuleu'],
