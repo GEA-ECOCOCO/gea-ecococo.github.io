@@ -169,7 +169,7 @@
       '<div class="who"><div class="avatar">' + esc(inicial(u.nombre)) + '</div><div>' + esc(u.nombre) + '<br><small>' + (adm ? 'Administrador' : 'Vendedor') + '</small></div></div></aside>' +
       '<div><header class="top"><div class="tile"><img src="../img/logo-gea-carbon.svg" alt=""></div><h1>' + TITULOS[S.ruta] + '<small>' + esc(fecha(hoy())) + '</small></h1><button class="avatar" data-a="ir" data-r="ajustes" aria-label="Ajustes y cuenta de ' + esc(u.nombre) + '">' + esc(inicial(u.nombre)) + '</button></header>' + demo +
       '<main class="view" id="vista">' + inner + '</main></div>' +
-      '<nav class="tabs' + (adm ? ' seven' : '') + '" aria-label="Secciones">' + (adm ? tabBtn('inicio', 'Inicio', 'home') + tabBtn('pedidos', 'Pedidos', 'ped') + tabBtn('clientes', 'Clientes', 'users') + '<button class="fab" data-a="nuevoped" aria-label="Nuevo pedido">' + ic('plus') + '</button>' + tabBtn('inventario', 'Inventario', 'box') + tabBtn('costos', 'Costos', 'coin') + tabBtn('asistente', 'Asistente', 'spark') : tabBtn('inicio', 'Inicio', 'home') + tabBtn('pedidos', 'Pedidos', 'ped') + '<button class="fab" data-a="nuevoped" aria-label="Nuevo pedido">' + ic('plus') + '</button>' + tabBtn('clientes', 'Clientes', 'users') + tabBtn('ajustes', 'Ajustes', 'gear')) + '</nav></div>';
+      '<nav class="tabs' + (adm ? ' eight' : '') + '" aria-label="Secciones">' + (adm ? tabBtn('inicio', 'Inicio', 'home') + tabBtn('pedidos', 'Pedidos', 'ped') + tabBtn('clientes', 'Clientes', 'users') + '<button class="fab" data-a="nuevoped" aria-label="Nuevo pedido">' + ic('plus') + '</button>' + tabBtn('inventario', 'Inventario', 'box') + tabBtn('costos', 'Costos', 'coin') + tabBtn('asistente', 'Asistente', 'spark') + tabBtn('ajustes', 'Ajustes', 'gear') : tabBtn('inicio', 'Inicio', 'home') + tabBtn('pedidos', 'Pedidos', 'ped') + '<button class="fab" data-a="nuevoped" aria-label="Nuevo pedido">' + ic('plus') + '</button>' + tabBtn('clientes', 'Clientes', 'users') + tabBtn('ajustes', 'Ajustes', 'gear')) + '</nav></div>';
   }
   function render(aviso) {
     var app = $('#app');
@@ -321,12 +321,48 @@
         return '<div style="margin-bottom:12px"><b>' + esc(p.nombre) + '</b><div class="price-grid"><label class="fld"><span>Tienda</span><input inputmode="decimal" data-p="' + p.id + '" data-k="precio_tienda" value="' + p.precio_tienda + '"></label><label class="fld"><span>Mayorista</span><input inputmode="decimal" data-p="' + p.id + '" data-k="precio_mayorista" value="' + p.precio_mayorista + '"></label><label class="fld"><span>Consumidor</span><input inputmode="decimal" data-p="' + p.id + '" data-k="precio_publico" value="' + p.precio_publico + '"></label></div></div>';
       }).join('') + '<button class="btn sm" data-a="guardarprecios">Guardar precios</button></div>' +
         '<div class="card"><h3>Reglas del negocio</h3><label class="fld"><span>Comisión del vendedor por kg (Q)</span><input id="cfg-com" inputmode="decimal" value="' + num(cfg.comision_por_kg) + '"></label><label class="fld"><span>WhatsApp que recibe los pedidos</span><input id="cfg-wa" inputmode="tel" value="' + esc(cfg.whatsapp_admin) + '"><small>Con código de país, por ejemplo 50242794894.</small></label><label class="fld"><span>Pedido mínimo (kg)</span><input id="cfg-min" inputmode="decimal" value="' + num(cfg.pedido_minimo_kg) + '"></label><button class="btn sm" data-a="guardarcfg">Guardar reglas</button></div>' +
+        cardVolumen() + cardEquipo() +
         '<div class="card"><h3>Tus datos</h3><p style="color:var(--suave);font-size:15px;margin-bottom:12px">Todo se guarda en tu hoja de Google. Ahí puedes ver, filtrar o exportar lo que quieras. Las claves del equipo están en la pestaña Usuarios.</p>' + (sn.sheetUrl ? '<a class="btn sec" href="' + esc(sn.sheetUrl) + '" target="_blank" rel="noopener">' + ic('sheet') + ' Abrir la hoja de Google</a>' : '') + '</div>';
     }
     h += '<div class="btn-row"><button class="btn sec" data-a="salir">' + ic('out') + ' Cerrar sesión</button></div><p style="text-align:center;color:var(--suave);font-size:13px;margin-top:16px">Panel GEA · versión 1</p>';
     return h;
   }
 
+
+  /* --- control de precios por volumen y equipo (solo administrador) --- */
+  var VOLD = { bolsas_mayoreo: 10, precio_bolsa_mayoreo: 15, bolsas_volumen: 100, precio_bolsa_volumen: 14, bultos_volumen: 10, precio_bulto_volumen: 325 };
+  function cv(k) { var v = S.snap.config[k]; return v === undefined || v === '' || v === null || !num(v) ? VOLD[k] : num(v) }
+  function cardVolumen() {
+    return '<div class="card"><h3>Precios por volumen</h3><p style="color:var(--suave);font-size:15px;margin-bottom:12px">Se aplican solos al armar un pedido. Nunca suben el precio que ya tiene el cliente.</p>' +
+      '<div class="price-grid"><label class="fld"><span>Bolsa 1 kg · mayorista desde</span><input id="vl-bm" inputmode="numeric" value="' + cv('bolsas_mayoreo') + '"></label><label class="fld"><span>Precio por bolsa (Q)</span><input id="vl-pm" inputmode="decimal" value="' + cv('precio_bolsa_mayoreo') + '"></label></div>' +
+      '<div class="price-grid"><label class="fld"><span>Bolsa 1 kg · desde</span><input id="vl-bv" inputmode="numeric" value="' + cv('bolsas_volumen') + '"></label><label class="fld"><span>Precio por bolsa (Q)</span><input id="vl-pv" inputmode="decimal" value="' + cv('precio_bolsa_volumen') + '"></label></div>' +
+      '<div class="price-grid"><label class="fld"><span>Bulto 25 kg · desde</span><input id="vl-xb" inputmode="numeric" value="' + cv('bultos_volumen') + '"></label><label class="fld"><span>Precio por bulto (Q)</span><input id="vl-xp" inputmode="decimal" value="' + cv('precio_bulto_volumen') + '"></label></div>' +
+      '<button class="btn sm" data-a="guardarvol">Guardar precios por volumen</button></div>';
+  }
+  function guardarVol(btn) {
+    var fin = ocupado(btn);
+    api('config.guardar', { valores: { bolsas_mayoreo: $('#vl-bm').value, precio_bolsa_mayoreo: $('#vl-pm').value, bolsas_volumen: $('#vl-bv').value, precio_bolsa_volumen: $('#vl-pv').value, bultos_volumen: $('#vl-xb').value, precio_bulto_volumen: $('#vl-xp').value } }).then(function (res) { fin(); if (!res.ok) return toast(res.error); aplicar(res); render(); toast('Precios por volumen guardados', true) });
+  }
+  function cardEquipo() {
+    var us = S.snap.usuarios || [];
+    return '<div class="card"><h3>Equipo y claves</h3><p style="color:var(--suave);font-size:15px;margin-bottom:12px">Quién puede entrar al panel. Cada clave son 6 números y es distinta para cada persona.</p>' +
+      us.map(function (u) { return '<button class="row" data-a="usuario" data-n="' + esc(u.nombre) + '"><span class="ini">' + esc(inicial(u.nombre)) + '</span><span><div class="t">' + esc(u.nombre) + '</div><div class="s">' + (u.rol === 'admin' ? 'Administrador' : 'Vendedor') + '</div></span><span class="r"><span class="chip ' + (u.activo === 'No' ? 'c-can' : 'c-ok') + '">' + (u.activo === 'No' ? 'Desactivado' : 'Activo') + '</span></span></button>' }).join('') +
+      '<div style="margin-top:12px"><button class="btn sm" data-a="usuarionuevo">' + ic('plus') + ' Agregar vendedor</button></div></div>';
+  }
+  function usuarioSheet(nombre) {
+    var u = nombre ? (S.snap.usuarios || []).filter(function (x) { return x.nombre === nombre })[0] : null, nuevo = !u;
+    openSheet(shHead(nuevo ? 'Agregar vendedor' : u.nombre, nuevo ? 'Podrá registrar pedidos y clientes con su clave' : (u.rol === 'admin' ? 'Administrador' : 'Vendedor')) + '<div class="sh-b">' +
+      (nuevo ? fld('Nombre', 'un-n', '', { ph: 'Ej. Luis Pérez', max: 30 }) : '<input type="hidden" id="un-n" value="' + esc(u.nombre) + '">') +
+      fld(nuevo ? 'Clave de 6 números' : 'Clave nueva (déjala vacía para no cambiarla)', 'un-p', '', { mode: 'numeric', max: 6, ph: '000000' }) +
+      '<div class="btn-row" style="margin:-4px 0 14px"><button type="button" class="btn sec sm" data-a="genpin">Generar una clave al azar</button></div>' +
+      (nuevo ? '' : '<div class="fld"><span>Estado</span>' + segHTML('un-a', ['Activo', 'Desactivado'], u.activo === 'No' ? 'Desactivado' : 'Activo') + '<small>Desactivado: ya no puede entrar. Sus pedidos anteriores se conservan.</small></div>') +
+      '<p style="color:var(--suave);font-size:14px">Entrégale la clave en persona o por mensaje privado. Nadie más debe verla.</p></div><div class="sh-f"><button class="btn" data-a="guardarusuario">Guardar</button></div>');
+  }
+  function guardarUsuario(btn) {
+    var sh = $('.sheet'), fin = ocupado(btn), est = segVal(sh, 'un-a'), usr = { nombre: val(sh, 'un-n'), pin: val(sh, 'un-p') };
+    if (est) usr.activo = est === 'Desactivado' ? 'No' : 'Sí';
+    api('usuario.guardar', { usuario: usr }).then(function (res) { fin(); if (!res.ok) return setErr(sh, res.error); aplicar(res); closeSheet(); render(); toast('Equipo actualizado', true) });
+  }
 
   /* --- costos y contingencia (solo administrador) --- */
   function qk(x) { return x === null || x === undefined ? '—' : 'Q' + x.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
@@ -660,6 +696,11 @@
       case 'mover': moverSheet(); break;
       case 'guardarmov': guardarMov(el); break;
       case 'guardarprecios': guardarPrecios(el); break;
+      case 'guardarvol': guardarVol(el); break;
+      case 'usuario': usuarioSheet(el.getAttribute('data-n')); break;
+      case 'usuarionuevo': usuarioSheet(''); break;
+      case 'guardarusuario': guardarUsuario(el); break;
+      case 'genpin': var pe = $('#un-p'); if (pe) pe.value = String(100000 + Math.floor(Math.random() * 900000)); break;
       case 'guardarcfg': guardarCfg(el); break;
       case 'pregrapida': var kk = el.getAttribute('data-k'); chatAdd('u', PREG.filter(function (x) { return x[0] === kk })[0][1]); chatAdd('a', respuestaLocal(kk)); chatPintar(); break;
       case 'gasto': gastoSheet(); break;

@@ -114,6 +114,7 @@ function snapshot(db, ctx) {
     movimientos: admin ? db.Movimientos.slice(-200) : [],
     lotes: admin ? db.Lotes.slice(-60) : [],
     gastos: admin ? db.Gastos.slice(-500) : [],
+    usuarios: admin ? db.Usuarios.map(function (u) { return { nombre: u.nombre, rol: u.rol, activo: u.activo === 'No' ? 'No' : 'Sí' } }) : [],
     sheetUrl: admin ? (ctx.sheetUrl || '') : ''
   });
 }
@@ -306,7 +307,7 @@ accion('producto.guardar', true, function (db, req, ctx, ops) {
 
 accion('config.guardar', true, function (db, req, ctx, ops) {
   need(ctx, 'admin');
-  var permitidas = ['comision_por_kg', 'whatsapp_admin', 'pedido_minimo_kg', 'nombre_negocio'], vals = req.valores || {};
+  var permitidas = ['comision_por_kg', 'whatsapp_admin', 'pedido_minimo_kg', 'nombre_negocio', 'bolsas_mayoreo', 'precio_bolsa_mayoreo', 'bolsas_volumen', 'precio_bolsa_volumen', 'bultos_volumen', 'precio_bulto_volumen'], vals = req.valores || {};
   permitidas.forEach(function (k) {
     if (vals[k] === undefined) return;
     var v = k === 'whatsapp_admin' ? s(vals[k]).replace(/\D/g, '') : (k === 'nombre_negocio' ? s(vals[k]) : n(vals[k]));
@@ -315,6 +316,26 @@ accion('config.guardar', true, function (db, req, ctx, ops) {
     if (row) upd(db, ops, 'Config', row, { valor: v }, 'clave'); else add(db, ops, 'Config', { clave: k, valor: v });
   });
   return {};
+});
+
+accion('usuario.guardar', true, function (db, req, ctx, ops) {
+  need(ctx, 'admin');
+  var u = req.usuario || {}, nombre = s(u.nombre).slice(0, 30), pin = s(u.pin), activo = u.activo === 'No' ? 'No' : 'Sí';
+  var ex = nombre ? db.Usuarios.filter(function (x) { return x.nombre.toLowerCase() === nombre.toLowerCase() })[0] : null;
+  if (!nombre) throw PE('Escribe el nombre de la persona.');
+  if (pin && !/^\d{6}$/.test(pin)) throw PE('La clave debe tener exactamente 6 números.');
+  if (pin && db.Usuarios.some(function (x) { return String(x.pin) === pin && (!ex || x.nombre !== ex.nombre) })) throw PE('Esa clave ya la usa otra persona. Elige otra.');
+  if (!ex) {
+    if (!pin) throw PE('Pon una clave de 6 números para la persona nueva.');
+    var nuevo = add(db, ops, 'Usuarios', { nombre: nombre, rol: u.rol === 'admin' ? 'admin' : 'vendedor', pin: pin, activo: 'Sí' });
+    return { usuario: { nombre: nuevo.nombre, rol: nuevo.rol, activo: nuevo.activo } };
+  }
+  if (activo === 'No' && ex.nombre === ctx.user.nombre) throw PE('No puedes desactivarte a ti mismo.');
+  if (activo === 'No' && ex.rol === 'admin' && db.Usuarios.filter(function (x) { return x.rol === 'admin' && x.activo !== 'No' && x.nombre !== ex.nombre }).length === 0) throw PE('Debe quedar al menos un administrador activo.');
+  var patch = { activo: u.activo === undefined ? (ex.activo === 'No' ? 'No' : 'Sí') : activo };
+  if (pin) patch.pin = pin;
+  upd(db, ops, 'Usuarios', ex, patch, 'nombre');
+  return { usuario: { nombre: ex.nombre, rol: ex.rol, activo: ex.activo === 'No' ? 'No' : 'Sí' } };
 });
 
 accion('articulo.guardar', true, function (db, req, ctx, ops) {
@@ -357,8 +378,6 @@ function handle(db, req, ctx) {
 }
 
 var PanelCore = { SCHEMA: SCHEMA, TIPOS: TIPOS, METODOS: METODOS, handle: handle, defaultDb: defaultDb, cfgObj: cfgObj };
-
-
 /* =====================================================================
    PANEL GEA · conexión con Google Sheets (Apps Script)
    Instalación: ver GUIA-INSTALACION. Resumen: pega este archivo completo,
@@ -408,6 +427,7 @@ function instalar() {
   SpreadsheetApp.flush();
   Logger.log('Listo. Abre la pestaña "Usuarios": ahí están las claves de Manolo y del vendedor. Cámbialas por claves de 6 dígitos que solo tú conozcas. Después: Implementar > Nueva implementación > Aplicación web.');
 }
+
 function pinAzar_() { return String(100000 + Math.floor(Math.random() * 900000)) }
 function cerrarTodasLasSesiones() { PropertiesService.getScriptProperties().setProperty('SECRETO', Utilities.getUuid() + Utilities.getUuid()) }
 
@@ -489,7 +509,6 @@ function entrar_(req) {
   cache.remove('fallos');
   return { ok: true, data: { token: crearToken_(u), user: { nombre: u.nombre, rol: u.rol } } };
 }
-
 /* ---------- entrada web ---------- */
 function ahora_() {
   var d = new Date();
@@ -543,6 +562,7 @@ function iaPreguntar_(req, user) {
   var texto = (cuerpo.content || []).map(function (b) { return b.text || '' }).join('').trim();
   return { ok: true, data: { respuesta: texto || 'No obtuve respuesta. Inténtalo de nuevo.' } };
 }
+
 /* ---------- pedidos que llegan desde la página pública (sin clave) ---------- */
 function webPedido_(req) {
   var w = req.web || {};

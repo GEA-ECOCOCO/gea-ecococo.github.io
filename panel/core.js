@@ -115,6 +115,7 @@
       movimientos: admin ? db.Movimientos.slice(-200) : [],
       lotes: admin ? db.Lotes.slice(-60) : [],
       gastos: admin ? db.Gastos.slice(-500) : [],
+      usuarios: admin ? db.Usuarios.map(function (u) { return { nombre: u.nombre, rol: u.rol, activo: u.activo === 'No' ? 'No' : 'Sí' } }) : [],
       sheetUrl: admin ? (ctx.sheetUrl || '') : ''
     });
   }
@@ -309,7 +310,7 @@
 
   accion('config.guardar', true, function (db, req, ctx, ops) {
     need(ctx, 'admin');
-    var permitidas = ['comision_por_kg', 'whatsapp_admin', 'pedido_minimo_kg', 'nombre_negocio'], vals = req.valores || {};
+    var permitidas = ['comision_por_kg', 'whatsapp_admin', 'pedido_minimo_kg', 'nombre_negocio', 'bolsas_mayoreo', 'precio_bolsa_mayoreo', 'bolsas_volumen', 'precio_bolsa_volumen', 'bultos_volumen', 'precio_bulto_volumen'], vals = req.valores || {};
     permitidas.forEach(function (k) {
       if (vals[k] === undefined) return;
       var v = k === 'whatsapp_admin' ? s(vals[k]).replace(/\D/g, '') : (k === 'nombre_negocio' ? s(vals[k]) : n(vals[k]));
@@ -318,6 +319,26 @@
       if (row) upd(db, ops, 'Config', row, { valor: v }, 'clave'); else add(db, ops, 'Config', { clave: k, valor: v });
     });
     return {};
+  });
+
+  accion('usuario.guardar', true, function (db, req, ctx, ops) {
+    need(ctx, 'admin');
+    var u = req.usuario || {}, nombre = s(u.nombre).slice(0, 30), pin = s(u.pin), activo = u.activo === 'No' ? 'No' : 'Sí';
+    var ex = nombre ? db.Usuarios.filter(function (x) { return x.nombre.toLowerCase() === nombre.toLowerCase() })[0] : null;
+    if (!nombre) throw PE('Escribe el nombre de la persona.');
+    if (pin && !/^\d{6}$/.test(pin)) throw PE('La clave debe tener exactamente 6 números.');
+    if (pin && db.Usuarios.some(function (x) { return String(x.pin) === pin && (!ex || x.nombre !== ex.nombre) })) throw PE('Esa clave ya la usa otra persona. Elige otra.');
+    if (!ex) {
+      if (!pin) throw PE('Pon una clave de 6 números para la persona nueva.');
+      var nuevo = add(db, ops, 'Usuarios', { nombre: nombre, rol: u.rol === 'admin' ? 'admin' : 'vendedor', pin: pin, activo: 'Sí' });
+      return { usuario: { nombre: nuevo.nombre, rol: nuevo.rol, activo: nuevo.activo } };
+    }
+    if (activo === 'No' && ex.nombre === ctx.user.nombre) throw PE('No puedes desactivarte a ti mismo.');
+    if (activo === 'No' && ex.rol === 'admin' && db.Usuarios.filter(function (x) { return x.rol === 'admin' && x.activo !== 'No' && x.nombre !== ex.nombre }).length === 0) throw PE('Debe quedar al menos un administrador activo.');
+    var patch = { activo: u.activo === undefined ? (ex.activo === 'No' ? 'No' : 'Sí') : activo };
+    if (pin) patch.pin = pin;
+    upd(db, ops, 'Usuarios', ex, patch, 'nombre');
+    return { usuario: { nombre: ex.nombre, rol: ex.rol, activo: ex.activo === 'No' ? 'No' : 'Sí' } };
   });
 
   accion('articulo.guardar', true, function (db, req, ctx, ops) {
@@ -455,6 +476,7 @@
     function rnd() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296 }
     function pick(a) { return a[Math.floor(rnd() * a.length)] }
     var db = defaultDb(), admin = { nombre: 'Manolo', rol: 'admin' }, vend = { nombre: 'Wilson', rol: 'vendedor' };
+    db.Usuarios = [{ nombre: 'Manolo', rol: 'admin', pin: '123456', activo: 'Sí' }, { nombre: 'Wilson', rol: 'vendedor', pin: '111111', activo: 'Sí' }];
     var clientes = [
       ['Tienda La Bendición', 'Tienda', 'Rosa Méndez', '5512-3401', 'Zona 1, Retalhuleu'], ['Abarrotes El Ahorro', 'Tienda', 'Carlos Pérez', '5598-2210', 'Zona 2, Retalhuleu'],
       ['Comercial San Judas', 'Tienda', 'Marta López', '4455-9087', 'Champerico'], ['Tienda Doña Lupe', 'Tienda', 'Guadalupe Ixcol', '5021-7743', 'Zona 4, Retalhuleu'],

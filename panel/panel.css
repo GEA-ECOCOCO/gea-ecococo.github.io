@@ -272,3 +272,4 @@ input[type=range]{width:100%;accent-color:var(--brasa);height:32px}
 .ia-in{display:flex;gap:8px;margin-top:6px}.ia-in input{flex:1;min-height:50px;border:1.5px solid var(--ceniza);border-radius:14px;padding:0 14px;font-size:16px;background:var(--papel);color:var(--carbon)}.ia-in .btn{width:54px;padding:0;flex:none}
 
 .tabs.seven{grid-template-columns:1fr 1fr 1fr 64px 1fr 1fr 1fr;padding-left:2px;padding-right:2px}.tabs.seven .tab{font-size:10.5px;padding:7px 0}.tabs.seven .fab{width:54px;height:54px;margin-top:-22px}
+.tabs.eight{grid-template-columns:1fr 1fr 1fr 58px 1fr 1fr 1fr 1fr;padding-left:0;padding-right:0}.tabs.eight .tab{font-size:9.5px;padding:7px 0}.tabs.eight .tab svg{width:21px;height:21px}.tabs.eight .fab{width:50px;height:50px;margin-top:-20px}
