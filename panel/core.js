@@ -179,7 +179,7 @@
       usuarios: admin ? db.Usuarios.map(function (u) { return { nombre: u.nombre, rol: u.rol, activo: u.activo === 'No' ? 'No' : 'Sí' } }) : [],
       sheetUrl: admin ? (ctx.sheetUrl || '') : '',
       fiscal: admin ? fiscal(db, ctx.today) : null,
-      accesos: admin ? (db.Accesos || []).filter(function (a) { return a.rol === 'contador' }).slice(-30).reverse() : []
+      accesos: admin ? (db.Accesos || []).slice(-80).reverse() : []
     });
   }
 
@@ -463,6 +463,19 @@
     return { gasto: upd(db, ops, 'Gastos', g, { estado: 'Anulado' }) };
   });
 
+  /* Bitácora de actividad: quién hizo qué y cuándo. Solo se agrega; el panel no tiene ninguna acción para borrarla. Nunca guarda claves. */
+  var ETIQ = { 'cliente.guardar': 'Guardó cliente', 'pedido.crear': 'Creó pedido', 'pedido.entregar': 'Entregó pedido', 'cobro.registrar': 'Registró cobro', 'pedido.cancelar': 'Canceló pedido',
+    'inventario.mover': 'Movió inventario', 'produccion.registrar': 'Registró producción', 'producto.guardar': 'Cambió precios', 'config.guardar': 'Cambió reglas o cifras', 'usuario.guardar': 'Cambió equipo y claves',
+    'articulo.guardar': 'Cambió mínimo de inventario', 'gasto.registrar': 'Registró gasto', 'pedido.facturar': 'Factura FEL', 'gasto.anular': 'Anuló gasto' };
+  function bitacora(db, ops, ctx, req, data) {
+    var d = data || {}, det = '';
+    if (req.action === 'config.guardar') det = Object.keys(req.valores || {}).join(', ');
+    else if (req.action === 'usuario.guardar') det = (d.usuario && d.usuario.nombre || '') + (d.usuario && d.usuario.activo === 'No' ? ' (desactivado)' : '');
+    else if (req.action === 'pedido.facturar') det = (d.pedido && d.pedido.id || '') + (req.anular ? ' · quitó factura' : '');
+    else det = (d.pedido && d.pedido.id) || (d.cliente && d.cliente.nombre) || (d.gasto && d.gasto.id) || (d.cobro && d.cobro.pedido_id) || (d.lote && d.lote.id) || (d.producto && d.producto.id) || '';
+    if (!db.Accesos) db.Accesos = [];
+    add(db, ops, 'Accesos', { fecha: ctx.today, hora: sello(ctx).hora, usuario: ctx.user.nombre, rol: ctx.user.rol, evento: ETIQ[req.action] || req.action, detalle: s(det).slice(0, 80) });
+  }
   function handle(db, req, ctx) {
     var fn = ACCIONES[req && req.action];
     if (!fn) return { ok: false, error: 'Acción no válida.', code: 'accion' };
@@ -472,6 +485,7 @@
     ctx._lug = undefined;
     try {
       var data = fn(db, req, ctx, ops);
+      if (MUTA[req.action] && ctx.user && ctx.user.rol !== 'web' && req.action !== 'acceso.registrar') bitacora(db, ops, ctx, req, data);
       return { ok: true, data: data, ops: ops, snapshot: (MUTA[req.action] || req.action === 'bootstrap') ? snapshot(db, ctx) : undefined };
     } catch (e) {
       if (e && e.pe) return { ok: false, error: e.message, code: e.code, ops: [] };
