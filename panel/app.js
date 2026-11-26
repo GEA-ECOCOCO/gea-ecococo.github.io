@@ -397,7 +397,7 @@
   }
   function contextoIA() {
     var sn = S.snap, R = C.resumen(sn), L = ['Fecha de hoy: ' + sn.hoy, 'Ventas hoy: ' + Q(R.hoy.q) + ' (' + R.hoy.kg + ' kg). Últimos 7 días: ' + Q(R.semana.q) + '. Mes: ' + Q(R.mes.q) + ' (' + R.mes.kg + ' kg). Cobrado hoy: ' + Q(R.cobradoHoy) + ', en el mes: ' + Q(R.cobradoMes) + '.', 'Por cobrar: ' + Q(R.porCobrar) + (R.porCobrarLista.length ? ' → ' + R.porCobrarLista.slice(0, 10).map(function (p) { return p.cliente + ' ' + Q(p.saldo) + ' (entregado ' + p.fecha_entrega + ')' }).join('; ') : ''),
-      'Por entregar: ' + R.porEntregar.length + ' pedidos, ' + R.comprometidoKg + ' kg' + (R.porEntregar.length ? ' → ' + R.porEntregar.slice(0, 8).map(function (p) { return p.cliente + ' ' + p.kg + ' kg para ' + p.fecha_entrega }).join('; ') : ''),
+      'Por entregar: ' + R.porEntregar.length + ' pedidos, ' + R.comprometidoKg + ' kg' + (R.porEntregar.length ? ' → ' + R.porEntregar.slice(0, 8).map(function (p) { return p.cliente + ' ' + p.kg + ' kg, total ' + Q(p.total) + ', para ' + p.fecha_entrega }).join('; ') : ''),
       'Mejores clientes (30 días): ' + (R.top.map(function (c) { return c.cliente + ' ' + Q(c.q) }).join('; ') || 'sin datos'),
       'Inventario: ' + sn.inventario.map(function (a) { return a.nombre + ' ' + a.stock + ' ' + a.unidad + ' (mínimo ' + a.stock_min + ')' }).join('; ')];
     L.push(resumenTexto(C.costos(sn)).replace(/\n\n.*$/s, ''));
@@ -405,8 +405,9 @@
     if (gs.length) L.push('Últimos gastos: ' + gs.map(function (g) { return g.fecha + ' ' + g.categoria + ' ' + Q(g.monto) + (g.concepto ? ' (' + g.concepto + ')' : '') }).join('; '));
     return L.join('\n').slice(0, 7000);
   }
+  function fmt(t) { return esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>') }
   function burbujas() {
-    return S.chat.map(function (m) { return '<div class="cb ' + (m.r === 'u' ? 'u' : 'a') + '">' + esc(m.t).replace(/\n/g, '<br>') + '</div>' }).join('') + (S.pensando ? '<div class="cb a pens"><i></i><i></i><i></i></div>' : '');
+    return S.chat.map(function (m) { return '<div class="cb ' + (m.r === 'u' ? 'u' : 'a') + '">' + fmt(m.t) + '</div>' }).join('') + (S.pensando ? '<div class="cb a pens"><i></i><i></i><i></i></div>' : '');
   }
   function vAsistente() {
     if (!isAdmin()) return '<div class="vacio"><b>Esta sección es del administrador</b></div>';
