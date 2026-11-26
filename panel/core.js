@@ -14,7 +14,8 @@
     Movimientos: ['id', 'fecha', 'articulo_id', 'articulo', 'tipo', 'cantidad', 'motivo', 'referencia', 'registrado_por', 'hora', 'lugar'],
     Lotes: ['id', 'fecha', 'cascara_kg', 'aglutinante_kg', 'briquetas_kg', 'rendimiento', 'notas', 'registrado_por', 'hora', 'lugar'],
     Gastos: ['id', 'fecha', 'categoria', 'concepto', 'monto', 'tipo', 'proveedor', 'estado', 'registrado_por', 'hora', 'lugar', 'nit_proveedor', 'doc_numero'],
-    Usuarios: ['nombre', 'rol', 'pin', 'activo']
+    Usuarios: ['nombre', 'rol', 'pin', 'activo'],
+    Accesos: ['fecha', 'hora', 'usuario', 'rol', 'evento', 'detalle']
   };
   var TIPOS = ['Tienda', 'Mayorista', 'Consumidor'];
   var METODOS = ['Efectivo', 'Transferencia', 'Depósito'];
@@ -161,7 +162,7 @@
   /* ---------- lo que ve cada usuario ---------- */
   function snapshot(db, ctx) {
     var admin = ctx.user.rol === 'admin', cont = ctx.user.rol === 'contador', st = stockMap(db);
-    if (cont) { var cg = cfgObj(db); return copy({ user: ctx.user, hoy: ctx.today, config: { nombre_negocio: cg.nombre_negocio, limite_pc: cg.limite_pc, tasa_pc: cg.tasa_pc }, productos: [], clientes: [], pedidos: [], cobros: [], inventario: [], movimientos: [], lotes: [], gastos: [], usuarios: [], sheetUrl: '', fiscal: fiscal(db, ctx.today) }) }
+    if (cont) { var cg = cfgObj(db); return copy({ user: ctx.user, hoy: ctx.today, config: { nombre_negocio: cg.nombre_negocio, limite_pc: cg.limite_pc, tasa_pc: cg.tasa_pc }, productos: [], clientes: [], pedidos: [], cobros: [], inventario: [], movimientos: [], lotes: [], gastos: [], usuarios: [], sheetUrl: '', accesos: [], fiscal: fiscal(db, ctx.today) }) }
     var peds = db.Pedidos.filter(function (p) { return admin || p.vendedor === ctx.user.nombre });
     var inv = db.Inventario.filter(function (a) { return a.activo !== 'No' && (admin || a.tipo === 'producto') })
       .map(function (a) { var c = copy(a); c.stock = st[a.id] || 0; return c });
@@ -177,7 +178,8 @@
       gastos: admin ? db.Gastos.slice(-500) : [],
       usuarios: admin ? db.Usuarios.map(function (u) { return { nombre: u.nombre, rol: u.rol, activo: u.activo === 'No' ? 'No' : 'Sí' } }) : [],
       sheetUrl: admin ? (ctx.sheetUrl || '') : '',
-      fiscal: admin ? fiscal(db, ctx.today) : null
+      fiscal: admin ? fiscal(db, ctx.today) : null,
+      accesos: admin ? (db.Accesos || []).filter(function (a) { return a.rol === 'contador' }).slice(-30).reverse() : []
     });
   }
 
@@ -391,7 +393,9 @@
     var u = req.usuario || {}, nombre = s(u.nombre).slice(0, 30), pin = s(u.pin), activo = u.activo === 'No' ? 'No' : 'Sí';
     var ex = nombre ? db.Usuarios.filter(function (x) { return x.nombre.toLowerCase() === nombre.toLowerCase() })[0] : null;
     if (!nombre) throw PE('Escribe el nombre de la persona.');
-    if (pin && !/^\d{6}$/.test(pin)) throw PE('La clave debe tener exactamente 6 números.');
+    var rolDest = ex ? ex.rol : (u.rol === 'admin' ? 'admin' : (u.rol === 'contador' ? 'contador' : 'vendedor'));
+    if (pin && rolDest === 'contador' && !/^\d{10,12}$/.test(pin)) throw PE('La clave del contador debe tener de 10 a 12 números (es más larga porque entra una persona externa).');
+    if (pin && rolDest !== 'contador' && !/^\d{6}$/.test(pin)) throw PE('La clave debe tener exactamente 6 números.');
     if (pin && db.Usuarios.some(function (x) { return String(x.pin) === pin && (!ex || x.nombre !== ex.nombre) })) throw PE('Esa clave ya la usa otra persona. Elige otra.');
     if (!ex) {
       if (!pin) throw PE('Pon una clave de 6 números para la persona nueva.');
@@ -443,6 +447,15 @@
     return { pedido: upd(db, ops, 'Pedidos', ped, { fel_serie: ser, fel_numero: num_, fel_fecha: f, fel_estado: 'Emitida', actualizado: ctx.now }) };
   });
 
+  var EVENTOS_ACCESO = ['Descarga libro de ventas', 'Descarga libro de compras'];
+  accion('acceso.registrar', true, function (db, req, ctx, ops) {
+    var ev = EVENTOS_ACCESO.indexOf(req.evento) >= 0 ? req.evento : '';
+    if (!ev) throw PE('Evento no válido.');
+    if (!db.Accesos) db.Accesos = [];
+    add(db, ops, 'Accesos', { fecha: ctx.today, hora: sello(ctx).hora, usuario: ctx.user.nombre, rol: ctx.user.rol, evento: ev, detalle: s(req.detalle).slice(0, 80) });
+    return {};
+  });
+
   accion('gasto.anular', true, function (db, req, ctx, ops) {
     need(ctx, 'admin');
     var g = find(db.Gastos, req.id);
@@ -454,7 +467,7 @@
     var fn = ACCIONES[req && req.action];
     if (!fn) return { ok: false, error: 'Acción no válida.', code: 'accion' };
     var ops = [];
-    if (ctx.user && ctx.user.rol === 'contador' && req.action !== 'bootstrap') return { ok: false, error: 'Tu acceso es solo de lectura.', code: 'permiso', ops: [] };
+    if (ctx.user && ctx.user.rol === 'contador' && req.action !== 'bootstrap' && req.action !== 'acceso.registrar') return { ok: false, error: 'Tu acceso es solo de lectura.', code: 'permiso', ops: [] };
     ctx.geo = geoValida(req && (req.geo || (req.web && req.web.geo)));
     ctx._lug = undefined;
     try {

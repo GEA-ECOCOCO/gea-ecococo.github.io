@@ -350,7 +350,7 @@
         return '<div style="margin-bottom:12px"><b>' + esc(p.nombre) + '</b><div class="price-grid"><label class="fld"><span>Tienda</span><input inputmode="decimal" data-p="' + p.id + '" data-k="precio_tienda" value="' + p.precio_tienda + '"></label><label class="fld"><span>Mayorista</span><input inputmode="decimal" data-p="' + p.id + '" data-k="precio_mayorista" value="' + p.precio_mayorista + '"></label><label class="fld"><span>Consumidor</span><input inputmode="decimal" data-p="' + p.id + '" data-k="precio_publico" value="' + p.precio_publico + '"></label></div></div>';
       }).join('') + '<button class="btn sm" data-a="guardarprecios">Guardar precios</button></div>' +
         '<div class="card"><h3>Reglas del negocio</h3><label class="fld"><span>Comisión del vendedor por kg (Q)</span><input id="cfg-com" inputmode="decimal" value="' + num(cfg.comision_por_kg) + '"></label><label class="fld"><span>WhatsApp que recibe los pedidos</span><input id="cfg-wa" inputmode="tel" value="' + esc(cfg.whatsapp_admin) + '"><small>Con código de país, por ejemplo 50242794894.</small></label><label class="fld"><span>Pedido mínimo (kg)</span><input id="cfg-min" inputmode="decimal" value="' + num(cfg.pedido_minimo_kg) + '"></label><button class="btn sm" data-a="guardarcfg">Guardar reglas</button></div>' +
-        cardVolumen() + cardEquipo() +
+        cardVolumen() + cardEquipo() + cardAccesos() +
         '<div class="card"><h3>Tus datos</h3><p style="color:var(--suave);font-size:15px;margin-bottom:12px">Todo se guarda en tu hoja de Google. Ahí puedes ver, filtrar o exportar lo que quieras. Las claves del equipo están en la pestaña Usuarios.</p>' + (sn.sheetUrl ? '<a class="btn sec" href="' + esc(sn.sheetUrl) + '" target="_blank" rel="noopener">' + ic('sheet') + ' Abrir la hoja de Google</a>' : '') + '</div>';
     }
     h += '<div class="btn-row"><button class="btn sec" data-a="salir">' + ic('out') + ' Cerrar sesión</button></div><p style="text-align:center;color:var(--suave);font-size:13px;margin-top:16px">Panel GEA · versión 1</p>';
@@ -378,12 +378,18 @@
       us.map(function (u) { return '<button class="row" data-a="usuario" data-n="' + esc(u.nombre) + '"><span class="ini">' + esc(inicial(u.nombre)) + '</span><span><div class="t">' + esc(u.nombre) + '</div><div class="s">' + (u.rol === 'admin' ? 'Administrador' : u.rol === 'contador' ? 'Contador · solo lectura' : 'Vendedor') + '</div></span><span class="r"><span class="chip ' + (u.activo === 'No' ? 'c-can' : 'c-ok') + '">' + (u.activo === 'No' ? 'Desactivado' : 'Activo') + '</span></span></button>' }).join('') +
       '<div class="btn-row" style="margin-top:12px"><button class="btn sm" data-a="usuarionuevo">' + ic('plus') + ' Agregar vendedor</button><button class="btn sm sec" data-a="contadornuevo">' + ic('plus') + ' Agregar contador</button></div></div>';
   }
+  function cardAccesos() {
+    var ac = S.snap.accesos || [], hay = (S.snap.usuarios || []).some(function (u) { return u.rol === 'contador' });
+    if (!hay && !ac.length) return '';
+    return '<div class="card"><h3>Accesos del contador</h3><p style="color:var(--suave);font-size:15px;margin-bottom:8px">Cuándo entró y qué libros descargó. Los últimos movimientos primero.</p>' +
+      (ac.length ? ac.slice(0, 12).map(function (a) { return '<div class="kv"><span>' + esc(a.evento) + '</span><b>' + esc(fecha(a.fecha)) + ' · ' + esc(a.hora) + '</b></div>' }).join('') : '<div class="vacio"><b>Sin movimientos todavía</b>Aparecerán aquí cuando entre.</div>') + '</div>';
+  }
   function usuarioSheet(nombre, rolNuevo) {
     var u = nombre ? (S.snap.usuarios || []).filter(function (x) { return x.nombre === nombre })[0] : null, nuevo = !u;
     var conta = nuevo ? rolNuevo === 'contador' : u.rol === 'contador';
     openSheet(shHead(nuevo ? (conta ? 'Agregar contador' : 'Agregar vendedor') : u.nombre, nuevo ? (conta ? 'Solo verá y descargará los libros de impuestos' : 'Podrá registrar pedidos y clientes con su clave') : (u.rol === 'admin' ? 'Administrador' : conta ? 'Contador · solo lectura' : 'Vendedor')) + '<div class="sh-b"><input type="hidden" id="un-r" value="' + (conta ? 'contador' : 'vendedor') + '">' +
       (nuevo ? fld('Nombre', 'un-n', '', { ph: 'Ej. Luis Pérez', max: 30 }) : '<input type="hidden" id="un-n" value="' + esc(u.nombre) + '">') +
-      fld(nuevo ? 'Clave de 6 números' : 'Clave nueva (déjala vacía para no cambiarla)', 'un-p', '', { mode: 'numeric', max: 6, ph: '000000' }) +
+      fld(nuevo ? (conta ? 'Clave de 10 a 12 números' : 'Clave de 6 números') : 'Clave nueva (déjala vacía para no cambiarla)', 'un-p', '', { mode: 'numeric', max: conta ? 12 : 6, ph: conta ? '0000000000' : '000000' }) + (conta ? '<small style="display:block;margin:-6px 0 12px;color:var(--suave)">Más larga que las demás porque entra una persona externa. La sesión le dura 7 días.</small>' : '') +
       '<div class="btn-row" style="margin:-4px 0 14px"><button type="button" class="btn sec sm" data-a="genpin">Generar una clave al azar</button></div>' +
       (nuevo ? '' : '<div class="fld"><span>Estado</span>' + segHTML('un-a', ['Activo', 'Desactivado'], u.activo === 'No' ? 'Desactivado' : 'Activo') + '<small>Desactivado: ya no puede entrar. Sus pedidos anteriores se conservan.</small></div>') +
       '<p style="color:var(--suave);font-size:14px">Entrégale la clave en persona o por mensaje privado. Nadie más debe verla.</p></div><div class="sh-f"><button class="btn" data-a="guardarusuario">Guardar</button></div>');
@@ -723,6 +729,7 @@
   }
   function csvLibro(k) {
     var F = S.snap.fiscal; if (!F) return;
+    if (isConta()) api('acceso.registrar', { evento: 'Descarga libro de ' + k });
     function cel(x) { x = String(x == null ? '' : x); return /[",\n]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x }
     var filas = k === 'ventas' ? [['Fecha', 'Serie', 'Número', 'NIT', 'Cliente', 'Total (Q)', 'Pedido']].concat(F.ventas.slice().sort(function (a, b) { return a.fecha < b.fecha ? -1 : 1 }).map(function (v) { return [v.fecha, v.serie, v.numero, v.nit, v.cliente, v.total.toFixed(2), v.id] }))
       : [['Fecha', 'Documento', 'NIT proveedor', 'Proveedor', 'Concepto', 'Monto (Q)', 'Gasto']].concat(F.compras.slice().sort(function (a, b) { return a.fecha < b.fecha ? -1 : 1 }).map(function (v) { return [v.fecha, v.doc, v.nit, v.proveedor, v.concepto, v.monto.toFixed(2), v.id] }));
@@ -784,7 +791,7 @@
       case 'usuarionuevo': usuarioSheet(''); break;
       case 'contadornuevo': usuarioSheet('', 'contador'); break;
       case 'guardarusuario': guardarUsuario(el); break;
-      case 'genpin': var pe = $('#un-p'); if (pe) pe.value = String(100000 + Math.floor(Math.random() * 900000)); break;
+      case 'genpin': var pe = $('#un-p'), rr = $('#un-r'); if (pe) pe.value = rr && rr.value === 'contador' ? String(1000000000 + Math.floor(Math.random() * 9000000000)) : String(100000 + Math.floor(Math.random() * 900000)); break;
       case 'guardarcfg': guardarCfg(el); break;
       case 'facturar': facturarSheet(id); break;
       case 'guardarfactura': guardarFactura(el); break;
