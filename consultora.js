@@ -14,7 +14,7 @@
   var UN={u:['pago único','one-time'],m:['al mes','per month'],a:['al año','per year'],h:['por hora','per hour']};
   function totals(v){
     var cov={},t={u:0,m:0,a:0,h:0};
-    v.forEach(function(it){if(it.k==='full'&&it.inc)it.inc.split(' ').forEach(function(x){cov[x]=1})});
+    v.forEach(function(it){if(/^(full|paq)/.test(it.k)&&it.inc)it.inc.split(' ').forEach(function(x){cov[x]=1})});
     v.forEach(function(it){if(cov[it.k])return;parse(it.p).forEach(function(x){t[x.u]+=x.q})});
     return {t:t,cov:cov};
   }
@@ -35,7 +35,7 @@
     if(ul){
       ul.textContent='';
       v.forEach(function(it){var li=document.createElement('li'),s=document.createElement('span'),b=document.createElement('button');
-        s.textContent=it.t+(T.cov[it.k]?L(' · incluido en la plataforma completa',' · included in the complete platform'):'');b.type='button';b.textContent='×';b.setAttribute('aria-label',L('Quitar ','Remove ')+it.t);
+        s.textContent=it.t+(T.cov[it.k]?L(' · incluido en tu paquete',' · included in your package'):'');b.type='button';b.textContent='×';b.setAttribute('aria-label',L('Quitar ','Remove ')+it.t);
         b.addEventListener('click',function(){remove(it.k)});li.appendChild(s);li.appendChild(b);ul.appendChild(li)});
       var e=document.getElementById('pkg-empty'),g=document.getElementById('pkg-go'),c=document.getElementById('pkg-clear');
       if(e)e.hidden=!!n;if(g)g.hidden=!n;if(c)c.hidden=!n;
@@ -91,7 +91,7 @@
     v.forEach(function(it){
       var li=document.createElement('li'),d=document.createElement('div'),b=document.createElement('b'),sm=document.createElement('span'),x=document.createElement('button');
       b.textContent=it.t;
-      sm.textContent=T.cov[it.k]?L('Incluido en la plataforma completa','Included in the complete platform'):(ptxt(it.p)||'');
+      sm.textContent=T.cov[it.k]?L('Incluido en tu paquete','Included in your package'):(ptxt(it.p)||'');
       d.appendChild(b);d.appendChild(sm);
       x.type='button';x.className='pk-rm';x.textContent='×';x.setAttribute('aria-label',L('Quitar ','Remove ')+it.t);
       x.addEventListener('click',function(){remove(it.k)});
@@ -113,7 +113,7 @@
     var v=get(),T=totals(v);if(!v.length||!window.geaCotizacionPDF)return;
     var rows=[];if(T.t.u)rows.push([L('Pago único','One-time'),moneyU(T.t.u)]);if(T.t.m)rows.push([L('Cada mes','Monthly'),moneyU(T.t.m)]);if(T.t.a)rows.push([L('Cada año','Yearly'),moneyU(T.t.a)]);if(T.t.h)rows.push([L('Mejoras (por hora)','Improvements (per hour)'),moneyU(T.t.h)]);
     var no=window.geaCotizacionNo?geaCotizacionNo():'COT',f=null;try{f=window.geaFX&&geaFX()}catch(e){}
-    var d={en:EN,no:no,fecha:window.geaOrdenFecha?geaOrdenFecha(EN):'',fx:f,tot:rows,items:v.map(function(it){var c=!!T.cov[it.k];return {t:it.t,inc:c,pr:c?L('Incluido en la plataforma completa','Included in the complete platform'):ptxt(it.p)}})};
+    var d={en:EN,no:no,fecha:window.geaOrdenFecha?geaOrdenFecha(EN):'',fx:f,tot:rows,items:v.map(function(it){var c=!!T.cov[it.k];return {t:it.t,inc:c,pr:c?L('Incluido en tu paquete','Included in your package'):ptxt(it.p)}})};
     var name=(EN?'gea-consultora-quote-':'cotizacion-gea-consultora-')+no+'.pdf',blob=window.geaCotizacionPDF(d);
     try{window.geaTrack&&geaTrack('cotizacion_pdf',{via:mode,items:v.length})}catch(e){}
     if(mode==='print'&&window.geaPdfImprimir)window.geaPdfImprimir(blob,name);else if(window.geaPdfBajar)window.geaPdfBajar(blob,name);

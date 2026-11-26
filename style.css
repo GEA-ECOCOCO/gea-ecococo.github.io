@@ -1882,3 +1882,19 @@ html[data-tema="tecnologia"] .aj{--a-bg:#10231B;--a-ink:#E9F7EC;--a-mut:#9DBBA6;
 html.aj-open{overflow:hidden}
 .aj-btn svg{display:block}
 @media(max-width:420px){.aj-btn{width:34px;height:34px;margin-left:6px}}
+
+/* Paquetes de GEA Consultora */
+.cs-paqs{margin:18px 0 6px;gap:16px}
+.cs-pq{position:relative;display:flex;flex-direction:column}
+.cs-pq h3{margin:0 0 2px}
+.cs-pq-for{margin:0 0 6px;opacity:.8;font-size:.92rem}
+.cs-pq-pr{font-weight:800;font-size:1.5rem;color:#0A2A3F;margin:2px 0 0}
+.cs-pq-pr small{font-weight:600;font-size:.8rem;opacity:.75}
+.cs-pq-un{font-size:.8rem;opacity:.75;margin:0 0 6px}
+.cs-pq .cs-inc{columns:1;flex:1}
+.cs-pq-rec{border:2px solid #2585C5;background:linear-gradient(160deg,rgba(76,195,255,.14),transparent 70%)}
+.cs-pq-tag{position:absolute;top:-12px;right:14px;background:#2585C5;color:#fff;font-size:.74rem;font-weight:700;padding:3px 12px;border-radius:999px}
+.cs-cmp{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.cs-cmp table{min-width:540px}
+.cs-cmp th,.cs-cmp td{font-size:.82rem;padding:9px 7px;overflow-wrap:normal;word-break:normal;hyphens:manual}
+.cs-cmp th{font-size:.74rem}
