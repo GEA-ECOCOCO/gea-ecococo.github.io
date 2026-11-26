@@ -221,6 +221,25 @@
       '<span class="r"><b class="num">' + Q(p.total) + '</b><span class="chip c-' + e.c + '">' + e.t + '</span></span></button>';
   }
   function lista(rows, vacioT, vacioS) { return '<div class="list">' + (rows.length ? rows.join('') : '<div class="vacio"><b>' + vacioT + '</b>' + vacioS + '</div>') + '</div>' }
+  function porVisitar() {
+    var h = Date.parse(hoy() + 'T00:00:00Z'), out = [];
+    S.snap.clientes.forEach(function (c) {
+      if (c.estado === 'Inactivo') return;
+      var st = statsCli(c.id), d = st.ult ? Math.round((h - Date.parse(st.ult + 'T00:00:00Z')) / 86400000) : null;
+      if (d === null || d >= 15) out.push({ c: c, d: d });
+    });
+    out.sort(function (a, b) { if (a.d === null) return 1; if (b.d === null) return -1; return b.d - a.d });
+    return out;
+  }
+  function tarjetaVisitar() {
+    var v = porVisitar();
+    var rows = v.slice(0, 6).map(function (x) {
+      var c = x.c, sub = x.d === null ? 'Aún no te ha comprado' : 'Hace ' + x.d + ' días sin pedir';
+      return '<button class="row" data-a="cli" data-id="' + esc(c.id) + '"><span class="ini">' + esc(inicial(c.nombre)) + '</span><span><div class="t">' + esc(c.nombre) + '</div><div class="s">' + sub + (c.zona ? ' · ' + esc(c.zona) : '') + '</div></span><span class="r"><span class="s">Ver y escribir</span></span></button>';
+    });
+    return '<div class="sec-h"><h2>Clientes por visitar</h2><span>' + (v.length ? v.length + (v.length === 1 ? ' cliente' : ' clientes') : '') + '</span></div>' +
+      lista(rows, 'Todos tus clientes están al día', 'Cuando alguien pase 15 días sin pedir, aparece aquí para que lo contactes.');
+  }
   function vInicio() {
     var sn = S.snap, R = C.resumen(sn), adm = isAdmin(), art = sn.inventario.filter(function (a) { return a.tipo === 'producto' })[0], stock = art ? art.stock : 0, min = art ? art.stock_min : 0;
     var izq = (adm ? hero(stock, R.comprometidoKg, min) : heroVend(R, Math.max(0, stock - R.comprometidoKg))) + figs(R) +
@@ -234,7 +253,7 @@
       var maxq = R.top[0] ? R.top[0].q : 1;
       der += '<div class="sec-h"><h2>Mejores clientes</h2><span>últimos 30 días</span></div><div class="list">' + (R.top.length ? R.top.map(function (c) { return '<div class="hbar"><div><span>' + esc(c.cliente) + '</span><b class="num">' + Q(c.q, 0) + '</b></div><i style="width:' + Math.max(6, c.q / maxq * 100) + '%"></i></div>' }).join('') : '<div class="vacio"><b>Aún no hay ventas</b>Los clientes que más compran aparecen aquí.</div>') + '</div>';
     } else {
-      der += '<div class="sec-h"><h2>Mis últimos pedidos</h2></div>' + lista(sn.pedidos.slice().reverse().filter(function (p) { return p.estado !== 'Pendiente' }).slice(0, 5).map(function (p) { return pedRow(p) }), 'Todavía no hay pedidos entregados', 'Registra tu primer pedido con el botón naranja.');
+      der += tarjetaVisitar() + '<div class="sec-h"><h2>Mis últimos pedidos</h2></div>' + lista(sn.pedidos.slice().reverse().filter(function (p) { return p.estado !== 'Pendiente' }).slice(0, 5).map(function (p) { return pedRow(p) }), 'Todavía no hay pedidos entregados', 'Registra tu primer pedido con el botón naranja.');
     }
     return '<div class="grid2"><div>' + izq + '</div><div>' + der + '</div></div>';
   }
