@@ -224,10 +224,139 @@
     return { hasta: hoy, tasa: pc.tasa, meses: hist, proyeccion: proy, supuestos: sup, propios: propio, auto: auto, antiguedad: ag, balance: bal, credito: cr };
   }
 
+  /* ---------- capacidad de crédito y líneas de financiamiento ----------
+     El catálogo sale de información pública (sitios de los bancos, MINECO, BCIE, Superintendencia de Bancos), verificada en CAT_VERIF.
+     Los bancos NO publican su criterio de aprobación ni sus tasas: esto mide qué tan lista está la empresa para cada línea y
+     cuánto podría pagar; no promete aprobación. Las condiciones cambian, hay que confirmarlas siempre con el banco. */
+  var CAT_VERIF = '2026-11-26', TASA_SUP = 14, PLAZO_SUP = 60, PLAZO_TOPE = 84, COB_OBJ = 1.5, USD = 7.8;
+  var CAP_NUM = ['cap_cobertura'], CAP_TXT = ['cap_docs', 'cap_garantias', 'cap_bancos', 'cap_rtu'];
+  var DOCS = [['dpi', 'DPI vigente del propietario'], ['nit', 'NIT y RTU actualizados en SAT'], ['patente', 'Patente de comercio'], ['recibo', 'Recibo reciente de agua, luz o teléfono'], ['estados_cta', 'Estados de cuenta bancarios de los últimos 3 meses'],
+    ['solvencia', 'Solvencia fiscal de la SAT'], ['decl', 'Declaraciones de impuestos al día'], ['ef_firmados', 'Estados financieros firmados por tu contador'], ['flujo3', 'Flujo de caja proyectado a 3 años'],
+    ['plan', 'Plan de inversión con cotizaciones del equipo'], ['patrimonial', 'Estado patrimonial e ingresos y egresos'], ['referencias', 'Autorización para consultar referencias crediticias']];
+  var GARANTIAS = [['prenda', 'Prenda sobre maquinaria o vehículo'], ['fiador', 'Fiador con propiedad'], ['hipoteca', 'Hipoteca de un inmueble']];
+  var BANCOS = [['bac', 'BAC Credomatic'], ['banrural', 'Banrural'], ['bi', 'Banco Industrial'], ['bam', 'BAM'], ['gt', 'G&T Continental'], ['promerica', 'Promerica'], ['chn', 'CHN'], ['coop', 'Cooperativa']];
+  var FIN_CAT = [
+    { id: 'fit', banco: 'MINECO', bk: 'mineco', producto: 'Fondo de Innovación Tecnológica (FIT)', tipo: 'Fondo público', montoMin: 20000, montoMax: 10000000, plazoMax: null, gracia: null, destinos: ['equipo'], rtu: true, hist: 0, docs: ['dpi', 'patente', 'plan'], garantias: null,
+      tasa: 'Preferencial (cifra no publicada)', notas: 'Financia maquinaria y equipo, modernización de procesos, nuevos productos y certificaciones. Pide RTU con al menos un año en la SAT, actividad financiable y una propuesta del proyecto (innovación, resultados esperados y destino del dinero). Plazo, gracia y garantías no están publicados: confirma al 2295-2320.',
+      fuente: 'https://agn.gt/como-solicitar-un-credito-del-fit-conozca-los-requisitos/' },
+    { id: 'bac-sost', banco: 'BAC Credomatic', bk: 'bac', producto: 'Financiamiento sostenible (economía circular, residuos, eficiencia energética)', tipo: 'Banca privada · verde', montoMin: null, montoMax: null, plazoMax: 84, gracia: 12, destinos: ['equipo'], hist: 12, docs: ['ef_firmados', 'decl', 'plan'], garantias: null,
+      tasa: 'Competitiva (cifra no publicada)', notas: 'Financia hasta el 100 % del proyecto, con hasta 7 años de plazo y 12 meses de gracia a capital. Pide buen historial crediticio, documentación legal vigente, estados financieros recientes y comprobante de ingresos o facturación. Una planta que convierte residuo de coco en carbón encaja en economía circular y residuos.',
+      fuente: 'https://www.baccredomatic.com/es-gt/pymes/financiamientos-sostenibles' },
+    { id: 'bac-micro', banco: 'BAC Credomatic', bk: 'bac', producto: 'Microcrédito', tipo: 'Banca privada', montoMin: 8000, montoMax: 1000000, plazoMax: 60, gracia: null, destinos: ['equipo', 'capital'], hist: 12, docs: ['dpi', 'nit', 'ef_firmados', 'plan'], docsTipicos: true, garantias: null,
+      tasa: 'Competitiva (cifra no publicada)', notas: 'De Q8,000 a Q1,000,000 y hasta 60 meses; sirve para inventario, modernizar instalaciones o comprar equipo clave. El banco publica la lista de requisitos en un PDF; los documentos mostrados son los típicos de la banca privada.',
+      fuente: 'https://www.baccredomatic.com/es-gt/pymes/microcreditos' },
+    { id: 'bac-pre', banco: 'BAC Credomatic', bk: 'bac', producto: 'Crédito preaprobado (capital de trabajo)', tipo: 'Banca privada', montoMin: null, montoMax: Math.round(130000 * USD), plazoMax: 60, gracia: null, destinos: ['capital'], cliente: 'bac', docs: ['dpi'], garantias: null, sinGarantia: true,
+      tasa: 'Fija (cifra no publicada)', notas: 'Hasta US$130,000 y 60 meses, para capital de trabajo. Se ofrece a clientes con ingresos depositados en BAC; según la evaluación puede ser sin garantía o con firma solidaria. No sirve para comprar maquinaria.',
+      fuente: 'https://www.baccredomatic.com/es-gt/pymes/financiamiento/credito-preaprobado' },
+    { id: 'bac-pyme', banco: 'BAC Credomatic', bk: 'bac', producto: 'Crédito PYMES', tipo: 'Banca privada', montoMin: 1000000, montoMax: 7800000, plazoMax: null, gracia: null, destinos: ['equipo', 'capital'], hist: 12, docs: ['dpi', 'nit', 'ef_firmados', 'decl', 'plan'], docsTipicos: true, garantias: null,
+      tasa: 'Competitiva (cifra no publicada)', notas: 'Entre Q1,000,000 y Q7,800,000 (US$130,000 a US$1,000,000). Para montos menores el banco ofrece el microcrédito.',
+      fuente: 'https://www.baccredomatic.com/es-gt/pymes/landing/requisitos-de-prestamos-pymes' },
+    { id: 'gtc', banco: 'G&T Continental', bk: 'gt', producto: 'Crédito GTC Expressarial', tipo: 'Banca privada', montoMin: null, montoMax: 1000000, plazoMax: null, gracia: null, destinos: null, ventasMin: 1000000, ventasSoft: true, hist: 12, docs: ['ef_firmados', 'decl', 'plan'], docsTipicos: true, garantias: null,
+      tasa: 'No publicada', notas: 'Hasta Q1,000,000 desembolsados en unos 10 días, para negocios que facturan entre Q1,000,000 y Q50,000,000 al año o tienen hasta 150 empleados. Cuanto mayor el monto, más tarda la aprobación.',
+      fuente: 'https://www.prensalibre.com/c-studio/cuando-y-como-solicitar-un-credito-bancario-para-su-negocio/' },
+    { id: 'mineco-fid', banco: 'MINECO · cooperativas y fundaciones', bk: 'coop', producto: 'Fideicomiso MIPYME (segundo piso)', tipo: 'Fondo público', montoMin: null, montoMax: 500000, plazoMax: null, gracia: 12, destinos: ['equipo', 'capital'], hist: 0, docs: ['dpi', 'nit', 'plan'], docsTipicos: true, garantias: null,
+      tasa: 'No publicada', notas: 'MINECO no presta directo: lo hacen cooperativas, asociaciones, fundaciones y cámaras. Topes por tamaño: micro hasta Q250,000, pequeña hasta Q500,000, mediana hasta Q1,500,000. Cubre maquinaria y equipo; garantía mixta y 12 meses de gracia a capital. Cifras del folleto 2025: confirma que el fondo esté vigente.',
+      fuente: 'https://mineco.gob.gt/images/que_hacer/economia/Folleto_MINECO%20Empresarial_2025.pdf' },
+    { id: 'chn', banco: 'CHN', bk: 'chn', producto: 'Crédito MIPYME (línea del BCIE)', tipo: 'Banca de desarrollo', montoMin: null, montoMax: null, plazoMax: null, gracia: null, destinos: ['equipo', 'capital'], hist: 12, docs: ['dpi', 'referencias', 'recibo', 'estados_cta', 'patrimonial', 'ef_firmados', 'flujo3', 'plan'], garantias: null,
+      tasa: 'Competitiva (cifra no publicada)', notas: 'El BCIE aprobó US$60 millones al CHN para micro, pequeñas y medianas empresas. La guía de requisitos del CHN pide solicitud con carta del destino de los fondos, DPI, estados de cuenta de 3 meses, estado patrimonial, estados financieros certificados por contador y flujo de caja a 3 años (primer año mensual). Esa guía es de 2022: confirma la lista vigente.',
+      fuente: 'https://lahora.gt/lh-economia/hloarca/2025/08/20/bcie-aprueba-credito-para-micro-y-pequenas-empresas-en-guatemala-a-traves-del-chn/' },
+    { id: 'banrural', banco: 'Banrural', bk: 'banrural', producto: 'Crédito Amigo y líneas MIPYME', tipo: 'Banca de desarrollo', montoMin: null, montoMax: null, plazoMax: null, gracia: null, destinos: null, hist: 0, docs: ['dpi', 'nit', 'recibo', 'plan', 'patente'], docsTipicos: true, garantias: null,
+      tasa: 'No publicada', notas: 'Banrural canaliza fondos del BCIE a MIPYMES. Para el Crédito Amigo Microempresario pide DPI, NIT, recibo de servicios y plan de inversión o cotización; si llevas contabilidad, también patente y flujo de fondos. Montos y plazos no están publicados.',
+      fuente: 'https://livinginguatemala.com/es/guias/como-conseguir-prestamo-emprendimiento-guatemala/' },
+    { id: 'banca', banco: 'Banco Industrial · BAM · Promerica · G&T', bk: 'banca', bks: ['bi', 'bam', 'promerica', 'gt'], producto: 'Crédito empresarial con garantía', tipo: 'Banca privada', montoMin: null, montoMax: null, plazoMax: 120, gracia: null, destinos: ['equipo', 'capital'], hist: 12, docs: ['patente', 'nit', 'dpi', 'ef_firmados', 'decl', 'solvencia', 'plan', 'referencias'], garantias: ['prenda', 'fiador', 'hipoteca'],
+      tasa: 'No publicada', notas: 'Estos bancos reciben fondeo de IFC, BID y BCIE para MIPYMES, pero no publican requisitos por producto. Lo habitual: patente, NIT, estados financieros de 1 a 3 años, declaraciones de IVA e ISR, solvencia fiscal, plan de inversión y garantía; plazos de 5 a 10 años con garantía.',
+      fuente: 'https://livinginguatemala.com/es/guias/como-conseguir-prestamo-emprendimiento-guatemala/' }
+  ];
+  function pmt(m, ta, pl) { var rm = ta / 1200; return pl > 0 ? (rm > 0 ? m * rm / (1 - Math.pow(1 + rm, -pl)) : m / pl) : 0 }
+  function pv(c, ta, pl) { var rm = ta / 1200; return c <= 0 || pl <= 0 ? 0 : (rm > 0 ? c * (1 - Math.pow(1 + rm, -pl)) / rm : c * pl) }
+  function capTxt(k, raw) {
+    if (k === 'cap_rtu') return s(raw) === 'Sí' ? 'Sí' : 'No';
+    var lista = k === 'cap_docs' ? DOCS : (k === 'cap_garantias' ? GARANTIAS : BANCOS), ids = lista.map(function (x) { return x[0] });
+    return s(raw).split(',').map(function (x) { return x.trim() }).filter(function (x, i, a) { return ids.indexOf(x) >= 0 && a.indexOf(x) === i }).join(',');
+  }
+  function capSim(cap, monto, tasa, plazo) {
+    var cuota = pmt(monto, tasa, plazo), fl = cap.datos.flujoLibre, cob = cuota > 0 ? fl / cuota : 0;
+    return { cuota: r2(cuota), cobertura: r2(cob), ok: cuota > 0 && cob >= cap.params.cobertura, total: r2(cuota * plazo) };
+  }
+  function financiamiento(db, hoy, R, F) {
+    R = R || reportes(db, hoy); F = F || fiscal(db, hoy);
+    var cfg = cfgObj(db), H = R.meses, B = R.balance, AG = R.antiguedad, i;
+    var set = function (k) { var o = {}; s(cfg[k]).split(',').forEach(function (x) { if (x) o[x.trim()] = true }); return o };
+    var docsOk = set('cap_docs'), garOk = set('cap_garantias'), bcoOk = set('cap_bancos'), rtu = s(cfg.cap_rtu) === 'Sí';
+    var ventas12 = 0, bruta12 = 0, meses = 0;
+    H.forEach(function (x) { ventas12 += x.ventas; bruta12 += x.utilBruta; if (x.ventas > 0) meses++ });
+    ventas12 = r2(ventas12);
+    var act = H.filter(function (x) { return x.ventas > 0 || x.salidas > 0 }), ult = act.slice(-3), fh = 0;
+    ult.forEach(function (x) { fh += x.cobros - x.salidas - x.impuesto });
+    fh = ult.length ? r2(fh / ult.length) : 0;
+    var fp = R.proyeccion.reduce(function (t, x) { return t + x.flujo }, 0) / (R.proyeccion.length || 1), usaProy = R.supuestos.proy_kg_mes > 0 && ventas12 > 0;
+    var flujoLibre = ventas12 > 0 ? r2(usaProy ? Math.min(fh, fp) : fh) : 0;
+    var v3 = H.slice(-3).reduce(function (t, x) { return t + x.ventas }, 0), v3p = H.slice(-6, -3).reduce(function (t, x) { return t + x.ventas }, 0);
+    var tasa = n(cfg.cred_tasa) > 0 ? n(cfg.cred_tasa) : TASA_SUP, plazoU = Math.round(n(cfg.cred_plazo)), cobT = n(cfg.cap_cobertura) > 0 ? n(cfg.cap_cobertura) : COB_OBJ;
+    var cuotaMax = flujoLibre > 0 ? r2(flujoLibre / cobT) : 0, plazoRef = plazoU > 0 ? plazoU : PLAZO_SUP;
+    var cap = { hasta: hoy, verificado: CAT_VERIF,
+      datos: { mesesConVentas: meses, ventas12: ventas12, margenBruto: ventas12 > 0 ? r2(bruta12 / ventas12 * 100) : 0, flujoHist: fh, flujoProy: r2(fp), usaProy: usaProy, flujoLibre: flujoLibre, mesesBase: ult.length },
+      params: { tasa: tasa, tasaPropia: n(cfg.cred_tasa) > 0, plazo: plazoRef, plazoPropio: plazoU > 0, cobertura: cobT, coberturaPropia: n(cfg.cap_cobertura) > 0 },
+      capacidad: { cuotaMax: cuotaMax, montoMax: r2(pv(cuotaMax, tasa, plazoRef)), solicitado: null },
+      sel: { docs: Object.keys(docsOk), garantias: Object.keys(garOk), bancos: Object.keys(bcoOk), rtu: rtu } };
+    var mo = n(cfg.cred_monto);
+    if (mo > 0 && plazoU > 0) { var cs = pmt(mo, tasa, plazoU); cap.capacidad.solicitado = { monto: r2(mo), cuota: r2(cs), cobertura: cs > 0 ? r2(flujoLibre / cs) : 0 } }
+    // productos
+    var Qf = function (x) { return 'Q' + Math.round(x).toLocaleString('en-US') };
+    var docNom = {}; DOCS.forEach(function (d) { docNom[d[0]] = d[1] });
+    var prods = FIN_CAT.map(function (e) {
+      var plazo = plazoU > 0 ? Math.min(plazoU, e.plazoMax || 999) : Math.min(e.plazoMax || PLAZO_SUP, PLAZO_TOPE);
+      var capP = pv(cuotaMax, tasa, plazo), posible = e.montoMax ? Math.min(capP, e.montoMax) : capP; posible = Math.floor(posible / 1000) * 1000;
+      var ck = [], faltan = [], graves = [];
+      function add(est, txt) { ck.push({ e: est, t: txt }); if (est === 'falta') faltan.push(txt); if (est === 'no') graves.push(txt) }
+      if (flujoLibre > 0) add('ok', 'Flujo libre de ' + Qf(flujoLibre) + ' al mes: cuota máxima ' + Qf(cuotaMax)); else add('falta', 'Aún no hay flujo libre positivo para pagar una cuota: registra ventas, cobros y gastos');
+      if (e.montoMin && capP < e.montoMin) add('no', 'El monto mínimo es ' + Qf(e.montoMin) + ' y hoy tu capacidad a ' + plazo + ' meses es ' + Qf(capP));
+      else if (e.montoMin) add('ok', 'Tu capacidad (' + Qf(capP) + ') alcanza el mínimo de ' + Qf(e.montoMin));
+      else if (e.montoMax) add('info', 'Hasta ' + Qf(e.montoMax));
+      else add('info', 'Monto no publicado');
+      if (e.destinos && e.destinos.indexOf('equipo') < 0) add('no', 'Es para capital de trabajo: no financia maquinaria');
+      else if (e.destinos) add('ok', 'Financia maquinaria y equipo');
+      else add('info', 'El destino permitido no está publicado');
+      if (e.ventasMin) { if (ventas12 >= e.ventasMin) add('ok', 'Ventas de 12 meses sobre ' + Qf(e.ventasMin)); else add(e.ventasSoft ? 'falta' : 'no', 'Pide facturar al menos ' + Qf(e.ventasMin) + ' al año; llevas ' + Qf(ventas12)) }
+      if (e.rtu) { if (rtu) add('ok', 'RTU con un año o más'); else add('falta', 'Confirmar RTU con un año o más (en Mis requisitos)') }
+      if (e.hist) { if (meses >= e.hist) add('ok', 'Historial de ' + meses + ' meses con ventas'); else add('falta', 'Historial: ' + meses + ' de ' + e.hist + ' meses con ventas') }
+      var fd = (e.docs || []).filter(function (d) { return !docsOk[d] });
+      if (e.docs && e.docs.length) { if (fd.length) add('falta', 'Documentos por reunir (' + fd.length + '): ' + fd.map(function (d) { return docNom[d] }).join('; ')); else add('ok', 'Documentos listos' + (e.docsTipicos ? ' (los típicos; el banco confirma su lista)' : '')) }
+      if (e.garantias) { if (e.garantias.some(function (g) { return garOk[g] })) add('ok', 'Tienes una garantía que ofrecer'); else add('falta', 'Definir una garantía: prenda del equipo, fiador o hipoteca') }
+      else add('info', e.sinGarantia ? 'Puede ser sin garantía o con firma solidaria, según evaluación' : 'Garantía no publicada: pregúntala al banco');
+      if (e.cliente) { if (bcoOk[e.cliente]) add('ok', 'Tienes cuenta en este banco'); else add('falta', 'Se ofrece a clientes con ingresos depositados en este banco') }
+      var estado = graves.length ? 'no' : (faltan.length === 0 ? 'listo' : (faltan.length <= 3 ? 'cercano' : 'preparar'));
+      var tieneCta = e.bks ? e.bks.some(function (b) { return bcoOk[b] }) : !!bcoOk[e.bk];
+      var rank = ({ listo: 4, cercano: 3, preparar: 2, no: 1 })[estado] * 1000 + (e.destinos && e.destinos.indexOf('equipo') >= 0 ? 100 : 0) + (tieneCta ? 40 : 0) + Math.min(Math.floor(posible / 10000), 39);
+      return { id: e.id, banco: e.banco, bk: e.bk, producto: e.producto, tipo: e.tipo, estado: estado, rank: rank, posible: estado === 'no' ? 0 : posible, plazo: plazo, cuota: posible > 0 ? r2(pmt(posible, tasa, plazo)) : 0, montoMin: e.montoMin, montoMax: e.montoMax, plazoMax: e.plazoMax, gracia: e.gracia, tasa: e.tasa, checks: ck, faltan: faltan, graves: graves, notas: e.notas, fuente: e.fuente, tieneCuenta: tieneCta };
+    });
+    prods.sort(function (a, b) { return b.rank - a.rank });
+    cap.productos = prods;
+    var vistos = {}; cap.bancos = [];
+    prods.forEach(function (p) { if (vistos[p.bk]) { vistos[p.bk].n++; return } p.n = 1; vistos[p.bk] = { banco: p.banco, producto: p.producto, estado: p.estado, posible: p.posible, n: 1, tieneCuenta: p.tieneCuenta }; cap.bancos.push(vistos[p.bk]) });
+    // índice de preparación (interno, no es una calificación del banco)
+    var fi = F.facturado, sf = F.sinFacturarQ, share = fi + sf > 0 ? fi / (fi + sf) : 0, marg = cap.datos.margenBruto;
+    var crec = v3 > 0 && v3 >= v3p ? 7 : 0, mg = Math.min(Math.max(marg, 0) / 30, 1) * 8;
+    var dl = DOCS.filter(function (d) { return docsOk[d[0]] }).length, ca = AG.total > 0 ? Math.max(0, 1 - (AG.b[2] + AG.b[3]) / AG.total) : (ventas12 > 0 ? 1 : 0);
+    var partes = [
+      { k: 'hist', t: 'Historial de ventas', max: 25, pts: 25 * Math.min(meses / 12, 1), msg: meses + ' de 12 meses con ventas', ac: meses >= 12 ? '' : 'Registra cada venta y cada cobro: los bancos piden 12 meses o más de historial.' },
+      { k: 'fiscal', t: 'Ventas facturadas (FEL)', max: 20, pts: 20 * share, msg: Math.round(share * 100) + ' % de lo entregado tiene factura', ac: share >= 0.99 ? '' : 'Factura los pedidos entregados' + (F.sinFacturar.length ? ' (' + F.sinFacturar.length + ' sin factura)' : '') + ': lo que no está facturado no cuenta para el banco.' },
+      { k: 'flujo', t: 'Flujo y margen', max: 25, pts: (flujoLibre > 0 ? 10 : 0) + mg + crec, msg: flujoLibre > 0 ? 'Flujo libre ' + Qf(flujoLibre) + ' al mes · margen bruto ' + Math.round(marg) + ' %' : 'Sin flujo libre positivo todavía', ac: flujoLibre > 0 ? (marg < 30 ? 'Sube el margen bruto: cuida el costo por kilo y el precio.' : '') : 'Necesitas meses con más cobros que gastos.' },
+      { k: 'docs', t: 'Carpeta de documentos', max: 20, pts: 20 * dl / DOCS.length, msg: dl + ' de ' + DOCS.length + ' documentos listos', ac: dl === DOCS.length ? '' : 'Reúne los documentos y márcalos en Mis requisitos.' },
+      { k: 'cartera', t: 'Cartera sana', max: 10, pts: 10 * ca, msg: AG.total > 0 ? Qf(AG.b[2] + AG.b[3]) + ' con más de 30 días de ' + Qf(AG.total) + ' por cobrar' : 'Sin saldos por cobrar atrasados', ac: ca >= 0.9 ? '' : 'Cobra los saldos de más de 30 días antes de pedir el crédito.' }
+    ];
+    var tot = 0; partes.forEach(function (p) { p.pts = r2(p.pts); p.faltan = r2(p.max - p.pts); tot += p.pts });
+    cap.indice = { puntos: Math.round(tot), nivel: tot >= 75 ? 'alto' : (tot >= 50 ? 'medio' : 'bajo'), partes: partes };
+    cap.acciones = partes.filter(function (p) { return p.ac }).sort(function (a, b) { return b.faltan - a.faltan }).map(function (p) { return { t: p.ac, pts: p.faltan } });
+    cap.tope = { limite: F.limite, ritmo: r2(F.proyeccion), pct: F.limite ? r2(F.proyeccion / F.limite * 100) : 0, nivel: F.nivel };
+    return cap;
+  }
+
   /* ---------- lo que ve cada usuario ---------- */
   function snapshot(db, ctx) {
     var admin = ctx.user.rol === 'admin', cont = ctx.user.rol === 'contador', st = stockMap(db);
     if (cont) { var cg = cfgObj(db); return copy({ user: ctx.user, hoy: ctx.today, config: { nombre_negocio: cg.nombre_negocio, limite_pc: cg.limite_pc, tasa_pc: cg.tasa_pc }, productos: [], clientes: [], pedidos: [], cobros: [], inventario: [], movimientos: [], lotes: [], gastos: [], usuarios: [], sheetUrl: '', accesos: [], fiscal: fiscal(db, ctx.today) }) }
+    var Fi = admin ? fiscal(db, ctx.today) : null, Re = admin ? reportes(db, ctx.today) : null;
     var peds = db.Pedidos.filter(function (p) { return admin || p.vendedor === ctx.user.nombre });
     var inv = db.Inventario.filter(function (a) { return a.activo !== 'No' && (admin || a.tipo === 'producto') })
       .map(function (a) { var c = copy(a); c.stock = st[a.id] || 0; return c });
@@ -243,8 +372,7 @@
       gastos: admin ? db.Gastos.slice(-500) : [],
       usuarios: admin ? db.Usuarios.map(function (u) { return { nombre: u.nombre, rol: u.rol, activo: u.activo === 'No' ? 'No' : 'Sí' } }) : [],
       sheetUrl: admin ? (ctx.sheetUrl || '') : '',
-      fiscal: admin ? fiscal(db, ctx.today) : null,
-      reportes: admin ? reportes(db, ctx.today) : null,
+      fiscal: Fi, reportes: Re, capacidad: admin ? financiamiento(db, ctx.today, Re, Fi) : null,
       accesos: admin ? (db.Accesos || []).slice(-80).reverse() : []
     });
   }
@@ -443,10 +571,10 @@
 
   accion('config.guardar', true, function (db, req, ctx, ops) {
     need(ctx, 'admin');
-    var permitidas = ['comision_por_kg', 'whatsapp_admin', 'pedido_minimo_kg', 'nombre_negocio', 'bolsas_mayoreo', 'precio_bolsa_mayoreo', 'bolsas_volumen', 'precio_bolsa_volumen', 'bultos_volumen', 'precio_bulto_volumen', 'limite_pc', 'tasa_pc'].concat(PROY), vals = req.valores || {};
+    var permitidas = ['comision_por_kg', 'whatsapp_admin', 'pedido_minimo_kg', 'nombre_negocio', 'bolsas_mayoreo', 'precio_bolsa_mayoreo', 'bolsas_volumen', 'precio_bolsa_volumen', 'bultos_volumen', 'precio_bulto_volumen', 'limite_pc', 'tasa_pc'].concat(PROY).concat(CAP_NUM).concat(CAP_TXT), vals = req.valores || {};
     permitidas.forEach(function (k) {
       if (vals[k] === undefined) return;
-      var v = k === 'whatsapp_admin' ? s(vals[k]).replace(/\D/g, '') : (k === 'nombre_negocio' ? s(vals[k]) : (PROY.indexOf(k) >= 0 && s(vals[k]) === '' ? '' : n(vals[k])));
+      var v = CAP_TXT.indexOf(k) >= 0 ? capTxt(k, vals[k]) : (k === 'whatsapp_admin' ? s(vals[k]).replace(/\D/g, '') : (k === 'nombre_negocio' ? s(vals[k]) : ((PROY.indexOf(k) >= 0 || CAP_NUM.indexOf(k) >= 0) && s(vals[k]) === '' ? '' : n(vals[k]))));
       if (k === 'whatsapp_admin' && v && v.length < 8) throw PE('El número de WhatsApp parece incompleto.');
       var row = db.Config.filter(function (r) { return r.clave === k })[0];
       if (row) upd(db, ops, 'Config', row, { valor: v }, 'clave'); else add(db, ops, 'Config', { clave: k, valor: v });
@@ -698,7 +826,7 @@
   }
 
   root.PanelCore = {
-    SCHEMA: SCHEMA, fiscal: fiscal, reportes: reportes, nitNorm: nitNorm, TIPOS: TIPOS, METODOS: METODOS, handle: handle, defaultDb: defaultDb, demoDb: demoDb, resumen: resumen,
+    SCHEMA: SCHEMA, fiscal: fiscal, reportes: reportes, financiamiento: financiamiento, capSim: capSim, FIN_CAT: FIN_CAT, DOCS: DOCS, GARANTIAS: GARANTIAS, BANCOS: BANCOS, nitNorm: nitNorm, TIPOS: TIPOS, METODOS: METODOS, handle: handle, defaultDb: defaultDb, demoDb: demoDb, resumen: resumen,
     stockMap: stockMap, precioUnit: precioUnit, addDays: addDays, cfgObj: cfgObj, ART_PRODUCTO: ART_PRODUCTO, PRECIO: PRECIO, CATEGORIAS: CATEGORIAS, costos: costos, simular: simular
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

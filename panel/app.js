@@ -180,7 +180,7 @@
       (demo ? '<div class="quick"><small>Demostración con datos ficticios. Elige cómo entrar:</small><button class="btn sec" data-a="demo" data-pin="123456">Entrar como administrador</button><button class="btn sec" data-a="demo" data-pin="111111">Entrar como vendedor</button></div>' : '') +
       '</div>';
   }
-  var TITULOS = { asistente: 'Asistente', costos: 'Costos y planes', inicio: 'Inicio', pedidos: 'Pedidos', clientes: 'Clientes', inventario: 'Inventario', ajustes: 'Ajustes', impuestos: 'Impuestos SAT', reportes: 'Reportes para el banco' };
+  var TITULOS = { asistente: 'Asistente', costos: 'Costos y planes', inicio: 'Inicio', pedidos: 'Pedidos', clientes: 'Clientes', inventario: 'Inventario', ajustes: 'Ajustes', impuestos: 'Impuestos SAT', reportes: 'Reportes para el banco', capacidad: 'Capacidad de crédito' };
   function tabBtn(r, nombre, icono) { return '<button class="tab" data-a="ir" data-r="' + r + '"' + (S.ruta === r ? ' aria-current="page"' : '') + '>' + ic(icono) + '<span>' + nombre + '</span></button>' }
   function railBtn(r, nombre, icono) { return '<button class="nav" data-a="ir" data-r="' + r + '"' + (S.ruta === r ? ' aria-current="page"' : '') + '>' + ic(icono) + '<span>' + nombre + '</span></button>' }
   function shellConta(inner) {
@@ -204,7 +204,7 @@
     if (!S.user) { app.innerHTML = loginHTML(aviso); var f = $('#f-login'); if (f) f.addEventListener('submit', entrar); return }
     if (!S.snap) { app.innerHTML = shell(S.errCarga ? '<div class="err">' + esc(S.errCarga) + '</div><button class="btn" data-a="recargar">Reintentar</button>' : '<div class="skel" style="height:260px"></div><div class="skel"></div><div class="skel"></div>'); return }
     if (isConta()) S.ruta = 'impuestos';
-    var v = { inicio: vInicio, pedidos: vPedidos, clientes: vClientes, inventario: vInventario, costos: vCostos, asistente: vAsistente, ajustes: vAjustes, impuestos: vImpuestos, reportes: vReportes }[S.ruta] || vInicio;
+    var v = { inicio: vInicio, pedidos: vPedidos, clientes: vClientes, inventario: vInventario, costos: vCostos, asistente: vAsistente, ajustes: vAjustes, impuestos: vImpuestos, reportes: vReportes, capacidad: vCapacidad }[S.ruta] || vInicio;
     var keep = window.scrollY;
     app.innerHTML = shell(v());
     if (S.ruta === 'inicio' && S.intro) { S.intro = false; setTimeout(function () { var h = $('.hero'); if (h) h.classList.remove('go') }, 2200) }
@@ -272,7 +272,7 @@
   function vInicio() {
     var sn = S.snap, R = C.resumen(sn), adm = isAdmin(), art = sn.inventario.filter(function (a) { return a.tipo === 'producto' })[0], stock = art ? art.stock : 0, min = art ? art.stock_min : 0;
     var izq = (adm ? hero(stock, R.comprometidoKg, min) : heroVend(R, Math.max(0, stock - R.comprometidoKg))) + figs(R) +
-      (adm ? tarjetaCostos() + tarjetaSAT() + tarjetaBanco() + tarjetaAsistente() : '') +
+      (adm ? tarjetaCostos() + tarjetaSAT() + tarjetaBanco() + tarjetaCapacidad() + tarjetaAsistente() : '') +
       '<div class="sec-h"><h2>Ventas de los últimos 14 días</h2><span class="num">' + Q(R.serie.reduce(function (a, s) { return a + s.q }, 0), 0) + '</span></div>' + chart(R.serie);
     var der = '<div class="sec-h" style="margin-top:0"><h2>' + (adm ? 'Por entregar' : 'Mis pedidos por entregar') + '</h2><span>' + R.porEntregar.length + (R.porEntregar.length === 1 ? ' pedido' : ' pedidos') + ' · ' + K(R.comprometidoKg) + '</span></div>' +
       lista(R.porEntregar.slice(0, 5).map(function (p) { return pedRow(p, true) }), 'Todo entregado', 'Cuando se registre un pedido nuevo, aparece aquí.');
@@ -844,6 +844,70 @@
     if (!w) toast('Tu navegador bloqueó la ventana. Permite ventanas emergentes para este sitio.');
   }
 
+  /* ---------- capacidad de crédito y líneas de financiamiento (solo administrador) ---------- */
+  var EST = { listo: ['Lista para solicitar', 'c-ok'], cercano: ['Cerca', 'c-pend'], preparar: ['Por preparar', 'c-can'], no: ['No aplica hoy', 'c-can'] };
+  var MARCA = { ok: ['✓', 'var(--bosque)'], falta: ['!', 'var(--brasa-btn)'], no: ['✕', 'var(--alerta)'], info: ['·', 'var(--suave)'] };
+  function tarjetaCapacidad() {
+    var K = S.snap.capacidad;
+    if (!K) return '<button class="row" data-a="ir" data-r="capacidad" style="margin-bottom:6px"><span class="bar cobrar"></span><span><div class="t">Capacidad de crédito</div><div class="s">Falta actualizar el código de Google (Apps Script)</div></span><span class="r"><span class="chip c-cobrar">!</span></span></button>';
+    var I = K.indice, lis = K.productos.filter(function (p) { return p.estado === 'listo' }).length;
+    return '<button class="row" data-a="ir" data-r="capacidad" style="margin-bottom:6px"><span class="bar ' + (I.nivel === 'alto' ? 'ok' : I.nivel === 'medio' ? 'pend' : 'cobrar') + '"></span><span><div class="t">Capacidad de crédito</div><div class="s">Preparación ' + I.puntos + ' de 100 · cuota máxima ' + Q(K.capacidad.cuotaMax, 0) + ' al mes' + (lis ? ' · ' + lis + ' línea' + (lis > 1 ? 's' : '') + ' lista' + (lis > 1 ? 's' : '') : '') + '</div></span><span class="r"></span></button>';
+  }
+  function simCapHTML(K, m, t, p) {
+    if (!(m > 0 && p > 0)) return '<p style="color:var(--suave);font-size:14px">Escribe un monto y un plazo para ver la cuota y si tu flujo la cubre.</p>';
+    var r = C.capSim(K, m, t, p), obj = K.params.cobertura, v = r.cobertura >= obj ? ['La cubres con holgura', 'c-ok'] : r.cobertura >= 1 ? ['Justa: el banco querrá más holgura', 'c-pend'] : ['Tu flujo hoy no la cubre', 'c-cobrar'];
+    return '<div class="kv"><span>Cuota mensual</span><b class="num">' + Q(r.cuota, 2) + '</b></div><div class="kv"><span>Total a pagar en ' + p + ' meses</span><b class="num">' + Q(r.total, 0) + '</b></div><div class="kv"><span>Cobertura (meta ' + obj + ' veces)</span><b class="num">' + r.cobertura + ' veces</b></div><div style="margin-top:10px"><span class="chip ' + v[1] + '">' + v[0] + '</span></div>';
+  }
+  function chk(grupo, id, texto, on) { return '<label style="display:flex;gap:12px;align-items:flex-start;min-height:44px;padding:8px 0;border-top:1px solid var(--ceniza-2);cursor:pointer"><input type="checkbox" data-cap="' + grupo + '" value="' + esc(id) + '"' + (on ? ' checked' : '') + ' style="width:22px;height:22px;margin-top:1px;flex:none;accent-color:var(--bosque)"><span style="font-size:15px">' + esc(texto) + '</span></label>' }
+  function vCapacidad() {
+    var K = S.snap.capacidad;
+    if (!K) return '<div class="card"><h3>Falta un paso en Google</h3><p style="color:var(--suave)">Pega el código nuevo en Apps Script y publica una versión nueva (Implementar → Administrar implementaciones → ✏ → Nueva versión → Implementar). Luego recarga el panel.</p></div>';
+    var D = K.datos, P = K.params, CP = K.capacidad, I = K.indice, SEL = K.sel, h = '', top = K.productos[0];
+    var viejo = Math.round((new Date(hoy() + 'T00:00:00Z') - new Date(K.verificado + 'T00:00:00Z')) / 864e5);
+    h += '<div class="note"><b>Es una guía de preparación, no una aprobación.</b> Compara tu empresa con los requisitos públicos de bancos y fondos de Guatemala (verificados el ' + esc(K.verificado) + '). Los bancos no publican cuánto exigen para aprobar ni sus tasas: confirma siempre con el banco.' + (viejo > 90 ? ' <b>Esta lista tiene más de 3 meses: puede haber cambiado.</b>' : '') + '</div>';
+    h += '<div class="card"><h3>Qué tan lista está tu empresa</h3><div style="display:flex;align-items:baseline;gap:8px"><span class="d num" style="font-size:54px;line-height:1">' + I.puntos + '</span><span style="color:var(--suave)">de 100 · nivel ' + I.nivel + '</span></div>' +
+      I.partes.map(function (x) { var pc = Math.round(x.pts / x.max * 100); return '<div style="margin-top:12px"><div style="display:flex;justify-content:space-between;font-size:15px"><span><b>' + esc(x.t) + '</b></span><span class="num">' + Math.round(x.pts) + ' / ' + x.max + '</span></div><div style="height:8px;border-radius:5px;background:var(--ceniza-2);margin:5px 0 3px;overflow:hidden"><div style="height:100%;width:' + pc + '%;background:' + (pc >= 75 ? 'var(--bosque)' : pc >= 40 ? '#C98A1B' : 'var(--brasa-btn)') + '"></div></div><div style="font-size:13px;color:var(--suave)">' + esc(x.msg) + '</div></div>' }).join('') +
+      '<p style="font-size:13px;color:var(--suave);margin-top:14px">Índice interno de GEA para saber qué falta. No es la calificación de ningún banco. Se recalcula con cada venta, cobro, gasto o factura que registras (al ' + esc(S.snap.hoy) + ').</p><button class="btn sec sm" data-a="capact" style="margin-top:6px">Actualizar ahora</button></div>';
+    h += '<div class="card"><h3>Cuánto puedes pagar</h3>' +
+      '<div class="kv"><span>Flujo libre al mes<small style="display:block;font-size:12px">' + (D.usaProy ? 'El menor entre tu promedio de ' + D.mesesBase + ' meses y tu proyección, después de impuesto' : 'Promedio de tus últimos ' + D.mesesBase + ' meses, después de impuesto') + '</small></span><b class="num">' + Q(D.flujoLibre, 0) + '</b></div>' +
+      '<div class="kv"><span>Cuota máxima<small style="display:block;font-size:12px">Flujo libre ÷ ' + P.cobertura + ' (cobertura que busca el banco)</small></span><b class="num">' + Q(CP.cuotaMax, 0) + '</b></div>' +
+      '<div class="kv"><span>Crédito máximo<small style="display:block;font-size:12px">A ' + P.plazo + ' meses y ' + P.tasa + ' % anual' + (P.tasaPropia ? '' : ' (tasa supuesta)') + '</small></span><b class="num">' + Q(CP.montoMax, 0) + '</b></div>' +
+      (D.flujoLibre <= 0 ? '<p style="color:var(--suave);font-size:14px;margin-top:10px">Todavía no hay meses con más cobros que gastos. Cuando los registres, aquí aparecerá cuánto puedes pagar.</p>' : '') + '</div>';
+    var sm = S.capSim || { m: CP.solicitado ? CP.solicitado.monto : (Math.floor(CP.montoMax / 1000) * 1000 || ''), t: P.tasa, p: P.plazo };
+    h += '<div class="card"><h3>Prueba un crédito</h3><p style="color:var(--suave);font-size:14px;margin-bottom:10px">Cambia los números y mira al instante cuánto pagarías y si tu flujo lo aguanta.</p>' +
+      '<label class="fld"><span>Monto (Q)</span><input id="sc-m" data-capsim="m" inputmode="decimal" value="' + esc(sm.m) + '"></label><label class="fld"><span>Tasa de interés anual (%)</span><input id="sc-t" data-capsim="t" inputmode="decimal" value="' + esc(sm.t) + '"></label><label class="fld"><span>Plazo en meses</span><input id="sc-p" data-capsim="p" inputmode="numeric" value="' + esc(sm.p) + '"></label>' +
+      '<div id="simcap">' + simCapHTML(K, num(sm.m), num(sm.t), num(sm.p)) + '</div><button class="btn sec sm" data-a="capcred" style="margin-top:12px;width:100%;text-align:center;justify-content:center">Guardar como el crédito que pienso pedir</button></div>';
+    h += '<div class="card"><h3>Qué línea y qué banco</h3>' + (top && top.estado !== 'no' ? '<p style="margin-bottom:10px">Mejor ajuste hoy: <b>' + esc(top.banco) + '</b> · ' + esc(top.producto) + '.</p>' : '<p style="margin-bottom:10px;color:var(--suave)">Hoy ninguna línea aplica. Mira abajo qué falta.</p>') +
+      K.productos.map(function (p, i) {
+        var e = EST[p.estado], dt = [];
+        if (p.montoMin) dt.push('Desde ' + Q(p.montoMin, 0)); if (p.montoMax) dt.push('hasta ' + Q(p.montoMax, 0)); if (p.plazoMax) dt.push('plazo hasta ' + p.plazoMax + ' meses'); if (p.gracia) dt.push(p.gracia + ' meses de gracia');
+        return '<details style="border-top:1px solid var(--ceniza-2);padding:10px 0"' + (i === 0 && p.estado !== 'no' ? ' open' : '') + '><summary style="cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center;justify-content:space-between;min-height:44px"><span><b>' + esc(p.banco) + '</b><span style="display:block;font-size:14px;color:var(--suave)">' + esc(p.producto) + '</span></span><span style="text-align:right;flex:none"><span class="chip ' + e[1] + '">' + e[0] + '</span>' + (p.posible > 0 ? '<span class="num" style="display:block;font-size:13px;color:var(--suave);margin-top:3px">Podrías pedir hasta ' + Q(p.posible, 0) + '</span>' : '') + '</span></summary>' +
+          '<div style="margin-top:8px">' + p.checks.map(function (c) { var m = MARCA[c.e]; return '<div style="display:flex;gap:10px;font-size:14px;padding:3px 0"><b style="color:' + m[1] + ';width:14px;flex:none;text-align:center">' + m[0] + '</b><span>' + esc(c.t) + '</span></div>' }).join('') + '</div>' +
+          '<p style="font-size:13px;color:var(--suave);margin-top:8px">' + (dt.length ? esc(dt.join(' · ')) + '. ' : '') + 'Tasa: ' + esc(p.tasa) + '.' + (p.posible > 0 ? ' Con ese monto la cuota sería de ' + Q(p.cuota, 0) + ' a ' + p.plazo + ' meses.' : '') + '</p>' +
+          '<p style="font-size:13px;color:var(--suave);margin-top:6px">' + esc(p.notas) + '</p><a href="' + esc(p.fuente) + '" target="_blank" rel="noopener" style="font-size:13px;font-weight:700;color:var(--brasa-btn)">Ver la fuente pública</a></details>';
+      }).join('') + '</div>';
+    if (K.acciones.length) h += '<div class="card"><h3>Qué hacer para subir tu índice</h3>' + K.acciones.map(function (a) { return '<div class="kv"><span style="color:var(--tinta)">' + esc(a.t) + '</span><b class="num" style="white-space:nowrap">+' + Math.round(a.pts) + '</b></div>' }).join('') + '</div>';
+    h += '<div class="card"><h3>Mis requisitos</h3><p style="color:var(--suave);font-size:14px;margin-bottom:8px">Marca lo que ya tienes. Con cada cambio se recalculan las líneas de arriba.</p>' +
+      chk('rtu', 'Sí', 'Mi RTU lleva un año o más inscrito en la SAT', SEL.rtu) + '<h4 style="margin:14px 0 2px;font-size:15px">Documentos listos</h4>' + C.DOCS.map(function (d) { return chk('docs', d[0], d[1], SEL.docs.indexOf(d[0]) >= 0) }).join('') +
+      '<h4 style="margin:14px 0 2px;font-size:15px">Garantías que podrías ofrecer</h4>' + C.GARANTIAS.map(function (d) { return chk('garantias', d[0], d[1], SEL.garantias.indexOf(d[0]) >= 0) }).join('') +
+      '<h4 style="margin:14px 0 2px;font-size:15px">Dónde ya tienes cuenta</h4>' + C.BANCOS.map(function (d) { return chk('bancos', d[0], d[1], SEL.bancos.indexOf(d[0]) >= 0) }).join('') +
+      '<button class="btn" data-a="capguardar" style="margin-top:14px">Guardar y recalcular</button></div>';
+    if (K.tope.pct >= 80) h += '<div class="note"><b>Ojo con el tope de pequeño contribuyente.</b> A tu ritmo actual venderías ' + Q(K.tope.ritmo, 0) + ' este año, el ' + Math.round(K.tope.pct) + ' % del tope de ' + Q(K.tope.limite, 0) + '. Si la ampliación te hace pasar el tope, cambias de régimen. Habla con tu contador antes de fijar el monto.</div>';
+    h += '<div class="card"><h3>Cómo se calcula</h3><p style="font-size:14px;color:var(--suave)">La Superintendencia de Bancos obliga a los bancos a evaluar la capacidad de pago: que el deudor genere flujo suficiente para cumplir a tiempo (Resolución JM-47-2022). Por eso el panel parte de tu flujo real: lo que cobras menos lo que gastas y el impuesto estimado. La tasa y el plazo son supuestos que puedes cambiar arriba; los bancos no publican sus tasas. El catálogo de líneas está en el código del panel y se actualiza con una versión nueva cuando cambien las condiciones.</p></div>';
+    return h;
+  }
+  function guardarCap(btn) {
+    var fin = ocupado(btn), g = { docs: [], garantias: [], bancos: [], rtu: false };
+    document.querySelectorAll('input[data-cap]').forEach(function (e) { if (!e.checked) return; var k = e.getAttribute('data-cap'); if (k === 'rtu') g.rtu = true; else g[k].push(e.value) });
+    api('config.guardar', { valores: { cap_docs: g.docs.join(','), cap_garantias: g.garantias.join(','), cap_bancos: g.bancos.join(','), cap_rtu: g.rtu ? 'Sí' : 'No' } }).then(function (res) { fin(); if (!res.ok) return toast(res.error); aplicar(res); render(); toast('Listo, ya se recalculó', true) });
+  }
+  function guardarCred(btn) {
+    var m = num($('#sc-m').value), t = num($('#sc-t').value), p = Math.round(num($('#sc-p').value));
+    if (!(m > 0 && p > 0)) return toast('Escribe un monto y un plazo');
+    var fin = ocupado(btn);
+    api('config.guardar', { valores: { cred_monto: m, cred_tasa: t, cred_plazo: p } }).then(function (res) { fin(); if (!res.ok) return toast(res.error); S.capSim = null; aplicar(res); render(); toast('Guardado: ya sale en tus reportes para el banco', true) });
+  }
+
   /* ---------- acceso ---------- */
   function dispositivoTxt() { try { var ua = navigator.userAgent || '', m = ua.match(/\(([^)]*)\)/), nav = /Brave/i.test(ua) ? 'Brave' : /Edg/i.test(ua) ? 'Edge' : /Firefox/i.test(ua) ? 'Firefox' : /Chrome/i.test(ua) ? 'Chrome' : /Safari/i.test(ua) ? 'Safari' : 'Navegador'; return nav + ' · ' + (m ? m[1] : ua).replace(/^Linux; /, '').replace(/; wv/, '') } catch (e) { return '' } }
   function entrar(e, pinForzado) {
@@ -864,7 +928,10 @@
     var el = e.target.closest('[data-a]'); if (!el) return;
     var a = el.getAttribute('data-a'), id = el.getAttribute('data-id'), d = S.draft;
     switch (a) {
-      case 'ir': S.ruta = el.getAttribute('data-r'); S.limite = 40; render(); window.scrollTo(0, 0); break;
+      case 'ir': S.ruta = el.getAttribute('data-r'); S.limite = 40; render(); window.scrollTo(0, 0); if (S.ruta === 'capacidad') { S.capSim = null; cargar(false) } break;
+      case 'capact': var fa = ocupado(el, 'Actualizando…'); S.capSim = null; cargar(false).then(function () { toast('Cifras actualizadas', true) }); break;
+      case 'capguardar': guardarCap(el); break;
+      case 'capcred': guardarCred(el); break;
       case 'demo': entrar(null, el.getAttribute('data-pin')); break;
       case 'demoreset': LS.del('gea-panel-demo-' + hoy()); DB = null; S.snap = null; render(); cargar(); toast('Demo reiniciada', true); break;
       case 'recargar': S.errCarga = ''; cargar(); break;
@@ -926,6 +993,7 @@
     else if (t.hasAttribute && t.hasAttribute('data-q') && d) { d.items[t.getAttribute('data-q')] = Math.max(0, Math.floor(num(t.value))); avisoMin(); var tg = t.closest('.prod'); if (tg && isAdmin()) { /* campo de precio aparece al soltar */ } }
     else if (t.hasAttribute && t.hasAttribute('data-pr') && d) { d.precios[t.getAttribute('data-pr')] = t.value; avisoMin() }
     else if (t.hasAttribute && t.hasAttribute('data-sim')) { var k = t.getAttribute('data-sim'); S.sim[k] = num(t.value); var sv = $('#sv-' + k); if (sv) sv.textContent = (S.sim[k] > 0 ? '+' : '') + S.sim[k] + ' %'; var so = $('#simout'); if (so) so.innerHTML = simHTML(C.costos(S.snap)) }
+    else if (t.hasAttribute && t.hasAttribute('data-capsim') && S.snap && S.snap.capacidad) { S.capSim = { m: $('#sc-m').value, t: $('#sc-t').value, p: $('#sc-p').value }; var so2 = $('#simcap'); if (so2) so2.innerHTML = simCapHTML(S.snap.capacidad, num(S.capSim.m), num(S.capSim.t), num(S.capSim.p)) }
     else if (t.id === 'pn' && d) d.nota = t.value;
     else if (t.id === 'pf' && d) { d.fecha = t.value; }
     else if (t.id === 'lb' || t.id === 'lc') { var b = num($('#lb').value), c = num($('#lc').value), r = $('#lrend'); if (r) r.textContent = b > 0 && c > 0 ? 'Rendimiento: ' + (b / c * 100).toFixed(1) + ' % de la cáscara se volvió briqueta.' : 'Escribe los kilos de briquetas y de cáscara para ver el rendimiento.' }
