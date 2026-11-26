@@ -229,7 +229,7 @@
      Los bancos NO publican su criterio de aprobación ni sus tasas: esto mide qué tan lista está la empresa para cada línea y
      cuánto podría pagar; no promete aprobación. Las condiciones cambian, hay que confirmarlas siempre con el banco. */
   var CAT_VERIF = '2026-11-26', TASA_SUP = 14, PLAZO_SUP = 60, PLAZO_TOPE = 84, COB_OBJ = 1.5, USD = 7.8;
-  var CAP_NUM = ['cap_cobertura'], CAP_TXT = ['cap_docs', 'cap_garantias', 'cap_bancos', 'cap_rtu'];
+  var CAP_NUM = ['cap_cobertura', 'pro_kg_mes'], CAP_TXT = ['cap_docs', 'cap_garantias', 'cap_bancos', 'cap_rtu'];
   var DOCS = [['dpi', 'DPI vigente del propietario'], ['nit', 'NIT y RTU actualizados en SAT'], ['patente', 'Patente de comercio'], ['recibo', 'Recibo reciente de agua, luz o teléfono'], ['estados_cta', 'Estados de cuenta bancarios de los últimos 3 meses'],
     ['solvencia', 'Solvencia fiscal de la SAT'], ['decl', 'Declaraciones de impuestos al día'], ['ef_firmados', 'Estados financieros firmados por tu contador'], ['flujo3', 'Flujo de caja proyectado a 3 años'],
     ['plan', 'Plan de inversión con cotizaciones del equipo'], ['patrimonial', 'Estado patrimonial e ingresos y egresos'], ['referencias', 'Autorización para consultar referencias crediticias']];
@@ -777,6 +777,124 @@
     return out;
   }
 
+  /* ---------- consejero: analiza tus números y propone acciones (puro; corre en la pantalla con lo que ya registras) ----------
+     Referencias de mercado: información pública con fecha y fuente. No son precios en vivo; sirven para comparar con tus cifras y decidir qué investigar. */
+  var MKT_VERIF = '2026-11-26', MKT_USD = 7.8, LB_KG = 2.2046, PRO_KG_DEF = 2700;
+  var MKT_CAT = [
+    { id: 'local', tipo: 'Mercado local', titulo: 'Carbón vegetal para cocinar en Guatemala', refQ: [Math.round(5 * LB_KG * 100) / 100, null], refTxt: 'Consumidor ≈ Q5 por libra (≈ Q11 por kg); precio de fábrica Q1.50 a Q2.20 por libra (≈ Q3.30 a Q4.80 por kg).', conf: 'media',
+      datos: 'El INAB estima un consumo nacional de unos 42 millones de libras al año, de los cuales solo 6 % es importado; la demanda sube en Semana Santa y de octubre a diciembre. Casi todo es carbón de leña, con humo y chispa; la briqueta de coco compite por calidad.', req: ['Registro sanitario o etiqueta si lo vendes en supermercados (confirmar con el comprador)', 'Peso exacto en la bolsa y factura FEL'],
+      fuente: 'https://inab.gob.gt/images/boletines/2025/abril/Boletín_Producción_Carbón.pdf', fecha: '2025-04' },
+    { id: 'exp-bbq', tipo: 'Exportación', titulo: 'Briquetas de coco para parrilla (BBQ)', refUSD: [0.6, 1.5], refTxt: 'Referencia de vendedores en Alibaba: US$0.60 a 1.50 por kg.', conf: 'baja',
+      datos: 'El sudeste asiático produce más del 80 % del carbón de coco del mundo y domina este segmento básico. Pedido típico del comprador: humedad hasta 10 %, ceniza hasta 5 %, combustión de 90 minutos o más.', req: ['Clasificación UN 1361 y hoja de seguridad (MSDS) para el transporte', 'Pruebas de humedad, ceniza y tiempo de combustión', 'Registro de exportador y trámite aduanero (partida 4402)'],
+      fuente: 'https://seller.alibaba.com/blogs/2026/southeast-asia/coconut-shell-charcoal/coconut-shell-charcoal-export-strategy-white-paper', fecha: '2026' },
+    { id: 'exp-shisha', tipo: 'Exportación', titulo: 'Briquetas de coco para shisha (narguile)', refUSD: [0.8, 2.2], refTxt: 'Referencia de vendedores en Alibaba: US$0.80 a 2.20 por kg.', conf: 'baja',
+      datos: 'Es un segmento premium dentro de las briquetas: pide ceniza de 1.5 % o menos, combustión de más de 120 minutos y metales pesados bajo 10 ppm. Mercados: Oriente Medio, EE. UU. y Europa.', req: ['Análisis de laboratorio de ceniza y metales pesados', 'UN 1361, MSDS y cumplimiento de contacto con alimentos', 'Formato y empaque que pide el importador'],
+      fuente: 'https://seller.alibaba.com/blogs/2026/southeast-asia/coconut-shell-charcoal/coconut-shell-charcoal-export-strategy-white-paper', fecha: '2026' },
+    { id: 'exp-ac', tipo: 'Producto nuevo', titulo: 'Carbón activado de cáscara de coco (Fase 2)', refUSD: [2.2, 4.6], refTxt: 'US$2.2 a 4.6 por kg: EE. UU. US$2,204 por tonelada en el primer trimestre de 2026 (IMARC); Sri Lanka llegó a US$4,575 por tonelada en diciembre de 2025 (ICC).', conf: 'media',
+      datos: 'Las importaciones de EE. UU. de carbón activado de coco valieron US$134.9 millones en 2025, por demanda de tratamiento de agua y aire. Para filtros de agua se pide índice de yodo sobre 1,000 mg/g; los compradores de filtración suelen exigir la certificación NSF/ANSI 42 (cuesta entre US$15,000 y 25,000 y toma de 6 a 8 meses, según vendedores de Alibaba).', req: ['Activación (vapor o CO2) con control de temperatura', 'Pruebas de índice de yodo y superficie en laboratorio', 'Certificaciones según el destino (NSF/ANSI 42 para agua)', 'Partida 3802.10 y registro de exportador'],
+      fuente: 'https://mail.coconutcommunity.org/page-content/market-review-of-coconut-shell-charcoal-april-2026-mr-92', fecha: '2026-04' },
+    { id: 'loc-ac', tipo: 'Producto nuevo', titulo: 'Carbón activado para el mercado nacional', refQ: [25, 35], refTxt: 'Tu propio plan: Q25 a 35 por kg para filtros de agua e industria local.', conf: 'baja',
+      datos: 'Es la ruta de menor riesgo para empezar: sin exportación ni certificaciones internacionales. Hay que confirmar con compradores reales (purificadoras de agua, industria) el precio y el volumen antes de invertir en la máquina.', req: ['Prueba de laboratorio del producto', 'Cartas de intención de dos o tres compradores locales'],
+      fuente: 'https://www.baccredomatic.com/es-gt/pymes/financiamientos-sostenibles', fecha: '2026-11' }
+  ];
+  function kgMesProm(H) { var act = H.filter(function (x) { return x.ventas > 0 }).slice(-3), s0 = 0; act.forEach(function (x) { s0 += x.kg }); return act.length ? s0 / act.length : 0 }
+  function consejo(snap) {
+    var Rp = snap.reportes, K = snap.capacidad, F = snap.fiscal, cfg = snap.config || {}, hoy = snap.hoy, mes = parseInt(hoy.slice(5, 7), 10);
+    var R = costos(snap), RS = resumen(snap), H = Rp ? Rp.meses : [], hall = [], inv = [], i;
+    var ventas12 = H.reduce(function (t, x) { return t + x.ventas }, 0), kgM = kgMesProm(H), P = R.precioProm, capKg = n(cfg.pro_kg_mes) > 0 ? n(cfg.pro_kg_mes) : PRO_KG_DEF;
+    function H1(area, nivel, t, d, a) { hall.push({ area: area, nivel: nivel, t: t, d: d, a: a || '' }) }
+    var Qr = function (x) { return 'Q' + Math.round(x).toLocaleString('en-US') }, Q1 = function (x) { return 'Q' + (Math.round(x * 10) / 10).toFixed(1) };
+    if (!Rp || ventas12 <= 0) {
+      H1('Datos', 'media', 'Todavía no hay ventas para analizar', 'Sin ventas entregadas en 12 meses el consejero no puede darte cifras confiables.', 'Registra cada pedido, entrega, cobro y gasto. Con el primer mes completo ya tendrás un diagnóstico.');
+    } else {
+      // rentabilidad
+      if (R.margenPct === null) H1('Rentabilidad', 'media', 'No se puede calcular tu margen', 'Falta producción o gastos de los últimos 30 días.', 'Registra los lotes producidos y todos los gastos para saber cuánto te cuesta cada kilo.');
+      else {
+        var p35 = R.costoKg / (1 - 0.35);
+        if (R.margenPct < 0.15) H1('Rentabilidad', 'alta', 'Tu margen es de solo ' + Math.round(R.margenPct * 100) + ' %', 'Vendes a ' + Q1(P) + ' por kg y cada kilo te cuesta ' + Q1(R.costoKg) + '.', 'Para ganar 35 % necesitarías vender a ' + Q1(p35) + ' por kg o bajar el costo. Revisa primero qué categoría de gasto pesa más.');
+        else if (R.margenPct < 0.3) H1('Rentabilidad', 'media', 'Margen de ' + Math.round(R.margenPct * 100) + ' %: aceptable pero ajustado', 'Ganas ' + Q1(R.margenKg) + ' por kg.', 'Un alza de 10 % en cáscara o mano de obra se come buena parte de la ganancia. Apunta a 35 %: eso es vender a ' + Q1(p35) + ' por kg con tu costo actual.');
+        else H1('Rentabilidad', 'bien', 'Margen sano de ' + Math.round(R.margenPct * 100) + ' %', 'Ganas ' + Q1(R.margenKg) + ' por kg.', 'Cuida que siga así al crecer: un banco y un inversionista miran este número primero.');
+      }
+      // precio frente al mercado
+      if (P !== null) {
+        var leña = MKT_CAT[0].refQ[0];
+        if (P < leña) H1('Precio', 'media', 'Vendes más barato que el carbón de leña', 'Promedias ' + Q1(P) + ' por kg y el carbón de leña ronda ' + Q1(leña) + ' por kg al consumidor.', 'Tu briqueta rinde más y no echa chispa: sube precios a los clientes que no comparan por precio y reserva el mejor precio para mayoreo por volumen.');
+        else if (P < 15) H1('Precio', 'baja', 'Hay espacio para subir precio', 'Promedias ' + Q1(P) + ' por kg; el benchmark de supermercado que usaste ronda Q15 por kg.', 'Prueba BLACK DIAMOND a precio premium con 2 o 3 clientes antes de subir todo.');
+      }
+      // tendencia
+      var v3 = H.slice(-3).reduce(function (t, x) { return t + x.ventas }, 0), v3p = H.slice(-6, -3).reduce(function (t, x) { return t + x.ventas }, 0);
+      if (v3p > 0) { var cr = (v3 / v3p - 1) * 100; if (cr >= 15) H1('Ventas', 'bien', 'Tus ventas crecen ' + Math.round(cr) + ' %', 'Los últimos 3 meses vs los 3 anteriores.', 'Es el momento de asegurar cáscara y capacidad antes de que la demanda te rebase.'); else if (cr <= -10) H1('Ventas', 'alta', 'Tus ventas bajaron ' + Math.round(-cr) + ' %', 'Los últimos 3 meses vs los 3 anteriores.', 'Llama esta semana a tus 5 mejores clientes y pregunta qué cambió. Revisa si se acabó el producto o subió la competencia.') }
+      // concentración
+      var tot = 0; RS.top.forEach(function (c) { tot += c.q });
+      var ventas30 = R.ventas;
+      if (RS.top.length >= 1 && ventas30 > 0) { var sh = RS.top[0].q / ventas30; if (sh >= 0.4) H1('Clientes', 'media', RS.top[0].cliente + ' es el ' + Math.round(sh * 100) + ' % de tus ventas', 'Depender de un cliente es un riesgo: si se va, pierdes casi la mitad.', 'Meta: que ningún cliente pase de 30 %. Busca 3 clientes nuevos de tamaño parecido.') }
+      // cartera
+      var AG = Rp.antiguedad, viejo = AG.b[2] + AG.b[3];
+      if (AG.total > 0 && viejo / AG.total >= 0.2) H1('Cobros', 'media', Qr(viejo) + ' llevan más de 30 días sin cobrarse', 'Es el ' + Math.round(viejo / AG.total * 100) + ' % de lo que te deben.', 'Cobra primero a ' + (AG.lista[0] ? AG.lista[0].cliente : 'los más atrasados') + '. Para los nuevos, entrega solo con pago de contado o anticipo.');
+      // temporada e inventario
+      var kgBod = Rp.balance.kgBodega, cob = kgM > 0 ? kgBod / kgM : null, pico = (mes >= 10 && mes <= 12) || mes === 2 || mes === 3;
+      if (cob !== null && cob < 0.5 && pico) H1('Temporada', 'alta', (mes >= 10 ? 'Temporada alta y poco producto en bodega' : 'Se acerca Semana Santa y tienes poco producto'), 'Tienes ' + Math.round(kgBod) + ' kg, menos de la mitad de lo que vendes en un mes (' + Math.round(kgM) + ' kg).', 'Produce al máximo y asegura cáscara ahora: octubre a diciembre y Semana Santa son los meses de más demanda de carbón en el país.');
+      else if (cob !== null && cob > 3) H1('Inventario', 'media', 'Tienes ' + cob.toFixed(1) + ' meses de producto parado', Math.round(kgBod) + ' kg en bodega contra ' + Math.round(kgM) + ' kg de venta mensual.', 'Dinero detenido: baja la producción o empuja una promoción de mayoreo antes de producir más.');
+      else if (pico && mes >= 10 && cob !== null) H1('Temporada', 'baja', 'Estás en temporada alta', 'Octubre a diciembre es de las épocas de mayor consumo de carbón.', 'Confirma que tu stock alcance para pedidos grandes y que tus clientes ya te encargaron para fin de año.');
+      // capacidad y utilización
+      if (kgM > 0) { var ut = kgM / capKg; if (ut >= 0.85) H1('Capacidad', 'media', 'Vendes el ' + Math.round(ut * 100) + ' % de lo que puede producir tu planta', Math.round(kgM) + ' de ' + Math.round(capKg) + ' kg al mes.', 'Estás cerca del límite: planifica la ampliación antes de rechazar pedidos (mira Inversión abajo).'); else if (ut < 0.4) H1('Capacidad', 'baja', 'Tu planta trabaja al ' + Math.round(ut * 100) + ' % de su capacidad', Math.round(kgM) + ' de ' + Math.round(capKg) + ' kg al mes.', 'Antes de comprar más máquinas, llena la que tienes: el cuello de botella es vender, no producir.') }
+      // mayor gasto
+      var g0 = R.porCategoria[0];
+      if (g0 && R.gastos.total > 0 && g0.q / R.gastos.total >= 0.4) {
+        var cons = { 'Cáscara de coco': 'Negocia un precio fijo por contrato con tus proveedores y junta cargas completas para bajar el flete.', 'Mano de obra': 'Mide los kilos que se producen por hora de trabajo: si sube, baja el costo por kilo sin recortar.', 'Aceite y combustible': 'Mide cuánto aceite gasta el horno por kilo y recircula los gases de pirólisis como tu diseño prevé.', 'Electricidad': 'Revisa la potencia contratada y concentra la molienda y el prensado en horarios continuos.' };
+        H1('Costos', 'baja', 'Tu mayor gasto es ' + g0.categoria + ' (' + Math.round(g0.q / R.gastos.total * 100) + ' %)', Qr(g0.q) + ' en los últimos 30 días.', cons[g0.categoria] || 'Compara precios con otro proveedor y registra el comprobante de cada compra.');
+      }
+      // impuestos
+      if (F) {
+        if (F.sinFacturar && F.sinFacturar.length) H1('Impuestos', 'media', F.sinFacturar.length + ' pedido' + (F.sinFacturar.length > 1 ? 's' : '') + ' entregado' + (F.sinFacturar.length > 1 ? 's' : '') + ' sin factura', Qr(F.sinFacturarQ) + ' sin documento.', 'Factúralos: lo que no está facturado no cuenta para el banco ni para tu historial.');
+        if (F.pct >= 80) H1('Impuestos', F.pct >= 95 ? 'alta' : 'media', 'Llevas ' + Math.round(F.pct) + ' % del tope de pequeño contribuyente', 'A este ritmo cerrarías el año en ' + Qr(F.proyeccion) + ' de ' + Qr(F.limite) + '.', 'Habla con tu contador: crecer por encima del tope te cambia de régimen. Mejor planearlo antes de que ocurra.');
+      }
+      var sd = (snap.gastos || []).filter(function (g) { return g.estado !== 'Anulado' && g.tipo !== 'Inversión' && g.fecha >= addDays(hoy, -89) });
+      var sc = sd.filter(function (g) { return !g.doc_numero }).length;
+      if (sd.length >= 5 && sc / sd.length >= 0.5) H1('Impuestos', 'baja', Math.round(sc / sd.length * 100) + ' % de tus gastos no tiene factura o recibo', 'Sin comprobante no se respalda ante la SAT ni ante un banco.', 'Pide factura o recibo en cada compra y anota su número al registrar el gasto.');
+      // crédito
+      if (K) { if (K.indice.nivel === 'alto') H1('Crédito', 'bien', 'Estás listo para hablar con un banco', 'Índice de preparación ' + K.indice.puntos + ' de 100.', 'Entra a Capacidad de crédito para ver qué línea te conviene.'); else if (K.capacidad.cuotaMax > 0) H1('Crédito', 'baja', 'Hoy podrías pagar una cuota de ' + Qr(K.capacidad.cuotaMax) + ' al mes', 'Preparación ' + K.indice.puntos + ' de 100.', 'Sube el índice completando documentos y facturando todo; mira Capacidad de crédito.') }
+    }
+    // inversión sugerida
+    var margenKg = R.margenKg, ut2 = kgM > 0 ? kgM / capKg : 0, crecOk = H.length >= 6 && H.slice(-3).reduce(function (t, x) { return t + x.ventas }, 0) >= H.slice(-6, -3).reduce(function (t, x) { return t + x.ventas }, 0);
+    var extra = kgM * 0.25, gan = margenKg !== null && margenKg > 0 ? extra * margenKg : 0;
+    var vp = ut2 >= 0.85 && crecOk && gan > 0 ? ['recomendada', 'Estás vendiendo casi todo lo que produces y la demanda no baja. Con ' + Math.round(extra) + ' kg más al mes (un 25 % más, supuesto prudente) ganarías ' + Qr(gan) + ' mensuales.']
+      : ut2 >= 0.85 && gan <= 0 ? ['esperar', 'Estás casi al límite de producción, pero falta tu margen por kg para calcular el retorno: registra los lotes producidos y todos los gastos.']
+      : ut2 >= 0.85 && !crecOk ? ['esperar', 'Estás casi al límite, pero las ventas de los últimos 3 meses no crecen. Confirma que la demanda sube antes de comprar.']
+      : ut2 >= 0.6 ? ['esperar', 'Todavía tienes capacidad libre (' + Math.round((1 - ut2) * 100) + ' %). Compra la segunda prensa cuando pases del 85 % o rechaces pedidos por falta de producto.']
+      : [ 'no ahora', ut2 > 0 ? 'Tu planta trabaja al ' + Math.round(ut2 * 100) + ' %: sobra capacidad. Invierte en vender, no en máquinas.' : 'Sin ventas registradas aún no se puede justificar una máquina nueva.'];
+    inv.push({ t: 'Segunda prensa briquetadora (GEA-IND-003)', costo: 'Q8,600 a Q13,700 (según tu diseño)', veredicto: vp[0], por: vp[1], rec: gan > 0 && vp[0] !== 'no ahora' ? { min: Math.round(8600 / gan * 10) / 10, max: Math.round(13700 / gan * 10) / 10 } : null });
+    var gapP = P !== null ? P : 0;
+    inv.push({ t: 'Empaque premium y marca BLACK DIAMOND', costo: 'Por cotizar', veredicto: P !== null && P >= 15 ? 'esperar' : (P !== null ? 'recomendada' : 'no ahora'), por: P !== null ? (P >= 15 ? 'Ya vendes arriba de Q15 por kg: el empaque premium se paga si sostiene un precio todavía mayor.' : 'Vendes a ' + Q1(gapP) + ' por kg. Un empaque que justifique Q18 a 22 por kg (como planeaste para BLACK DIAMOND) es la inversión de menor costo con más retorno.') : 'Sin ventas registradas todavía.', rec: null });
+    var eAC = MKT_CAT[3], acQ = [eAC.refUSD[0] * MKT_USD, eAC.refUSD[1] * MKT_USD];
+    inv.push({ t: 'Línea de carbón activado (Fase 2)', costo: 'Por cotizar con tu diseño', veredicto: kgM >= capKg * 0.6 ? 'esperar' : 'no ahora', por: 'Se vende a ' + Qr(acQ[0]) + ' a ' + Qr(acQ[1]) + ' por kg contra ' + (P !== null ? Q1(P) + ' de tu briqueta' : 'el precio de tu briqueta') + ', pero exige activación, pruebas de laboratorio y compradores definidos. Primero: manda una muestra a laboratorio y consigue 2 cartas de intención.', rec: null });
+    // mercado: veredictos con tus números
+    var mkt = MKT_CAT.map(function (m) {
+      var o = { id: m.id, tipo: m.tipo, titulo: m.titulo, refTxt: m.refTxt, conf: m.conf, datos: m.datos, req: m.req, fuente: m.fuente, fecha: m.fecha, ver: null, qkg: null };
+      if (m.refUSD) o.qkg = [Math.round(m.refUSD[0] * MKT_USD * 10) / 10, Math.round(m.refUSD[1] * MKT_USD * 10) / 10];
+      else if (m.refQ && m.refQ[1]) o.qkg = [m.refQ[0], m.refQ[1]]; else if (m.refQ) o.qkg = [m.refQ[0], m.refQ[0]];
+      if (m.id === 'local') o.ver = { n: 'si', t: P !== null ? 'Es tu mercado principal. Promedias ' + Q1(P) + ' por kg contra ' + Q1(m.refQ[0]) + ' del carbón de leña.' : 'Es tu mercado principal hoy.' };
+      else if (m.id === 'exp-bbq') o.ver = P !== null && o.qkg[1] <= P ? { n: 'no', t: 'No conviene: el mercado local ya te paga ' + Q1(P) + ' por kg y la exportación pagaría ' + Q1(o.qkg[0]) + ' a ' + Q1(o.qkg[1]) + ', sin contar flete ni trámites.' } : { n: 'esperar', t: 'Sería un precio bajo y compites con el sudeste asiático. Solo vale con volumen grande y costo muy bajo.' };
+      else if (m.id === 'exp-shisha') o.ver = P !== null && o.qkg[1] <= P ? { n: 'no', t: 'Hoy el mercado local te paga igual o más (' + Q1(P) + ' por kg).' } : { n: 'esperar', t: 'Posible con producto premium: manda a laboratorio la ceniza y el tiempo de combustión de BLACK DIAMOND y contacta a dos importadores antes de invertir.' };
+      else if (m.id === 'exp-ac') o.ver = { n: 'esperar', t: 'Es la oportunidad de más valor: ' + Q1(o.qkg[0]) + ' a ' + Q1(o.qkg[1]) + ' por kg. Cuidado: tu proyección de exportación usa US$6 por kg y las referencias públicas llegan a unos US$4.6. Planea con US$3 a 4.5.' };
+      else o.ver = { n: 'esperar', t: 'La ruta más segura para empezar la Fase 2: vende en el país primero, con laboratorio y compradores confirmados.' };
+      return o;
+    });
+    var rk = { alta: 0, media: 1, baja: 2, bien: 3 }; hall.sort(function (a, b) { return rk[a.nivel] - rk[b.nivel] });
+    var na = hall.filter(function (x) { return x.nivel === 'alta' }).length, nm = hall.filter(function (x) { return x.nivel === 'media' }).length;
+    var estado = na >= 2 ? 'critico' : (na >= 1 || nm >= 3 ? 'atencion' : 'sano');
+    var frase = !Rp || ventas12 <= 0 ? 'Registra tus ventas y gastos para recibir un diagnóstico.' : (estado === 'sano' ? 'Tu negocio va bien. Estas son las mejoras que más suman.' : estado === 'atencion' ? 'Hay cosas que atender pronto, empieza por las primeras.' : 'Hay varios puntos urgentes: empieza por los de arriba.');
+    return { hasta: hoy, verificado: MKT_VERIF, estado: estado, frase: frase, prioridades: hall.filter(function (x) { return x.nivel !== 'bien' }).slice(0, 3), hallazgos: hall, inversion: inv, mercado: mkt, base: { kgMes: Math.round(kgM), capKg: capKg, capPropia: n(cfg.pro_kg_mes) > 0, precioKg: P, costoKg: R.costoKg } };
+  }
+  function consejoTexto(CS) {
+    var L = ['DIAGNÓSTICO AUTOMÁTICO DEL PANEL (' + CS.hasta + ', estado: ' + CS.estado + ')'];
+    CS.hallazgos.forEach(function (h) { L.push('- [' + h.nivel + '] ' + h.t + '. ' + h.d + ' Acción: ' + h.a) });
+    L.push('INVERSIONES EVALUADAS: ' + CS.inversion.map(function (x) { return x.t + ' → ' + x.veredicto + ' (' + x.por + ')' }).join(' | '));
+    L.push('REFERENCIAS DE MERCADO (públicas, verificadas ' + CS.verificado + '): ' + CS.mercado.map(function (m) { return m.titulo + ': ' + m.refTxt + ' Veredicto: ' + (m.ver ? m.ver.t : '') }).join(' | '));
+    L.push('Capacidad de planta usada en el cálculo: ' + CS.base.capKg + ' kg al mes (' + (CS.base.capPropia ? 'dato del dueño' : 'supuesto del diseño GEA-IND-003') + ').');
+    return L.join('\n');
+  }
+
   /* ---------- datos de demostración (ficticios), construidos con las mismas acciones reales ---------- */
   function demoDb(hoy) {
     var seed = 20261124;
@@ -826,7 +944,7 @@
   }
 
   root.PanelCore = {
-    SCHEMA: SCHEMA, fiscal: fiscal, reportes: reportes, financiamiento: financiamiento, capSim: capSim, FIN_CAT: FIN_CAT, DOCS: DOCS, GARANTIAS: GARANTIAS, BANCOS: BANCOS, nitNorm: nitNorm, TIPOS: TIPOS, METODOS: METODOS, handle: handle, defaultDb: defaultDb, demoDb: demoDb, resumen: resumen,
+    SCHEMA: SCHEMA, fiscal: fiscal, reportes: reportes, financiamiento: financiamiento, capSim: capSim, consejo: consejo, consejoTexto: consejoTexto, MKT_CAT: MKT_CAT, FIN_CAT: FIN_CAT, DOCS: DOCS, GARANTIAS: GARANTIAS, BANCOS: BANCOS, nitNorm: nitNorm, TIPOS: TIPOS, METODOS: METODOS, handle: handle, defaultDb: defaultDb, demoDb: demoDb, resumen: resumen,
     stockMap: stockMap, precioUnit: precioUnit, addDays: addDays, cfgObj: cfgObj, ART_PRODUCTO: ART_PRODUCTO, PRECIO: PRECIO, CATEGORIAS: CATEGORIAS, costos: costos, simular: simular
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

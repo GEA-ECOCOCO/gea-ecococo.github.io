@@ -180,7 +180,7 @@
       (demo ? '<div class="quick"><small>Demostración con datos ficticios. Elige cómo entrar:</small><button class="btn sec" data-a="demo" data-pin="123456">Entrar como administrador</button><button class="btn sec" data-a="demo" data-pin="111111">Entrar como vendedor</button></div>' : '') +
       '</div>';
   }
-  var TITULOS = { asistente: 'Asistente', costos: 'Costos y planes', inicio: 'Inicio', pedidos: 'Pedidos', clientes: 'Clientes', inventario: 'Inventario', ajustes: 'Ajustes', impuestos: 'Impuestos SAT', reportes: 'Reportes para el banco', capacidad: 'Capacidad de crédito' };
+  var TITULOS = { asistente: 'Asistente', costos: 'Costos y planes', inicio: 'Inicio', pedidos: 'Pedidos', clientes: 'Clientes', inventario: 'Inventario', ajustes: 'Ajustes', impuestos: 'Impuestos SAT', reportes: 'Reportes para el banco', capacidad: 'Capacidad de crédito', consejero: 'Consejero' };
   function tabBtn(r, nombre, icono) { return '<button class="tab" data-a="ir" data-r="' + r + '"' + (S.ruta === r ? ' aria-current="page"' : '') + '>' + ic(icono) + '<span>' + nombre + '</span></button>' }
   function railBtn(r, nombre, icono) { return '<button class="nav" data-a="ir" data-r="' + r + '"' + (S.ruta === r ? ' aria-current="page"' : '') + '>' + ic(icono) + '<span>' + nombre + '</span></button>' }
   function shellConta(inner) {
@@ -204,7 +204,7 @@
     if (!S.user) { app.innerHTML = loginHTML(aviso); var f = $('#f-login'); if (f) f.addEventListener('submit', entrar); return }
     if (!S.snap) { app.innerHTML = shell(S.errCarga ? '<div class="err">' + esc(S.errCarga) + '</div><button class="btn" data-a="recargar">Reintentar</button>' : '<div class="skel" style="height:260px"></div><div class="skel"></div><div class="skel"></div>'); return }
     if (isConta()) S.ruta = 'impuestos';
-    var v = { inicio: vInicio, pedidos: vPedidos, clientes: vClientes, inventario: vInventario, costos: vCostos, asistente: vAsistente, ajustes: vAjustes, impuestos: vImpuestos, reportes: vReportes, capacidad: vCapacidad }[S.ruta] || vInicio;
+    var v = { inicio: vInicio, pedidos: vPedidos, clientes: vClientes, inventario: vInventario, costos: vCostos, asistente: vAsistente, ajustes: vAjustes, impuestos: vImpuestos, reportes: vReportes, capacidad: vCapacidad, consejero: vConsejero }[S.ruta] || vInicio;
     var keep = window.scrollY;
     app.innerHTML = shell(v());
     if (S.ruta === 'inicio' && S.intro) { S.intro = false; setTimeout(function () { var h = $('.hero'); if (h) h.classList.remove('go') }, 2200) }
@@ -272,7 +272,7 @@
   function vInicio() {
     var sn = S.snap, R = C.resumen(sn), adm = isAdmin(), art = sn.inventario.filter(function (a) { return a.tipo === 'producto' })[0], stock = art ? art.stock : 0, min = art ? art.stock_min : 0;
     var izq = (adm ? hero(stock, R.comprometidoKg, min) : heroVend(R, Math.max(0, stock - R.comprometidoKg))) + figs(R) +
-      (adm ? tarjetaCostos() + tarjetaSAT() + tarjetaBanco() + tarjetaCapacidad() + tarjetaAsistente() : '') +
+      (adm ? tarjetaCostos() + tarjetaSAT() + tarjetaConsejero() + tarjetaBanco() + tarjetaCapacidad() + tarjetaAsistente() : '') +
       '<div class="sec-h"><h2>Ventas de los últimos 14 días</h2><span class="num">' + Q(R.serie.reduce(function (a, s) { return a + s.q }, 0), 0) + '</span></div>' + chart(R.serie);
     var der = '<div class="sec-h" style="margin-top:0"><h2>' + (adm ? 'Por entregar' : 'Mis pedidos por entregar') + '</h2><span>' + R.porEntregar.length + (R.porEntregar.length === 1 ? ' pedido' : ' pedidos') + ' · ' + K(R.comprometidoKg) + '</span></div>' +
       lista(R.porEntregar.slice(0, 5).map(function (p) { return pedRow(p, true) }), 'Todo entregado', 'Cuando se registre un pedido nuevo, aparece aquí.');
@@ -844,6 +844,40 @@
     if (!w) toast('Tu navegador bloqueó la ventana. Permite ventanas emergentes para este sitio.');
   }
 
+  /* ---------- consejero: análisis, inversión y mercado (solo administrador) ---------- */
+  var VER = { si: ['Sí, es tu base', 'c-ok'], recomendada: ['Recomendada', 'c-ok'], esperar: ['Esperar y validar', 'c-pend'], no: ['No conviene hoy', 'c-can'], 'no ahora': ['No ahora', 'c-can'] };
+  function tarjetaConsejero() {
+    var CS = C.consejo(S.snap), p = CS.prioridades[0], bar = CS.estado === 'critico' ? 'cobrar' : CS.estado === 'atencion' ? 'pend' : 'ok';
+    return '<button class="row" data-a="ir" data-r="consejero" style="margin-bottom:6px"><span class="bar ' + bar + '"></span><span><div class="t">Consejero del negocio</div><div class="s">' + esc(p ? p.t : CS.frase) + '</div></span><span class="r"><span class="chip c-ok">Nuevo</span></span></button>';
+  }
+  function vConsejero() {
+    if (!isAdmin()) return '<div class="vacio"><b>Esta sección es del administrador</b></div>';
+    var CS = C.consejo(S.snap), h = '', B = CS.base, est = { sano: ['Negocio sano', 'c-ok'], atencion: ['Con puntos por atender', 'c-pend'], critico: ['Atención urgente', 'c-cobrar'] }[CS.estado];
+    h += '<div class="note"><b>Es un análisis automático de tus números y de referencias públicas, no asesoría financiera.</b> Se recalcula con cada venta, cobro o gasto que registras. Las referencias de mercado son de ' + esc(CS.verificado) + ' y no son precios en vivo.</div>';
+    h += '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px"><h3 style="margin:0">Cómo vas hoy</h3><span class="chip ' + est[1] + '">' + est[0] + '</span></div><p style="margin-bottom:10px">' + esc(CS.frase) + '</p>' +
+      (CS.prioridades.length ? '<h4 style="font-size:15px;margin:6px 0">Empieza por esto</h4>' + CS.prioridades.map(function (x, i) { return '<div class="kv"><span style="color:var(--tinta)"><b>' + (i + 1) + '. ' + esc(x.t) + '</b><small style="display:block;color:var(--suave)">' + esc(x.a) + '</small></span></div>' }).join('') : '') + '</div>';
+    h += '<div class="sec-h"><h2>Qué dicen tus números</h2></div><div class="list">' + CS.hallazgos.map(function (x) { return '<div class="row" style="cursor:default;align-items:flex-start"><span class="bar ' + (x.nivel === 'alta' ? 'cobrar' : x.nivel === 'media' ? 'pend' : 'ok') + '"></span><span><div class="t">' + esc(x.t) + '</div><div class="s" style="white-space:normal">' + esc(x.d) + '</div>' + (x.a ? '<div class="s" style="white-space:normal;color:var(--tinta);margin-top:4px"><b>Qué hacer:</b> ' + esc(x.a) + '</div>' : '') + '</span><span class="r"><span class="chip c-can">' + esc(x.area) + '</span></span></div>' }).join('') + '</div>';
+    h += '<div class="sec-h"><h2>En qué invertir</h2></div>' + CS.inversion.map(function (x) { var v = VER[x.veredicto]; return '<div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><b>' + esc(x.t) + '</b><span class="chip ' + v[1] + '" style="flex:none">' + v[0] + '</span></div><div style="font-size:13px;color:var(--suave);margin:4px 0 6px">Costo: ' + esc(x.costo) + '</div><div style="font-size:15px">' + esc(x.por) + '</div>' + (x.rec ? '<div style="font-size:14px;margin-top:6px;color:var(--bosque)"><b>Se recupera en unos ' + x.rec.min + ' a ' + x.rec.max + ' meses</b> con ese kilo extra.</div>' : '') + '</div>' }).join('');
+    h += '<div class="card"><h3>Capacidad de tu planta</h3><p style="color:var(--suave);font-size:14px;margin-bottom:8px">El consejero compara lo que vendes con lo que tu planta puede producir. Hoy usa ' + Math.round(B.capKg) + ' kg al mes (' + (B.capPropia ? 'dato tuyo' : 'supuesto de tu diseño de la prensa, entre 2,350 y 3,025') + '). Escribe la capacidad real que has medido.</p><label class="fld"><span>Kilos que puede producir tu planta al mes</span><input id="pro-kg" inputmode="decimal" value="' + (B.capPropia ? Math.round(B.capKg) : '') + '" placeholder="' + Math.round(B.capKg) + '"></label><button class="btn sec sm" data-a="capkg">Guardar</button></div>';
+    h += '<div class="sec-h"><h2>Mercado, exportación y producto nuevo</h2></div>' + CS.mercado.map(function (m) { var v = VER[m.ver.n === 'si' ? 'si' : m.ver.n]; return '<details class="card" style="padding:12px 16px"><summary style="cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:44px"><span><span style="font-size:12px;color:var(--suave)">' + esc(m.tipo) + '</span><b style="display:block">' + esc(m.titulo) + '</b></span><span class="chip ' + v[1] + '" style="flex:none">' + v[0] + '</span></summary>' +
+      '<p style="margin:10px 0 6px;font-size:15px"><b>Para ti:</b> ' + esc(m.ver.t) + '</p><p style="font-size:14px;color:var(--suave);margin-bottom:6px"><b>Referencia:</b> ' + esc(m.refTxt) + ' <i>(confianza ' + m.conf + ')</i></p><p style="font-size:14px;color:var(--suave);margin-bottom:6px">' + esc(m.datos) + '</p><p style="font-size:14px;margin-bottom:4px"><b>Para entrar necesitas:</b></p>' + m.req.map(function (r) { return '<div style="font-size:14px;padding:2px 0 2px 12px">· ' + esc(r) + '</div>' }).join('') + '<a href="' + esc(m.fuente) + '" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;font-size:13px;font-weight:700;color:var(--brasa-btn)">Ver la fuente (' + esc(m.fecha) + ')</a></details>' }).join('');
+    h += '<div class="card"><h3>Análisis profundo con IA</h3><p style="color:var(--suave);font-size:14px;margin-bottom:10px">Le pasa a la IA tus números y este diagnóstico para que arme un plan: qué hacer, en qué invertir y qué mercado explorar. Si tu cuenta de IA tiene búsqueda en internet, verifica precios actuales y cita las fuentes.</p><button class="btn" data-a="conspro"' + (S.consIA && S.consIA.cargando ? ' disabled' : '') + '>' + (S.consIA && S.consIA.cargando ? 'Analizando…' : 'Pedir análisis profundo') + '</button>' +
+      (S.consIA && S.consIA.texto ? '<div style="margin-top:14px;padding:12px;background:var(--ceniza-2);border-radius:12px;font-size:15px;line-height:1.5">' + fmt(S.consIA.texto) + '</div><p style="font-size:12px;color:var(--suave);margin-top:6px">La IA puede equivocarse: confirma las cifras importantes en tus pantallas.</p>' : '') + '</div>';
+    return h;
+  }
+  function consejoIA(btn) {
+    if (S.consIA && S.consIA.cargando) return;
+    S.consIA = { cargando: true, texto: S.consIA ? S.consIA.texto : '' }; render();
+    var ctx = C.consejoTexto(C.consejo(S.snap)) + '\n\nDATOS DEL NEGOCIO:\n' + contextoIA();
+    api('ia.preguntar', { pregunta: 'Analiza mi negocio: qué debo hacer primero, en qué invertir y qué oportunidad de mercado, exportación o producto nuevo debo explorar.', contexto: ctx, historial: [], modo: 'consejero' }).then(function (res) {
+      S.consIA = { cargando: false, texto: res.ok ? res.data.respuesta : (res.error || 'No pude hacer el análisis ahora. Inténtalo de nuevo.') }; render();
+    });
+  }
+  function guardarCapKg(btn) {
+    var v = $('#pro-kg').value.trim(), fin = ocupado(btn);
+    api('config.guardar', { valores: { pro_kg_mes: v } }).then(function (res) { fin(); if (!res.ok) return toast(res.error); aplicar(res); render(); toast('Listo, ya se recalculó', true) });
+  }
+
   /* ---------- capacidad de crédito y líneas de financiamiento (solo administrador) ---------- */
   var EST = { listo: ['Lista para solicitar', 'c-ok'], cercano: ['Cerca', 'c-pend'], preparar: ['Por preparar', 'c-can'], no: ['No aplica hoy', 'c-can'] };
   var MARCA = { ok: ['✓', 'var(--bosque)'], falta: ['!', 'var(--brasa-btn)'], no: ['✕', 'var(--alerta)'], info: ['·', 'var(--suave)'] };
@@ -931,6 +965,8 @@
       case 'ir': S.ruta = el.getAttribute('data-r'); S.limite = 40; render(); window.scrollTo(0, 0); if (S.ruta === 'capacidad') { S.capSim = null; cargar(false) } break;
       case 'capact': var fa = ocupado(el, 'Actualizando…'); S.capSim = null; cargar(false).then(function () { toast('Cifras actualizadas', true) }); break;
       case 'capguardar': guardarCap(el); break;
+      case 'conspro': consejoIA(el); break;
+      case 'capkg': guardarCapKg(el); break;
       case 'capcred': guardarCred(el); break;
       case 'demo': entrar(null, el.getAttribute('data-pin')); break;
       case 'demoreset': LS.del('gea-panel-demo-' + hoy()); DB = null; S.snap = null; render(); cargar(); toast('Demo reiniciada', true); break;
