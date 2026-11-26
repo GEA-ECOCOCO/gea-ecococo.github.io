@@ -427,7 +427,9 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   q('form',sb).addEventListener('submit',function(e){e.preventDefault();var f=sres.querySelector('a');if(f)location.href=f.href});
   /* ---- carrito ---- */
   function count(){return Object.keys(cart).reduce(function(a,k){return a+cart[k]},0)}
-  function total(){return Object.keys(cart).reduce(function(a,k){return a+cart[k]*PROD[k].p},0)}
+  /* Precio por volumen: desde 10 bultos de 25 kg, Q325 c/u; desde 100 bolsas de 1 kg, Q14 c/u. */
+  function pu(k){var p=PROD[k].p,c=cart[k]||0;if(k==='k25'&&c>=10)return Math.min(p,325);if(k==='k1'&&c>=100)return Math.min(p,14);return p}
+  function total(){return Object.keys(cart).reduce(function(a,k){return a+cart[k]*pu(k)},0)}
   var cD={},DEPS=['Alta Verapaz','Baja Verapaz','Chimaltenango','Chiquimula','El Progreso','Escuintla','Guatemala','Huehuetenango','Izabal','Jalapa','Jutiapa','Petén','Quetzaltenango','Quiché','Retalhuleu','Sacatepéquez','San Marcos','Santa Rosa','Sololá','Suchitepéquez','Totonicapán','Zacapa'];
   function cfield(k,lab,type,ac,max,ph){return '<div class="cf"><label for="c-'+k+'">'+lab+'</label><input id="c-'+k+'" data-c="'+k+'" type="'+type+'"'+(type==='tel'?' inputmode="tel"':'')+' maxlength="'+max+'" autocomplete="'+ac+'"'+(ph?' placeholder="'+ph+'"':'')+'><span class="ce"></span></div>'}
   /* Registro del pedido en el panel de GEA (hoja de cálculo privada). Es un aviso extra: si falla, el pedido igual sale por WhatsApp. */
@@ -435,7 +437,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     try{
       var u=(window.GEA_CONFIG||{}).panelUrl;if(!u||!/^https:\/\/script\.google\.com\//.test(u))return;
       var ks=Object.keys(cart).filter(function(k){return PROD[k]&&cart[k]>0});if(!ks.length)return;
-      var w={nom:cD.nom,tel:cD.tel,dep:cD.dep,mun:cD.mun,zon:cD.zon,dir:cD.dir,ref:cD.ref,nit:cD.nit,nota:cD.nota,items:ks.map(function(k){return {k:k,c:cart[k],p:PROD[k].p}})};
+      var w={nom:cD.nom,tel:cD.tel,dep:cD.dep,mun:cD.mun,zon:cD.zon,dir:cD.dir,ref:cD.ref,nit:cD.nit,nota:cD.nota,items:ks.map(function(k){return {k:k,c:cart[k],p:pu(k)}})};
       fetch(u,{method:'POST',mode:'no-cors',keepalive:true,headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'web.pedido',web:w})}).catch(function(){});
     }catch(e){}
   }
@@ -444,7 +446,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     document.querySelectorAll('.cart-n').forEach(function(b){b.textContent=n;b.hidden=!n});
     var ks=Object.keys(cart);
     if(!ks.length){cb.innerHTML='<p class="vacio">'+gL('Tu carrito está vacío. Agrega tu carbón ECOCOCO para armar tu pedido.','Your cart is empty. Add your ECOCOCO charcoal to build your order.')+'</p><p><button type="button" class="btn pill add" data-add="k1">'+gL('Agregar bolsa 1 kg','Add 1 kg bag')+' · Q'+PROD.k1.p+'</button></p><p><button type="button" class="btn pill add" data-add="k25">'+gL('Agregar bulto 25 kg','Add 25 kg sack')+' · Q'+PROD.k25.p+'</button></p>';cf.innerHTML='';return}
-    cb.innerHTML=ks.map(function(k){var p=PROD[k];return '<div class="li"><div class="li-t"><b>'+pn(k)+'</b><span>'+QU(p.p)+' '+gL('c/u','each')+'</span></div><div class="li-q"><button type="button" data-q="-1" data-k="'+k+'" aria-label="'+gL('Quitar uno','Remove one')+'">−</button><span>'+cart[k]+'</span><button type="button" data-q="1" data-k="'+k+'" aria-label="'+gL('Agregar uno','Add one')+'">+</button></div><div class="li-s">'+QU(cart[k]*p.p)+'</div><button type="button" class="li-x" data-del="'+k+'" aria-label="'+gL('Eliminar','Remove')+'">'+gI('x',18)+'</button></div>'}).join('');
+    cb.innerHTML=ks.map(function(k){var p=PROD[k];return '<div class="li"><div class="li-t"><b>'+pn(k)+'</b><span>'+QU(pu(k))+' '+gL('c/u','each')+(pu(k)<p.p?' · '+gL('precio por volumen','volume price'):'')+'</span></div><div class="li-q"><button type="button" data-q="-1" data-k="'+k+'" aria-label="'+gL('Quitar uno','Remove one')+'">−</button><span>'+cart[k]+'</span><button type="button" data-q="1" data-k="'+k+'" aria-label="'+gL('Agregar uno','Add one')+'">+</button></div><div class="li-s">'+QU(cart[k]*p.p)+'</div><button type="button" class="li-x" data-del="'+k+'" aria-label="'+gL('Eliminar','Remove')+'">'+gI('x',18)+'</button></div>'}).join('');
     var ordNo='';
     function msgWA(){
       var L=[gL('Hola, quiero hacer este pedido de ECOCOCO:','Hi, I\'d like to place this ECOCOCO order:')];
@@ -459,14 +461,14 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       if(cD.nit)L.push('NIT: '+cD.nit);
       if(cD.nota)L.push(gL('Notas: ','Notes: ')+cD.nota);
       L.push('');L.push(gL('PEDIDO','ORDER')+(ordNo?' '+ordNo:''));
-      ks.forEach(function(k){var p=PROD[k];L.push('• '+pn(k)+': '+cart[k]+' × '+Q(p.p)+' = '+Q(cart[k]*p.p)+' (≈ '+Us(cart[k]*p.p)+')')});
+      ks.forEach(function(k){var p=PROD[k];L.push('• '+pn(k)+': '+cart[k]+' × '+Q(pu(k))+' = '+Q(cart[k]*pu(k))+' (≈ '+Us(cart[k]*pu(k))+')')});
       L.push('');L.push(gL('Total del pedido: ','Order total: ')+Q(total())+' (≈ '+Us(total())+')');
       L.push(gL('Tipo de cambio: Q','Exchange rate: Q')+fxR().toFixed(2)+gL(' por US$1 (aproximado; el pago es en quetzales).',' per US$1 (approximate; payment is in quetzales).'));
       L.push(gL('Entrega y forma de pago: por coordinar.','Delivery and payment: to be arranged.'));
       return 'https://wa.me/'+WA+'?text='+encodeURIComponent(L.join('\n'));
     }
     var bulto=cart.k25>0;
-    cf.innerHTML='<div class="tot"><span>'+gL('Total estimado','Estimated total')+'</span><b>'+QU(total())+'</b></div><p class="nota fxn">'+fxNote()+'</p><p class="nota">'+gL('Precio a consumidor final. ','End-consumer price. ')+(bulto?gL('En bultos de 25 kg hay precio especial según volumen, lo confirmamos por WhatsApp. ','For 25 kg sacks there is a special volume price, which we confirm on WhatsApp. '):'')+gL('Entrega y forma de pago se acuerdan por WhatsApp. Aún no cobramos en línea.','Delivery and payment are arranged on WhatsApp. We do not charge online yet.')+'</p><p class="nota exp-l">'+gL('¿Envío fuera de Guatemala? ','Shipping outside Guatemala? ')+'<button type="button" class="lnk" data-exp>'+gL('Solicita una cotización de exportación','Request an export quote')+'</button></p><div class="cdat"><p class="cdat-h">'+gL('Datos para la entrega','Delivery details')+'</p>'+
+    cf.innerHTML='<div class="tot"><span>'+gL('Total estimado','Estimated total')+'</span><b>'+QU(total())+'</b></div><p class="nota fxn">'+fxNote()+'</p><p class="nota">'+gL('Precio a consumidor final. ','End-consumer price. ')+(true?gL('Desde 10 bultos de 25 kg el bulto baja a Q325, y desde 100 bolsas de 1 kg la bolsa baja a Q14. ','From 10 sacks of 25 kg the sack drops to Q325, and from 100 bags of 1 kg the bag drops to Q14. '):'')+gL('Entrega y forma de pago se acuerdan por WhatsApp. Aún no cobramos en línea.','Delivery and payment are arranged on WhatsApp. We do not charge online yet.')+'</p><p class="nota exp-l">'+gL('¿Envío fuera de Guatemala? ','Shipping outside Guatemala? ')+'<button type="button" class="lnk" data-exp>'+gL('Solicita una cotización de exportación','Request an export quote')+'</button></p><div class="cdat"><p class="cdat-h">'+gL('Datos para la entrega','Delivery details')+'</p>'+
       cfield('nom',gL('Nombre completo *','Full name *'),'text','name',80)+cfield('tel',gL('Teléfono (WhatsApp) *','Phone (WhatsApp) *'),'tel','tel',20)+
       '<div class="cf"><label for="c-dep">'+gL('Departamento *','Department *')+'</label><select id="c-dep" data-c="dep"><option value="">'+gL('Selecciona','Select')+'</option>'+DEPS.map(function(x){return '<option>'+x+'</option>'}).join('')+'</select><span class="ce"></span></div>'+
       cfield('mun',gL('Municipio *','Town *'),'text','address-level2',60)+cfield('zon',gL('Colonia, lotificación, sección o zona *','Neighborhood, subdivision, section or zone *'),'text','off',80)+
@@ -493,7 +495,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       var bad=valida();if(bad){bad.focus();return}
       if(typeof window.geaOrdenPDF!=='function'){alert(gL('El generador de PDF aún no cargó. Intenta de nuevo en unos segundos.','The PDF generator has not loaded yet. Please try again in a few seconds.'));return}
       ordNo=window.geaOrdenNo();aW.href=msgWA();
-      var items=Object.keys(cart).map(function(k){return {cod:PROD[k].c,nom:pn(k),cant:cart[k],p:PROD[k].p}});
+      var items=Object.keys(cart).map(function(k){return {cod:PROD[k].c,nom:pn(k),cant:cart[k],p:pu(k)}});
       var blob=window.geaOrdenPDF({en:GEA_EN,no:ordNo,fecha:window.geaOrdenFecha(GEA_EN),cli:cD,items:items,bulto:cart.k25>0,fx:window.geaFX?window.geaFX():{r:fxR(),d:''}});
       var url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ECOCOCO-'+ordNo+'.pdf';document.body.appendChild(a);a.click();
       setTimeout(function(){URL.revokeObjectURL(url);a.remove()},1500);

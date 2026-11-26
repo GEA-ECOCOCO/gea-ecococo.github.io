@@ -454,7 +454,7 @@
   function segHTML(name, opts, val) { return '<div class="seg" role="group" data-seg="' + name + '">' + opts.map(function (o) { return '<button type="button" data-a="seg" data-n="' + name + '" data-v="' + esc(o) + '" aria-pressed="' + (o === val) + '">' + esc(o) + '</button>' }).join('') + '</div>' }
   function segVal(sheet, name) { var b = $('[data-seg="' + name + '"] [aria-pressed="true"]', sheet); return b ? b.getAttribute('data-v') : '' }
   function val(sheet, id) { var e = $('#' + id, sheet); return e ? e.value.trim() : '' }
-  function precioDe(p, cli) { return num(p[C.PRECIO[cli ? cli.tipo : 'Tienda'] || 'precio_tienda']) }
+  function precioDe(p, cli, q) { return C.precioUnit(p, cli ? cli.tipo : 'Tienda', q || 0, S.snap.config) }
 
   /* nuevo pedido */
   function draftNuevo(cid) { return { cliente_id: cid || '', items: {}, precios: {}, fecha: S.snap.hoy, nota: '', abierto: !cid, q: '' } }
@@ -462,7 +462,7 @@
     var d = S.draft, cli = cliente(d.cliente_id), kg = 0, tot = 0;
     S.snap.productos.forEach(function (p) {
       var q = num(d.items[p.id]); if (q <= 0) return;
-      var pr = isAdmin() && d.precios[p.id] !== undefined && d.precios[p.id] !== '' ? num(d.precios[p.id]) : precioDe(p, cli);
+      var pr = isAdmin() && d.precios[p.id] !== undefined && d.precios[p.id] !== '' ? num(d.precios[p.id]) : precioDe(p, cli, q);
       kg += q * num(p.kg); tot += q * pr;
     });
     return { kg: kg, total: tot };
@@ -480,8 +480,8 @@
     if (d.abierto || !cli) h += '<div class="pick"><input id="pq" type="search" placeholder="Buscar cliente por nombre o zona" value="' + esc(d.q) + '" aria-label="Buscar cliente"><div id="opts">' + opcionesCli(d.q) + '</div></div>';
     else h += '<div class="pick"><div class="sel"><span class="ini">' + esc(inicial(cli.nombre)) + '</span><span style="flex:1"><b>' + esc(cli.nombre) + '</b><small>' + esc(cli.tipo) + (cli.zona ? ' · ' + esc(cli.zona) : '') + '</small></span><button type="button" class="btn ghost" data-a="cambiarcli" style="width:auto;padding:0 10px">Cambiar</button></div></div>';
     h += '<div>' + S.snap.productos.map(function (p) {
-      var q = num(d.items[p.id]), pr = precioDe(p, cli);
-      return '<div class="prod"><span><b>' + esc(p.nombre) + '</b><small>' + (cli ? Q(pr) + ' c/u · ' + esc(cli.tipo) : 'Elige un cliente para ver el precio') + '</small></span>' +
+      var q = num(d.items[p.id]), pr = precioDe(p, cli, q), vol = cli && pr < precioDe(p, cli, 0);
+      return '<div class="prod"><span><b>' + esc(p.nombre) + '</b><small>' + (cli ? Q(pr) + ' c/u · ' + esc(cli.tipo) + (vol ? ' · precio por volumen' : '') : 'Elige un cliente para ver el precio') + '</small></span>' +
         '<span class="step"><button type="button" data-a="menos" data-p="' + p.id + '" aria-label="Quitar uno de ' + esc(p.nombre) + '">−</button><input inputmode="numeric" data-q="' + p.id + '" value="' + (q || '') + '" placeholder="0" aria-label="Cantidad de ' + esc(p.nombre) + '"><button type="button" data-a="mas1" data-p="' + p.id + '" aria-label="Agregar uno de ' + esc(p.nombre) + '">+</button></span>' +
         (adm && q > 0 ? '<span class="pr">Precio acordado Q <input inputmode="decimal" data-pr="' + p.id + '" value="' + (d.precios[p.id] !== undefined ? esc(d.precios[p.id]) : '') + '" placeholder="' + pr + '" aria-label="Precio de ' + esc(p.nombre) + '"></span>' : '') + '</div>';
     }).join('') + '</div>';

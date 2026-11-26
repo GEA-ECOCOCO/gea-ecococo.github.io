@@ -75,6 +75,14 @@
     db.Config.forEach(function (r) { var v = r.valor; o[r.clave] = (typeof v === 'string' && v !== '' && isFinite(v) && r.clave !== 'whatsapp_admin') ? parseFloat(v) : v });
     return o;
   }
+  /* Precio por volumen: desde 10 bultos de 25 kg el bulto baja a Q325; desde 100 bolsas de 1 kg la bolsa baja a Q14. Nunca sube el precio del tipo de cliente. */
+  var VOL = { bultos: 10, precio_bulto: 325, bolsas: 100, precio_bolsa: 14 };
+  function precioUnit(p, tipo, cant, cfg) {
+    var base = n(p[PRECIO[tipo] || 'precio_tienda']), pr = base, kg = n(p.kg), q = n(cant); cfg = cfg || {};
+    if (kg === 25 && q >= (n(cfg.bultos_volumen) || VOL.bultos)) pr = Math.min(pr, n(cfg.precio_bulto_volumen) || VOL.precio_bulto);
+    if (kg === 1 && q >= (n(cfg.bolsas_volumen) || VOL.bolsas)) pr = Math.min(pr, n(cfg.precio_bolsa_volumen) || VOL.precio_bolsa);
+    return pr;
+  }
   function stockMap(db) {
     var m = {};
     db.Movimientos.forEach(function (x) { m[x.articulo_id] = r2((m[x.articulo_id] || 0) + n(x.cantidad)) });
@@ -143,7 +151,7 @@
     (req.items || []).forEach(function (it) {
       var p = find(db.Productos, it.producto_id), q = Math.floor(n(it.cantidad));
       if (!p || q <= 0) return;
-      var precio = n(p[PRECIO[cli.tipo] || 'precio_tienda']);
+      var precio = precioUnit(p, cli.tipo, q, cfg);
       if (ctx.user.rol === 'admin' && it.precio !== undefined && it.precio !== null && it.precio !== '' && n(it.precio) >= 0) precio = n(it.precio);
       items.push({ producto_id: p.id, nombre: p.nombre, cantidad: q, kg: n(p.kg), precio: precio, subtotal: r2(precio * q) });
     });
@@ -177,7 +185,7 @@
       var kgp = it && it.k === 'k25' ? 25 : (it && it.k === 'k1' ? 1 : 0), q = Math.min(500, Math.floor(n(it && it.c)));
       var p = db.Productos.filter(function (x) { return n(x.kg) === kgp && x.activo !== 'No' })[0];
       if (!kgp || !p || q <= 0) return;
-      var lista = n(p.precio_publico), visto = n(it.p), precio = lista;
+      var lista = precioUnit(p, 'Consumidor', q, cfgObj(db)), visto = n(it.p), precio = lista;
       if (visto > 0 && visto <= maxP * 2) { precio = visto; if (Math.abs(visto - lista) > 0.004) avisos.push(p.nombre + ': la página mostró Q' + visto + ' (lista del panel Q' + lista + ')') }
       items.push({ producto_id: p.id, nombre: p.nombre, cantidad: q, kg: n(p.kg), precio: precio, subtotal: r2(precio * q) });
     });
@@ -489,6 +497,6 @@
 
   root.PanelCore = {
     SCHEMA: SCHEMA, TIPOS: TIPOS, METODOS: METODOS, handle: handle, defaultDb: defaultDb, demoDb: demoDb, resumen: resumen,
-    stockMap: stockMap, addDays: addDays, cfgObj: cfgObj, ART_PRODUCTO: ART_PRODUCTO, PRECIO: PRECIO, CATEGORIAS: CATEGORIAS, costos: costos, simular: simular
+    stockMap: stockMap, precioUnit: precioUnit, addDays: addDays, cfgObj: cfgObj, ART_PRODUCTO: ART_PRODUCTO, PRECIO: PRECIO, CATEGORIAS: CATEGORIAS, costos: costos, simular: simular
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
