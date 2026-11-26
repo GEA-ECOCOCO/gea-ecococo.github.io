@@ -432,12 +432,17 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   function total(){return Object.keys(cart).reduce(function(a,k){return a+cart[k]*pu(k)},0)}
   var cD={},DEPS=['Alta Verapaz','Baja Verapaz','Chimaltenango','Chiquimula','El Progreso','Escuintla','Guatemala','Huehuetenango','Izabal','Jalapa','Jutiapa','Petén','Quetzaltenango','Quiché','Retalhuleu','Sacatepéquez','San Marcos','Santa Rosa','Sololá','Suchitepéquez','Totonicapán','Zacapa'];
   function cfield(k,lab,type,ac,max,ph){return '<div class="cf"><label for="c-'+k+'">'+lab+'</label><input id="c-'+k+'" data-c="'+k+'" type="'+type+'"'+(type==='tel'?' inputmode="tel"':'')+' maxlength="'+max+'" autocomplete="'+ac+'"'+(ph?' placeholder="'+ph+'"':'')+'><span class="ce"></span></div>'}
+  /* Lugar del pedido: se pide al empezar a llenar los datos (así ya está listo al enviar). Si el visitante no lo permite, el pedido sale igual con la dirección que escribió. */
+  var gGeo=null,gPedido=false;
+  function pedirGeo(){if(gPedido||!navigator.geolocation)return;gPedido=true;try{navigator.geolocation.getCurrentPosition(function(p){gGeo={lat:p.coords.latitude,lng:p.coords.longitude,acc:p.coords.accuracy}},function(){},{timeout:8000,maximumAge:300000})}catch(e){}}
+  document.addEventListener('focusin',function(e){if(e.target&&e.target.id&&e.target.id.indexOf('c-')===0)pedirGeo()});
   /* Registro del pedido en el panel de GEA (hoja de cálculo privada). Es un aviso extra: si falla, el pedido igual sale por WhatsApp. */
   function enviarPanel(){
     try{
       var u=(window.GEA_CONFIG||{}).panelUrl;if(!u||!/^https:\/\/script\.google\.com\//.test(u))return;
       var ks=Object.keys(cart).filter(function(k){return PROD[k]&&cart[k]>0});if(!ks.length)return;
       var w={nom:cD.nom,tel:cD.tel,dep:cD.dep,mun:cD.mun,zon:cD.zon,dir:cD.dir,ref:cD.ref,nit:cD.nit,nota:cD.nota,items:ks.map(function(k){return {k:k,c:cart[k],p:pu(k)}})};
+      if(gGeo)w.geo=gGeo;
       fetch(u,{method:'POST',mode:'no-cors',keepalive:true,headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'web.pedido',web:w})}).catch(function(){});
     }catch(e){}
   }

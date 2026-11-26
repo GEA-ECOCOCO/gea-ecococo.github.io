@@ -72,8 +72,29 @@
   }
 
   /* ---------- servidor ---------- */
+  /* Ubicación automática: se pide una vez al entrar y se manda junto a cada registro. Si el teléfono la niega, el registro se guarda igual. */
+  var GEO = { pos: null, t: 0 };
+  function geoPedir() {
+    return new Promise(function (ok) {
+      if (!navigator.geolocation) return ok(null);
+      if (GEO.pos && Date.now() - GEO.t < 120000) return ok(GEO.pos);
+      var fin = false, tm = setTimeout(function () { if (!fin) { fin = true; ok(GEO.pos) } }, 5000);
+      try {
+        navigator.geolocation.getCurrentPosition(function (p) {
+          GEO.pos = { lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy }; GEO.t = Date.now();
+          if (!fin) { fin = true; clearTimeout(tm); ok(GEO.pos) }
+        }, function () { if (!fin) { fin = true; clearTimeout(tm); ok(GEO.pos) } }, { enableHighAccuracy: true, timeout: 4500, maximumAge: 60000 });
+      } catch (e) { if (!fin) { fin = true; clearTimeout(tm); ok(null) } }
+    });
+  }
+  var SIN_GEO = { login: 1, bootstrap: 1, ping: 1, 'ia.preguntar': 1 };
   function api(action, payload) {
+    if (!SIN_GEO[action] && S.token) return geoPedir().then(function (g) { return api2(action, payload, g) });
+    return api2(action, payload, null);
+  }
+  function api2(action, payload, geo) {
     var req = Object.assign({ action: action, token: S.token }, payload || {});
+    if (geo) req.geo = geo;
     if (S.mode === 'demo') return new Promise(function (ok) { setTimeout(function () { ok(demoLlamar(req)) }, 120) });
     return fetch(CFG.url, { method: 'POST', body: JSON.stringify(req), redirect: 'follow' })
       .then(function (r) { return r.json() })
@@ -557,9 +578,9 @@
     var p = pedidoById(id); if (!p) return; var cli = cliente(p.cliente_id), e = est(p), adm = isAdmin(), cfg = S.snap.config;
     var cobros = (S.snap.cobros || []).filter(function (c) { return c.pedido_id === p.id });
     var lineas = items(p).map(function (i) { return '<div class="kv"><span>' + esc(i.cantidad) + ' × ' + esc(i.nombre) + '</span><b>' + Q(i.subtotal) + '</b></div>' }).join('');
-    var tl = '<li>Registrado ' + esc(fecha(p.fecha)) + '<small>por ' + esc(p.creado_por) + '</small></li>';
-    if (p.estado === 'Entregado') tl += '<li>Entregado ' + esc(fecha(p.fecha_entrega)) + '</li>'; else if (p.estado === 'Pendiente') tl += '<li>Entrega prevista ' + esc(fecha(p.fecha_entrega)) + '</li>'; else tl += '<li>Cancelado</li>';
-    cobros.forEach(function (c) { tl += '<li>Cobro de ' + Q(c.monto) + ' · ' + esc(c.metodo) + '<small>' + esc(fecha(c.fecha)) + (c.referencia ? ' · ' + esc(c.referencia) : '') + '</small></li>' });
+    var tl = '<li>Registrado ' + esc(fecha(p.fecha)) + (p.hora ? ' · ' + esc(p.hora) : '') + '<small>por ' + esc(p.creado_por) + (p.lugar ? ' · ' + esc(p.lugar) : '') + '</small></li>';
+    if (p.estado === 'Entregado') tl += '<li>Entregado ' + esc(fecha(p.fecha_entrega)) + (p.entrega_hora ? ' · ' + esc(p.entrega_hora) : '') + (p.entrega_lugar ? '<small>' + esc(p.entrega_lugar) + '</small>' : '') + '</li>'; else if (p.estado === 'Pendiente') tl += '<li>Entrega prevista ' + esc(fecha(p.fecha_entrega)) + '</li>'; else tl += '<li>Cancelado</li>';
+    cobros.forEach(function (c) { tl += '<li>Cobro de ' + Q(c.monto) + ' · ' + esc(c.metodo) + '<small>' + esc(fecha(c.fecha)) + (c.hora ? ' · ' + esc(c.hora) : '') + (c.referencia ? ' · ' + esc(c.referencia) : '') + (c.lugar ? ' · ' + esc(c.lugar) : '') + '</small></li>' });
     var acc = '', pend = p.estado === 'Pendiente';
     if (adm && pend) acc += '<button class="btn ok" data-a="entregar" data-id="' + esc(p.id) + '">Entregar y cobrar</button>';
     if (adm && p.estado === 'Entregado' && num(p.saldo) > 0.004) acc += '<button class="btn" data-a="cobrar" data-id="' + esc(p.id) + '">Registrar cobro · saldo ' + Q(p.saldo) + '</button>';
@@ -656,7 +677,7 @@
     api('login', { pin: pin }).then(function (res) {
       if (btn) fin();
       if (!res.ok) { render(res.error); return }
-      S.token = res.data.token; S.user = res.data.user; S.intro = true; S.snap = null; S.errCarga = ''; guardarSesion(); cargar();
+      S.token = res.data.token; S.user = res.data.user; S.intro = true; S.snap = null; S.errCarga = ''; guardarSesion(); geoPedir(); cargar();
     });
   }
 

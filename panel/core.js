@@ -8,12 +8,12 @@
     Config: ['clave', 'valor'],
     Productos: ['id', 'nombre', 'kg', 'precio_tienda', 'precio_mayorista', 'precio_publico', 'activo'],
     Clientes: ['id', 'nombre', 'tipo', 'contacto', 'telefono', 'zona', 'direccion', 'notas', 'estado', 'creado', 'creado_por'],
-    Pedidos: ['id', 'fecha', 'cliente_id', 'cliente', 'vendedor', 'items_json', 'resumen', 'kg', 'total', 'comision', 'estado', 'fecha_entrega', 'pagado', 'saldo', 'nota', 'creado_por', 'actualizado'],
-    Cobros: ['id', 'fecha', 'pedido_id', 'cliente', 'monto', 'metodo', 'referencia', 'registrado_por'],
+    Pedidos: ['id', 'fecha', 'cliente_id', 'cliente', 'vendedor', 'items_json', 'resumen', 'kg', 'total', 'comision', 'estado', 'fecha_entrega', 'pagado', 'saldo', 'nota', 'creado_por', 'actualizado', 'hora', 'lugar', 'entrega_hora', 'entrega_lugar'],
+    Cobros: ['id', 'fecha', 'pedido_id', 'cliente', 'monto', 'metodo', 'referencia', 'registrado_por', 'hora', 'lugar'],
     Inventario: ['id', 'nombre', 'unidad', 'tipo', 'stock_min', 'activo'],
-    Movimientos: ['id', 'fecha', 'articulo_id', 'articulo', 'tipo', 'cantidad', 'motivo', 'referencia', 'registrado_por'],
-    Lotes: ['id', 'fecha', 'cascara_kg', 'aglutinante_kg', 'briquetas_kg', 'rendimiento', 'notas', 'registrado_por'],
-    Gastos: ['id', 'fecha', 'categoria', 'concepto', 'monto', 'tipo', 'proveedor', 'estado', 'registrado_por'],
+    Movimientos: ['id', 'fecha', 'articulo_id', 'articulo', 'tipo', 'cantidad', 'motivo', 'referencia', 'registrado_por', 'hora', 'lugar'],
+    Lotes: ['id', 'fecha', 'cascara_kg', 'aglutinante_kg', 'briquetas_kg', 'rendimiento', 'notas', 'registrado_por', 'hora', 'lugar'],
+    Gastos: ['id', 'fecha', 'categoria', 'concepto', 'monto', 'tipo', 'proveedor', 'estado', 'registrado_por', 'hora', 'lugar'],
     Usuarios: ['nombre', 'rol', 'pin', 'activo']
   };
   var TIPOS = ['Tienda', 'Mayorista', 'Consumidor'];
@@ -43,6 +43,24 @@
     ops.push({ t: t, op: 'set', key: key || 'id', row: copy(row) });
     return row;
   }
+  /* Sello automático de cada registro: hora del servidor (no la del teléfono) y lugar según el GPS del dispositivo. */
+  function geoValida(g) {
+    if (!g || typeof g !== 'object') return null;
+    var la = parseFloat(g.lat), lo = parseFloat(g.lng), ac = parseFloat(g.acc);
+    if (!isFinite(la) || !isFinite(lo) || Math.abs(la) > 90 || Math.abs(lo) > 180) return null;
+    return { lat: la, lng: lo, acc: isFinite(ac) && ac >= 0 ? Math.round(ac) : null };
+  }
+  function lugarTxt(ctx, respaldo) {
+    var g = ctx.geo;
+    if (!g) return respaldo ? 'Sin GPS · ' + respaldo : 'Sin ubicación';
+    if (ctx._lug === undefined) {
+      var dir = '';
+      try { dir = typeof ctx.reverse === 'function' ? s(ctx.reverse(g.lat, g.lng)).slice(0, 140) : '' } catch (e) { dir = '' }
+      ctx._lug = (dir ? dir + ' · ' : '') + g.lat.toFixed(5) + ', ' + g.lng.toFixed(5) + (g.acc !== null ? ' (±' + g.acc + ' m)' : '');
+    }
+    return ctx._lug;
+  }
+  function sello(ctx, respaldo) { return { hora: String(ctx.now || '').slice(11, 16), lugar: lugarTxt(ctx, respaldo) } }
   function need(ctx, rol) { if (rol === 'admin' && ctx.user.rol !== 'admin') throw PE('Esta acción es solo para el administrador.', 'permiso') }
 
   /* ---------- datos iniciales ---------- */
@@ -95,7 +113,8 @@
   function mov(db, ops, ctx, art, tipo, cant, motivo, ref, fecha) {
     return add(db, ops, 'Movimientos', {
       id: nextId(db.Movimientos, 'MOV-', 5), fecha: fecha || ctx.today, articulo_id: art.id, articulo: art.nombre,
-      tipo: tipo, cantidad: r2(cant), motivo: motivo || '', referencia: ref || '', registrado_por: ctx.user.nombre
+      tipo: tipo, cantidad: r2(cant), motivo: motivo || '', referencia: ref || '', registrado_por: ctx.user.nombre,
+      hora: sello(ctx).hora, lugar: sello(ctx).lugar
     });
   }
 
@@ -169,7 +188,8 @@
       id: nextId(db.Pedidos, 'PED-' + year + '-', 4), fecha: ctx.today, cliente_id: cli.id, cliente: cli.nombre, vendedor: vendedor,
       items_json: JSON.stringify(items), resumen: items.map(function (i) { return i.cantidad + ' × ' + i.nombre }).join(', '),
       kg: kg, total: total, comision: comision, estado: 'Pendiente', fecha_entrega: fe, pagado: 0, saldo: total,
-      nota: s(req.nota), creado_por: ctx.user.nombre, actualizado: ctx.now
+      nota: s(req.nota), creado_por: ctx.user.nombre, actualizado: ctx.now,
+      hora: sello(ctx).hora, lugar: sello(ctx).lugar, entrega_hora: '', entrega_lugar: ''
     });
     return { pedido: ped, aviso: kg < n(cfg.pedido_minimo_kg) ? 'El pedido mínimo es de ' + cfg.pedido_minimo_kg + ' kg.' : '' };
   });
@@ -215,7 +235,8 @@
       items_json: JSON.stringify(items), resumen: items.map(function (i) { return i.cantidad + ' × ' + i.nombre }).join(', '),
       kg: kg, total: total, comision: 0, estado: 'Pendiente', fecha_entrega: ctx.today, pagado: 0, saldo: total,
       nota: ('Pedido desde la página web. Entrega y pago por coordinar. ' + (s(w.nota) ? 'Nota del cliente: ' + s(w.nota).slice(0, 200) + '. ' : '') + avisos.join('; ')).trim(),
-      creado_por: 'Web', actualizado: ctx.now
+      creado_por: 'Web', actualizado: ctx.now,
+      hora: sello(ctx).hora, lugar: sello(ctx, [s(w.mun), s(w.dep)].filter(Boolean).join(', ')).lugar, entrega_hora: '', entrega_lugar: ''
     });
     return { pedido: { id: ped.id } };
   });
@@ -226,7 +247,8 @@
     if (monto > r2(n(ped.saldo)) + 0.005) throw PE('El cobro es mayor que el saldo (Q' + r2(n(ped.saldo)).toFixed(2) + ').');
     var cob = add(db, ops, 'Cobros', {
       id: nextId(db.Cobros, 'COB-', 5), fecha: ctx.today, pedido_id: ped.id, cliente: ped.cliente, monto: monto,
-      metodo: METODOS.indexOf(metodo) >= 0 ? metodo : 'Efectivo', referencia: s(ref), registrado_por: ctx.user.nombre
+      metodo: METODOS.indexOf(metodo) >= 0 ? metodo : 'Efectivo', referencia: s(ref), registrado_por: ctx.user.nombre,
+      hora: sello(ctx).hora, lugar: sello(ctx).lugar
     });
     var pagado = r2(n(ped.pagado) + monto);
     upd(db, ops, 'Pedidos', ped, { pagado: pagado, saldo: r2(n(ped.total) - pagado), actualizado: ctx.now });
@@ -239,7 +261,7 @@
     if (!ped) throw PE('No encontramos ese pedido.', 'no_existe');
     if (ped.estado !== 'Pendiente') throw PE('Este pedido ya está ' + ped.estado.toLowerCase() + '.');
     var art = articuloProducto(db);
-    upd(db, ops, 'Pedidos', ped, { estado: 'Entregado', fecha_entrega: ctx.today, actualizado: ctx.now });
+    upd(db, ops, 'Pedidos', ped, { estado: 'Entregado', fecha_entrega: ctx.today, actualizado: ctx.now, entrega_hora: sello(ctx).hora, entrega_lugar: sello(ctx).lugar });
     if (art) mov(db, ops, ctx, art, 'Venta', -n(ped.kg), 'Entrega ' + ped.id + ' · ' + ped.cliente, ped.id);
     var cobro = null;
     if (req.cobrar) {
@@ -288,7 +310,8 @@
     var fecha = isDate(req.fecha) ? req.fecha : ctx.today;
     var lote = add(db, ops, 'Lotes', {
       id: nextId(db.Lotes, 'LOT-', 4), fecha: fecha, cascara_kg: ca, aglutinante_kg: ag, briquetas_kg: br,
-      rendimiento: ca > 0 ? r2(br / ca * 100) : '', notas: s(req.notas), registrado_por: ctx.user.nombre
+      rendimiento: ca > 0 ? r2(br / ca * 100) : '', notas: s(req.notas), registrado_por: ctx.user.nombre,
+      hora: sello(ctx).hora, lugar: sello(ctx).lugar
     });
     var art = articuloProducto(db), c = find(db.Inventario, ART_CASCARA), a = find(db.Inventario, ART_AGLUT);
     if (art) mov(db, ops, ctx, art, 'Producción', br, 'Lote ' + lote.id, lote.id, fecha);
@@ -357,7 +380,7 @@
     if (monto <= 0) throw PE('Escribe el monto del gasto.');
     var tipo = ['Fijo', 'Variable', 'Inversión'].indexOf(req.tipo) >= 0 ? req.tipo : cat[1];
     if (cat[1] === 'Inversión') tipo = 'Inversión';
-    return { gasto: add(db, ops, 'Gastos', { id: nextId(db.Gastos, 'GAS-', 5), fecha: isDate(req.fecha) ? req.fecha : ctx.today, categoria: cat[0], concepto: s(req.concepto), monto: monto, tipo: tipo, proveedor: s(req.proveedor), estado: 'Activo', registrado_por: ctx.user.nombre }) };
+    return { gasto: add(db, ops, 'Gastos', { id: nextId(db.Gastos, 'GAS-', 5), fecha: isDate(req.fecha) ? req.fecha : ctx.today, categoria: cat[0], concepto: s(req.concepto), monto: monto, tipo: tipo, proveedor: s(req.proveedor), estado: 'Activo', registrado_por: ctx.user.nombre, hora: sello(ctx).hora, lugar: sello(ctx).lugar }) };
   });
 
   accion('gasto.anular', true, function (db, req, ctx, ops) {
@@ -371,6 +394,8 @@
     var fn = ACCIONES[req && req.action];
     if (!fn) return { ok: false, error: 'Acción no válida.', code: 'accion' };
     var ops = [];
+    ctx.geo = geoValida(req && (req.geo || (req.web && req.web.geo)));
+    ctx._lug = undefined;
     try {
       var data = fn(db, req, ctx, ops);
       return { ok: true, data: data, ops: ops, snapshot: (MUTA[req.action] || req.action === 'bootstrap') ? snapshot(db, ctx) : undefined };
