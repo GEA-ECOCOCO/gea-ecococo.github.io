@@ -7,13 +7,13 @@
   var SCHEMA = {
     Config: ['clave', 'valor'],
     Productos: ['id', 'nombre', 'kg', 'precio_tienda', 'precio_mayorista', 'precio_publico', 'activo'],
-    Clientes: ['id', 'nombre', 'tipo', 'contacto', 'telefono', 'zona', 'direccion', 'notas', 'estado', 'creado', 'creado_por'],
-    Pedidos: ['id', 'fecha', 'cliente_id', 'cliente', 'vendedor', 'items_json', 'resumen', 'kg', 'total', 'comision', 'estado', 'fecha_entrega', 'pagado', 'saldo', 'nota', 'creado_por', 'actualizado', 'hora', 'lugar', 'entrega_hora', 'entrega_lugar'],
+    Clientes: ['id', 'nombre', 'tipo', 'contacto', 'telefono', 'zona', 'direccion', 'notas', 'estado', 'creado', 'creado_por', 'nit'],
+    Pedidos: ['id', 'fecha', 'cliente_id', 'cliente', 'vendedor', 'items_json', 'resumen', 'kg', 'total', 'comision', 'estado', 'fecha_entrega', 'pagado', 'saldo', 'nota', 'creado_por', 'actualizado', 'hora', 'lugar', 'entrega_hora', 'entrega_lugar', 'fel_serie', 'fel_numero', 'fel_fecha', 'fel_estado'],
     Cobros: ['id', 'fecha', 'pedido_id', 'cliente', 'monto', 'metodo', 'referencia', 'registrado_por', 'hora', 'lugar'],
     Inventario: ['id', 'nombre', 'unidad', 'tipo', 'stock_min', 'activo'],
     Movimientos: ['id', 'fecha', 'articulo_id', 'articulo', 'tipo', 'cantidad', 'motivo', 'referencia', 'registrado_por', 'hora', 'lugar'],
     Lotes: ['id', 'fecha', 'cascara_kg', 'aglutinante_kg', 'briquetas_kg', 'rendimiento', 'notas', 'registrado_por', 'hora', 'lugar'],
-    Gastos: ['id', 'fecha', 'categoria', 'concepto', 'monto', 'tipo', 'proveedor', 'estado', 'registrado_por', 'hora', 'lugar'],
+    Gastos: ['id', 'fecha', 'categoria', 'concepto', 'monto', 'tipo', 'proveedor', 'estado', 'registrado_por', 'hora', 'lugar', 'nit_proveedor', 'doc_numero'],
     Usuarios: ['nombre', 'rol', 'pin', 'activo']
   };
   var TIPOS = ['Tienda', 'Mayorista', 'Consumidor'];
@@ -118,6 +118,46 @@
     });
   }
 
+  /* ---------- obligaciones SAT · pequeño contribuyente ----------
+     Referencia (confirmar con SAT o tu contador): régimen de Pequeño Contribuyente, impuesto sobre el total facturado,
+     libro de compras y ventas, y tope anual de ventas facturadas. Todo es editable en Ajustes. */
+  var PC = { limite: 465381.25, tasa: 5 };
+  function nitNorm(x, vacioOk) {
+    var v = s(x).toUpperCase().replace(/[\s.\-]/g, '');
+    if (!v) return vacioOk ? '' : 'CF';
+    if (v === 'CF' || v === 'C/F') return 'CF';
+    if (!/^[0-9]{1,12}K?$/.test(v)) throw PE('El NIT solo lleva números y, al final, puede llevar K. Escribe CF si el cliente no da NIT.');
+    return v;
+  }
+  function pcCfg(cfg) { cfg = cfg || {}; return { limite: n(cfg.limite_pc) > 0 ? n(cfg.limite_pc) : PC.limite, tasa: cfg.tasa_pc !== undefined && cfg.tasa_pc !== '' && n(cfg.tasa_pc) >= 0 ? n(cfg.tasa_pc) : PC.tasa } }
+  function felOk(p) { return !!(p.fel_numero) && p.fel_estado !== 'Anulada' && p.estado !== 'Cancelado' }
+  function fiscal(db, hoy) {
+    var cfg = pcCfg(cfgObj(db)), año = hoy.slice(0, 4), ini = año + '-01-01';
+    var meses = {}, i; for (i = 1; i <= 12; i++) meses[año + '-' + (i < 10 ? '0' : '') + i] = { mes: año + '-' + (i < 10 ? '0' : '') + i, ventas: 0, docs: 0, impuesto: 0, compras: 0, docsCompra: 0, sinDoc: 0 };
+    var cli = {}; db.Clientes.forEach(function (c) { cli[c.id] = c });
+    var ventas = [], compras = [], total = 0, sinFacturar = [], sinFacturarQ = 0;
+    db.Pedidos.forEach(function (p) {
+      if (felOk(p)) {
+        var f = String(p.fel_fecha || p.fecha).slice(0, 10); if (f.slice(0, 4) !== año) return;
+        var q = n(p.total); total += q; var m = meses[f.slice(0, 7)]; if (m) { m.ventas = r2(m.ventas + q); m.docs++ }
+        var c = cli[p.cliente_id] || {}; ventas.push({ id: p.id, fecha: f, serie: s(p.fel_serie), numero: s(p.fel_numero), nit: s(c.nit) || 'CF', cliente: p.cliente, total: r2(q) });
+      } else if (p.estado === 'Entregado' && String(p.fecha_entrega || p.fecha).slice(0, 4) === año && p.fel_estado !== 'Anulada') { sinFacturar.push(p.id); sinFacturarQ = r2(sinFacturarQ + n(p.total)) }
+    });
+    db.Gastos.forEach(function (g) {
+      if (g.estado === 'Anulado' || String(g.fecha).slice(0, 4) !== año) return;
+      var m = meses[String(g.fecha).slice(0, 7)], q = n(g.monto); if (m) { m.compras = r2(m.compras + q); if (g.doc_numero) m.docsCompra++; else m.sinDoc++ }
+      compras.push({ id: g.id, fecha: g.fecha, doc: s(g.doc_numero), nit: s(g.nit_proveedor), proveedor: s(g.proveedor), concepto: s(g.concepto) || g.categoria, monto: r2(q) });
+    });
+    Object.keys(meses).forEach(function (k) { meses[k].impuesto = r2(meses[k].ventas * cfg.tasa / 100) });
+    total = r2(total);
+    var pct = cfg.limite ? total / cfg.limite * 100 : 0, nivel = pct >= 100 ? 'excedido' : pct >= 95 ? 'critico' : pct >= 80 ? 'atencion' : 'ok';
+    var d0 = new Date(ini + 'T00:00:00Z'), d1 = new Date(hoy + 'T00:00:00Z'), dias = Math.max(1, Math.round((d1 - d0) / 864e5) + 1);
+    var proy = r2(total / dias * 365);
+    return { año: año, limite: cfg.limite, tasa: cfg.tasa, facturado: total, pct: Math.round(pct * 10) / 10, nivel: nivel, restante: r2(Math.max(0, cfg.limite - total)), proyeccion: proy,
+      meses: Object.keys(meses).sort().map(function (k) { return meses[k] }), ventas: ventas, compras: compras, sinFacturar: sinFacturar, sinFacturarQ: sinFacturarQ,
+      impuestoAño: r2(total * cfg.tasa / 100) };
+  }
+
   /* ---------- lo que ve cada usuario ---------- */
   function snapshot(db, ctx) {
     var admin = ctx.user.rol === 'admin', st = stockMap(db);
@@ -135,7 +175,8 @@
       lotes: admin ? db.Lotes.slice(-60) : [],
       gastos: admin ? db.Gastos.slice(-500) : [],
       usuarios: admin ? db.Usuarios.map(function (u) { return { nombre: u.nombre, rol: u.rol, activo: u.activo === 'No' ? 'No' : 'Sí' } }) : [],
-      sheetUrl: admin ? (ctx.sheetUrl || '') : ''
+      sheetUrl: admin ? (ctx.sheetUrl || '') : '',
+      fiscal: admin ? fiscal(db, ctx.today) : null
     });
   }
 
@@ -154,7 +195,7 @@
     if (tel && tel.replace(/\D/g, '').length < 8) throw PE('El teléfono parece incompleto. Revisa que tenga 8 dígitos.');
     var dup = db.Clientes.filter(function (x) { return x.nombre.toLowerCase() === nombre.toLowerCase() && String(x.id) !== String(c.id || '') })[0];
     if (dup) throw PE('Ya existe un cliente llamado "' + dup.nombre + '". Si es otra tienda, agrega la zona al nombre.');
-    var campos = { nombre: nombre, tipo: tipo, contacto: s(c.contacto), telefono: tel, zona: s(c.zona), direccion: s(c.direccion), notas: s(c.notas) };
+    var campos = { nit: nitNorm(c.nit), nombre: nombre, tipo: tipo, contacto: s(c.contacto), telefono: tel, zona: s(c.zona), direccion: s(c.direccion), notas: s(c.notas) };
     if (c.id) {
       var ex = find(db.Clientes, c.id); if (!ex) throw PE('No encontramos ese cliente.', 'no_existe');
       if (ctx.user.rol === 'admin' && c.estado) campos.estado = c.estado === 'Inactivo' ? 'Inactivo' : 'Activo';
@@ -333,7 +374,7 @@
 
   accion('config.guardar', true, function (db, req, ctx, ops) {
     need(ctx, 'admin');
-    var permitidas = ['comision_por_kg', 'whatsapp_admin', 'pedido_minimo_kg', 'nombre_negocio', 'bolsas_mayoreo', 'precio_bolsa_mayoreo', 'bolsas_volumen', 'precio_bolsa_volumen', 'bultos_volumen', 'precio_bulto_volumen'], vals = req.valores || {};
+    var permitidas = ['comision_por_kg', 'whatsapp_admin', 'pedido_minimo_kg', 'nombre_negocio', 'bolsas_mayoreo', 'precio_bolsa_mayoreo', 'bolsas_volumen', 'precio_bolsa_volumen', 'bultos_volumen', 'precio_bulto_volumen', 'limite_pc', 'tasa_pc'], vals = req.valores || {};
     permitidas.forEach(function (k) {
       if (vals[k] === undefined) return;
       var v = k === 'whatsapp_admin' ? s(vals[k]).replace(/\D/g, '') : (k === 'nombre_negocio' ? s(vals[k]) : n(vals[k]));
@@ -380,7 +421,25 @@
     if (monto <= 0) throw PE('Escribe el monto del gasto.');
     var tipo = ['Fijo', 'Variable', 'Inversión'].indexOf(req.tipo) >= 0 ? req.tipo : cat[1];
     if (cat[1] === 'Inversión') tipo = 'Inversión';
-    return { gasto: add(db, ops, 'Gastos', { id: nextId(db.Gastos, 'GAS-', 5), fecha: isDate(req.fecha) ? req.fecha : ctx.today, categoria: cat[0], concepto: s(req.concepto), monto: monto, tipo: tipo, proveedor: s(req.proveedor), estado: 'Activo', registrado_por: ctx.user.nombre, hora: sello(ctx).hora, lugar: sello(ctx).lugar }) };
+    return { gasto: add(db, ops, 'Gastos', { id: nextId(db.Gastos, 'GAS-', 5), fecha: isDate(req.fecha) ? req.fecha : ctx.today, categoria: cat[0], concepto: s(req.concepto), monto: monto, tipo: tipo, proveedor: s(req.proveedor), nit_proveedor: nitNorm(req.nit_proveedor, true), doc_numero: s(req.doc_numero).slice(0, 40), estado: 'Activo', registrado_por: ctx.user.nombre, hora: sello(ctx).hora, lugar: sello(ctx).lugar }) };
+  });
+
+  accion('pedido.facturar', true, function (db, req, ctx, ops) {
+    need(ctx, 'admin');
+    var ped = find(db.Pedidos, req.id);
+    if (!ped) throw PE('No encontramos ese pedido.', 'no_existe');
+    if (ped.estado === 'Cancelado') throw PE('Un pedido cancelado no se factura.');
+    if (req.anular) {
+      if (!ped.fel_numero) throw PE('Este pedido no tiene factura registrada.');
+      return { pedido: upd(db, ops, 'Pedidos', ped, { fel_estado: 'Anulada', actualizado: ctx.now }) };
+    }
+    var num_ = s(req.numero).replace(/\s/g, '').slice(0, 40), ser = s(req.serie).replace(/\s/g, '').toUpperCase().slice(0, 20);
+    if (!num_) throw PE('Escribe el número de la factura FEL.');
+    if (ped.fel_numero && ped.fel_estado !== 'Anulada') throw PE('Este pedido ya tiene la factura ' + ped.fel_serie + ' ' + ped.fel_numero + '.');
+    var dup = db.Pedidos.filter(function (x) { return x.id !== ped.id && x.fel_numero && x.fel_estado !== 'Anulada' && String(x.fel_numero) === num_ && String(x.fel_serie || '') === ser })[0];
+    if (dup) throw PE('Esa factura ya está en el pedido ' + dup.id + '.');
+    var f = isDate(req.fecha) ? req.fecha : ctx.today;
+    return { pedido: upd(db, ops, 'Pedidos', ped, { fel_serie: ser, fel_numero: num_, fel_fecha: f, fel_estado: 'Emitida', actualizado: ctx.now }) };
   });
 
   accion('gasto.anular', true, function (db, req, ctx, ops) {
@@ -544,7 +603,7 @@
   }
 
   root.PanelCore = {
-    SCHEMA: SCHEMA, TIPOS: TIPOS, METODOS: METODOS, handle: handle, defaultDb: defaultDb, demoDb: demoDb, resumen: resumen,
+    SCHEMA: SCHEMA, fiscal: fiscal, nitNorm: nitNorm, TIPOS: TIPOS, METODOS: METODOS, handle: handle, defaultDb: defaultDb, demoDb: demoDb, resumen: resumen,
     stockMap: stockMap, precioUnit: precioUnit, addDays: addDays, cfgObj: cfgObj, ART_PRODUCTO: ART_PRODUCTO, PRECIO: PRECIO, CATEGORIAS: CATEGORIAS, costos: costos, simular: simular
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

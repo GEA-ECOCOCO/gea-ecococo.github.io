@@ -178,7 +178,7 @@
       (demo ? '<div class="quick"><small>Demostración con datos ficticios. Elige cómo entrar:</small><button class="btn sec" data-a="demo" data-pin="123456">Entrar como administrador</button><button class="btn sec" data-a="demo" data-pin="111111">Entrar como vendedor</button></div>' : '') +
       '</div>';
   }
-  var TITULOS = { asistente: 'Asistente', costos: 'Costos y planes', inicio: 'Inicio', pedidos: 'Pedidos', clientes: 'Clientes', inventario: 'Inventario', ajustes: 'Ajustes' };
+  var TITULOS = { asistente: 'Asistente', costos: 'Costos y planes', inicio: 'Inicio', pedidos: 'Pedidos', clientes: 'Clientes', inventario: 'Inventario', ajustes: 'Ajustes', impuestos: 'Impuestos SAT' };
   function tabBtn(r, nombre, icono) { return '<button class="tab" data-a="ir" data-r="' + r + '"' + (S.ruta === r ? ' aria-current="page"' : '') + '>' + ic(icono) + '<span>' + nombre + '</span></button>' }
   function railBtn(r, nombre, icono) { return '<button class="nav" data-a="ir" data-r="' + r + '"' + (S.ruta === r ? ' aria-current="page"' : '') + '>' + ic(icono) + '<span>' + nombre + '</span></button>' }
   function shell(inner) {
@@ -196,7 +196,7 @@
     var app = $('#app');
     if (!S.user) { app.innerHTML = loginHTML(aviso); var f = $('#f-login'); if (f) f.addEventListener('submit', entrar); return }
     if (!S.snap) { app.innerHTML = shell(S.errCarga ? '<div class="err">' + esc(S.errCarga) + '</div><button class="btn" data-a="recargar">Reintentar</button>' : '<div class="skel" style="height:260px"></div><div class="skel"></div><div class="skel"></div>'); return }
-    var v = { inicio: vInicio, pedidos: vPedidos, clientes: vClientes, inventario: vInventario, costos: vCostos, asistente: vAsistente, ajustes: vAjustes }[S.ruta] || vInicio;
+    var v = { inicio: vInicio, pedidos: vPedidos, clientes: vClientes, inventario: vInventario, costos: vCostos, asistente: vAsistente, ajustes: vAjustes, impuestos: vImpuestos }[S.ruta] || vInicio;
     var keep = window.scrollY;
     app.innerHTML = shell(v());
     if (S.ruta === 'inicio' && S.intro) { S.intro = false; setTimeout(function () { var h = $('.hero'); if (h) h.classList.remove('go') }, 2200) }
@@ -264,7 +264,7 @@
   function vInicio() {
     var sn = S.snap, R = C.resumen(sn), adm = isAdmin(), art = sn.inventario.filter(function (a) { return a.tipo === 'producto' })[0], stock = art ? art.stock : 0, min = art ? art.stock_min : 0;
     var izq = (adm ? hero(stock, R.comprometidoKg, min) : heroVend(R, Math.max(0, stock - R.comprometidoKg))) + figs(R) +
-      (adm ? tarjetaCostos() + tarjetaAsistente() : '') +
+      (adm ? tarjetaCostos() + tarjetaSAT() + tarjetaAsistente() : '') +
       '<div class="sec-h"><h2>Ventas de los últimos 14 días</h2><span class="num">' + Q(R.serie.reduce(function (a, s) { return a + s.q }, 0), 0) + '</span></div>' + chart(R.serie);
     var der = '<div class="sec-h" style="margin-top:0"><h2>' + (adm ? 'Por entregar' : 'Mis pedidos por entregar') + '</h2><span>' + R.porEntregar.length + (R.porEntregar.length === 1 ? ' pedido' : ' pedidos') + ' · ' + K(R.comprometidoKg) + '</span></div>' +
       lista(R.porEntregar.slice(0, 5).map(function (p) { return pedRow(p, true) }), 'Todo entregado', 'Cuando se registre un pedido nuevo, aparece aquí.');
@@ -433,15 +433,15 @@
   function gastoSheet() {
     openSheet(shHead('Registrar gasto', 'Cada compra o pago que anotes afina tu costo por kg') + '<div class="sh-b"><label class="fld"><span>Categoría</span><select id="gc">' + C.CATEGORIAS.map(function (c) { return '<option value="' + esc(c[0]) + '" data-t="' + c[1] + '">' + esc(c[0]) + '</option>' }).join('') + '</select></label>' +
       fld('Monto (Q)', 'gm', '', { mode: 'decimal' }) + fld('Concepto', 'gn', '', { ph: 'Ej. 6,200 kg de cáscara, recibo de luz' }) + '<div class="fld" id="gtw"><span>Tipo de gasto</span>' + segHTML('gt', ['Variable', 'Fijo'], 'Variable') + '<small>Variable: sube con lo que produces (cáscara, empaque). Fijo: se paga igual produzcas o no (mano de obra).</small></div>' +
-      fld('Proveedor (opcional)', 'gp', '', {}) + fld('Fecha', 'gf', S.snap.hoy, { type: 'date' }) + '</div><div class="sh-f"><button class="btn" data-a="guardargasto">Guardar gasto</button></div>');
+      fld('Proveedor (opcional)', 'gp', '', {}) + '<div class="two-f">' + fld('NIT del proveedor', 'gnit', '', { ph: 'Si te dieron factura' }) + fld('No. de factura o recibo', 'gdoc', '', {}) + '</div><small style="display:block;margin:-6px 0 12px;color:var(--suave)">Guarda la factura o recibo: respalda el gasto ante la SAT.</small>' + fld('Fecha', 'gf', S.snap.hoy, { type: 'date' }) + '</div><div class="sh-f"><button class="btn" data-a="guardargasto">Guardar gasto</button></div>');
   }
   function guardarGasto(btn) {
     var sh = $('.sheet'), fin = ocupado(btn);
-    api('gasto.registrar', { categoria: $('#gc', sh).value, monto: val(sh, 'gm'), concepto: val(sh, 'gn'), tipo: segVal(sh, 'gt'), proveedor: val(sh, 'gp'), fecha: val(sh, 'gf') }).then(function (res) { fin(); if (!res.ok) return setErr(sh, res.error); aplicar(res); closeSheet(); render(); toast('Gasto guardado', true) });
+    api('gasto.registrar', { categoria: $('#gc', sh).value, monto: val(sh, 'gm'), concepto: val(sh, 'gn'), tipo: segVal(sh, 'gt'), proveedor: val(sh, 'gp'), nit_proveedor: val(sh, 'gnit'), doc_numero: val(sh, 'gdoc'), fecha: val(sh, 'gf') }).then(function (res) { fin(); if (!res.ok) return setErr(sh, res.error); aplicar(res); closeSheet(); render(); toast('Gasto guardado', true) });
   }
   function verGasto(id) {
     var g = (S.snap.gastos || []).filter(function (x) { return x.id === id })[0]; if (!g) return;
-    openSheet(shHead(g.concepto || g.categoria, esc(g.categoria) + ' · ' + esc(fecha(g.fecha))) + '<div class="sh-b"><div class="kv"><span>Monto</span><b class="d" style="font-size:24px">' + Q(g.monto) + '</b></div><div class="kv"><span>Tipo</span><b>' + esc(g.tipo) + '</b></div>' + (g.proveedor ? '<div class="kv"><span>Proveedor</span><b>' + esc(g.proveedor) + '</b></div>' : '') + '<div class="kv"><span>Registró</span><b>' + esc(g.registrado_por) + '</b></div></div><div class="sh-f"><button class="btn danger" data-a="anulargasto" data-id="' + esc(g.id) + '">Anular este gasto</button></div>');
+    openSheet(shHead(g.concepto || g.categoria, esc(g.categoria) + ' · ' + esc(fecha(g.fecha))) + '<div class="sh-b"><div class="kv"><span>Monto</span><b class="d" style="font-size:24px">' + Q(g.monto) + '</b></div><div class="kv"><span>Tipo</span><b>' + esc(g.tipo) + '</b></div>' + (g.proveedor ? '<div class="kv"><span>Proveedor</span><b>' + esc(g.proveedor) + (g.nit_proveedor ? ' · NIT ' + esc(g.nit_proveedor) : '') + '</b></div>' : '') + '<div class="kv"><span>Comprobante</span><b>' + (g.doc_numero ? esc(g.doc_numero) : 'Sin comprobante') + '</b></div>' + '<div class="kv"><span>Registró</span><b>' + esc(g.registrado_por) + '</b></div></div><div class="sh-f"><button class="btn danger" data-a="anulargasto" data-id="' + esc(g.id) + '">Anular este gasto</button></div>');
   }
   function copiar(texto) {
     if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(texto);
@@ -586,10 +586,11 @@
     if (adm && p.estado === 'Entregado' && num(p.saldo) > 0.004) acc += '<button class="btn" data-a="cobrar" data-id="' + esc(p.id) + '">Registrar cobro · saldo ' + Q(p.saldo) + '</button>';
     if (adm && cli && cli.telefono) acc += '<a class="btn sec" target="_blank" rel="noopener" href="' + esc(waLink(cli.telefono, msgCliente(p, cli))) + '">' + ic('wa') + ' Escribir al cliente</a>';
     if (!adm && pend) acc += '<a class="btn ok" target="_blank" rel="noopener" href="' + esc(waLink(cfg.whatsapp_admin, msgPedido(p, cli))) + '">' + ic('wa') + ' Reenviar a Manolo</a>';
+    if (adm && p.estado !== 'Cancelado') acc += felOk(p) ? '<button class="btn sec" data-a="anularfactura" data-id="' + esc(p.id) + '">Quitar factura ' + esc(p.fel_serie || '') + ' ' + esc(p.fel_numero) + '</button>' : '<button class="btn sec" data-a="facturar" data-id="' + esc(p.id) + '">Registrar factura FEL</button>';
     if (pend) acc += confirmar ? '<button class="btn danger" data-a="cancelarok" data-id="' + esc(p.id) + '">Sí, cancelar este pedido</button>' : '<button class="btn danger" data-a="cancelar" data-id="' + esc(p.id) + '">Cancelar pedido</button>';
     openSheet(shHead(p.id, esc(p.cliente) + ' · <span class="chip c-' + e.c + '">' + e.t + '</span>') + '<div class="sh-b">' + lineas +
       '<div class="kv"><span>Total</span><b class="d" style="font-size:24px">' + Q(p.total) + '</b></div>' + (p.estado === 'Entregado' ? '<div class="kv"><span>Pagado</span><b>' + Q(p.pagado) + '</b></div><div class="kv"><span>Saldo</span><b style="color:' + (num(p.saldo) > 0.004 ? 'var(--alerta)' : 'var(--bosque)') + '">' + Q(p.saldo) + '</b></div>' : '') +
-      '<div class="kv"><span>Peso</span><b>' + K(p.kg) + '</b></div>' + (adm ? '<div class="kv"><span>Vendedor</span><b>' + esc(p.vendedor) + (num(p.comision) ? ' · comisión ' + Q(p.comision) : '') + '</b></div>' : '') + (p.nota ? '<div class="note" style="margin-top:12px">' + esc(p.nota) + '</div>' : '') +
+      '<div class="kv"><span>Peso</span><b>' + K(p.kg) + '</b></div>' + (adm && p.estado !== 'Cancelado' ? '<div class="kv"><span>Factura FEL</span><b>' + (felOk(p) ? esc((p.fel_serie ? p.fel_serie + ' ' : '') + p.fel_numero) : (p.fel_estado === 'Anulada' ? 'Anulada · falta emitir' : '<span style="color:var(--alerta)">Sin factura</span>')) + '</b></div>' : '') + (adm ? '<div class="kv"><span>Vendedor</span><b>' + esc(p.vendedor) + (num(p.comision) ? ' · comisión ' + Q(p.comision) : '') + '</b></div>' : '') + (p.nota ? '<div class="note" style="margin-top:12px">' + esc(p.nota) + '</div>' : '') +
       '<h3 style="margin:16px 0 4px;font-size:16px">Historial</h3><ul class="tl">' + tl + '</ul></div>' + (acc ? '<div class="sh-f"><div class="btn-row" style="flex-direction:column;gap:8px">' + acc + '</div></div>' : ''));
   }
   var METS = ['Efectivo', 'Transferencia', 'Depósito'];
@@ -612,13 +613,13 @@
   /* clientes */
   function clienteSheet(id, desde) {
     var c = id ? cliente(id) : { tipo: 'Tienda', estado: 'Activo' }, adm = isAdmin();
-    openSheet(shHead(id ? 'Editar cliente' : 'Nuevo cliente') + '<div class="sh-b" data-id="' + esc(id || '') + '" data-desde="' + (desde || '') + '">' + fld('Nombre del negocio o persona', 'cn', c.nombre || '', { ph: 'Ej. Tienda La Bendición' }) + '<div class="fld"><span>Tipo de precio</span>' + segHTML('tipo', C.TIPOS, c.tipo) + '</div>' +
+    openSheet(shHead(id ? 'Editar cliente' : 'Nuevo cliente') + '<div class="sh-b" data-id="' + esc(id || '') + '" data-desde="' + (desde || '') + '">' + fld('Nombre del negocio o persona', 'cn', c.nombre || '', { ph: 'Ej. Tienda La Bendición' }) + fld('NIT para la factura', 'cnit', c.nit && c.nit !== 'CF' ? c.nit : '', { ph: 'Sin guiones. Déjalo vacío si es consumidor final (CF)' }) + '<div class="fld"><span>Tipo de precio</span>' + segHTML('tipo', C.TIPOS, c.tipo) + '</div>' +
       '<div class="two-f">' + fld('Contacto', 'cc', c.contacto || '', { ph: 'Quién atiende' }) + fld('Teléfono', 'ct', c.telefono || '', { mode: 'tel', ph: '8 dígitos' }) + '</div>' + fld('Zona o colonia', 'cz', c.zona || '', { ph: 'Ej. Centro, zona 2' }) + fld('Dirección', 'cd', c.direccion || '', { area: 1 }) + fld('Notas', 'cno', c.notas || '', { area: 1, ph: 'Horario, forma de pago, referencias' }) +
       (id && adm ? '<div class="fld"><span>Estado</span>' + segHTML('estado', ['Activo', 'Inactivo'], c.estado || 'Activo') + '</div>' : '') + '</div><div class="sh-f"><button class="btn" data-a="guardarcli">Guardar cliente</button></div>');
   }
   function guardarCliente(btn) {
     var sh = $('.sheet'), b = $('.sh-b', sh), id = b.getAttribute('data-id'), desde = b.getAttribute('data-desde'), fin = ocupado(btn);
-    var c = { id: id || undefined, nombre: val(sh, 'cn'), tipo: segVal(sh, 'tipo'), contacto: val(sh, 'cc'), telefono: val(sh, 'ct'), zona: val(sh, 'cz'), direccion: val(sh, 'cd'), notas: val(sh, 'cno'), estado: segVal(sh, 'estado') || undefined };
+    var c = { id: id || undefined, nombre: val(sh, 'cn'), nit: val(sh, 'cnit'), tipo: segVal(sh, 'tipo'), contacto: val(sh, 'cc'), telefono: val(sh, 'ct'), zona: val(sh, 'cz'), direccion: val(sh, 'cd'), notas: val(sh, 'cno'), estado: segVal(sh, 'estado') || undefined };
     api('cliente.guardar', { cliente: c }).then(function (res) {
       fin(); if (!res.ok) return setErr(sh, res.error);
       aplicar(res); render(); toast('Cliente guardado', true);
@@ -666,6 +667,56 @@
   function guardarCfg(btn) {
     var fin = ocupado(btn);
     api('config.guardar', { valores: { comision_por_kg: $('#cfg-com').value, whatsapp_admin: $('#cfg-wa').value, pedido_minimo_kg: $('#cfg-min').value } }).then(function (res) { fin(); if (!res.ok) return toast(res.error); aplicar(res); render(); toast('Reglas guardadas', true) });
+  }
+
+  /* ---------- obligaciones SAT · pequeño contribuyente (solo administrador) ---------- */
+  var MES_N = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  function felOk(p) { return !!p.fel_numero && p.fel_estado !== 'Anulada' && p.estado !== 'Cancelado' }
+  function mesTxt(m) { return MES_N[parseInt(m.slice(5, 7), 10) - 1] }
+  function colorNivel(n) { return n === 'ok' ? 'var(--bosque)' : n === 'atencion' ? '#D9A441' : 'var(--alerta)' }
+  function tarjetaSAT() {
+    var F = S.snap.fiscal; if (!F) return '';
+    var msg = F.nivel === 'excedido' ? 'Superaste el tope anual: habla con tu contador' : F.nivel === 'critico' ? 'Estás por llegar al tope anual' : F.nivel === 'atencion' ? 'Ya usaste ' + F.pct + ' % del tope anual' : 'Facturado ' + F.año + ': ' + Q(F.facturado, 0) + ' de ' + Q(F.limite, 0);
+    var sf = F.sinFacturar.length;
+    return '<button class="row" data-a="ir" data-r="impuestos" style="margin-bottom:6px"><span class="bar ' + (F.nivel === 'ok' ? (sf ? 'pend' : 'ok') : 'cobrar') + '"></span><span><div class="t">Impuestos SAT</div><div class="s">' + esc(msg) + (sf ? ' · ' + sf + ' sin factura' : '') + '</div></span><span class="r">' + (F.nivel !== 'ok' ? '<span class="chip c-cobrar">!</span>' : '') + '</span></button>';
+  }
+  function vImpuestos() {
+    var F = S.snap.fiscal; if (!F) return '<div class="card"><p>Solo el administrador ve esta sección.</p></div>';
+    var mesAct = S.snap.hoy.slice(0, 7), M = F.meses.filter(function (m) { return m.mes === mesAct })[0] || { ventas: 0, impuesto: 0, docs: 0 };
+    var prev = F.meses.filter(function (m) { return m.mes < mesAct && m.ventas > 0 }).slice(-1)[0];
+    var h = '<div class="note"><b>Régimen: Pequeño contribuyente.</b> Esta pantalla te ordena la información para la SAT. No sustituye a tu contador: confirma con la SAT o con él el tope, el porcentaje y las fechas.</div>';
+    var alerta = F.nivel === 'excedido' ? 'Ya pasaste el tope anual de ventas facturadas. Consulta a tu contador cómo seguir: puede cambiar tu régimen.' : F.nivel === 'critico' ? 'Te quedan ' + Q(F.restante, 0) + ' para el tope anual. Cada factura nueva te acerca al cambio de régimen.' : F.nivel === 'atencion' ? 'Llevas más del 80 % del tope anual. Con este ritmo cerrarías el año en ' + Q(F.proyeccion, 0) + '.' : '';
+    h += '<div class="card"><h3>Tope anual de ventas facturadas ' + F.año + '</h3><div style="height:14px;border-radius:8px;background:var(--ceniza-2);overflow:hidden;margin:6px 0 10px"><div style="height:100%;width:' + Math.min(100, F.pct) + '%;background:' + colorNivel(F.nivel) + '"></div></div>' +
+      '<div class="kv"><span>Facturado en el año</span><b>' + Q(F.facturado) + ' · ' + F.pct + ' %</b></div><div class="kv"><span>Tope configurado</span><b>' + Q(F.limite) + '</b></div><div class="kv"><span>Te falta para llegar</span><b>' + Q(F.restante) + '</b></div><div class="kv"><span>Ritmo actual (proyección del año)</span><b style="color:' + (F.proyeccion > F.limite ? 'var(--alerta)' : 'inherit') + '">' + Q(F.proyeccion, 0) + '</b></div>' + (alerta ? '<div class="note" style="margin:12px 0 0;background:#FDE8E4;color:#7A2316">' + esc(alerta) + '</div>' : '') + '</div>';
+    h += '<div class="card"><h3>Impuesto estimado (' + F.tasa + ' % de lo facturado)</h3><div class="kv"><span>' + esc(mesTxt(mesAct)) + ' (' + M.docs + (M.docs === 1 ? ' factura' : ' facturas') + ')</span><b>' + Q(M.impuesto) + '</b></div>' + (prev ? '<div class="kv"><span>Último mes cerrado: ' + esc(mesTxt(prev.mes)) + '</span><b>' + Q(prev.impuesto) + '</b></div>' : '') + '<div class="kv"><span>Acumulado del año</span><b>' + Q(F.impuestoAño) + '</b></div><small style="color:var(--suave)">Declara y paga en la SAT el mes siguiente. Confirma con tu contador la fecha límite y el formulario.</small></div>';
+    var sf = F.sinFacturar.map(function (id) { return pedidoById(id) }).filter(Boolean);
+    h += '<div class="sec-h"><h2>Entregado sin factura</h2><span class="num">' + Q(F.sinFacturarQ) + '</span></div>' + lista(sf.slice(-8).reverse().map(function (p) { return pedRow(p, true) }), 'Todo está facturado', 'Cada pedido entregado tiene su factura registrada.');
+    h += '<div class="sec-h"><h2>Mes por mes</h2></div><div class="card"><div style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:6px 8px;font-size:14px"><b>Mes</b><b>Facturado</b><b>Impuesto</b><b>Gastos</b>' +
+      F.meses.filter(function (m) { return m.mes <= mesAct }).map(function (m) { return '<span>' + esc(mesTxt(m.mes)) + '</span><span class="num">' + Q(m.ventas, 0) + '</span><span class="num">' + Q(m.impuesto, 0) + '</span><span class="num">' + Q(m.compras, 0) + (m.sinDoc ? ' <i title="gastos sin comprobante" style="color:var(--alerta)">·' + m.sinDoc + '</i>' : '') + '</span>' }).join('') + '</div><small style="color:var(--suave);display:block;margin-top:10px">El punto rojo cuenta gastos sin factura o recibo anotado.</small></div>';
+    h += '<div class="card"><h3>Libros para tu contador</h3><p style="color:var(--suave);font-size:15px;margin-bottom:12px">Descarga el año en un archivo que abre Excel. Incluye fecha, serie y número de factura, NIT y monto.</p><div class="btn-row"><button class="btn sec" data-a="csv" data-k="ventas">Libro de ventas ' + F.año + '</button><button class="btn sec" data-a="csv" data-k="compras">Libro de compras ' + F.año + '</button></div></div>';
+    h += '<div class="card"><h3>Cifras que usa el panel</h3>' + '<label class="fld"><span>Tope anual de ventas facturadas (Q)</span><input id="pc-lim" inputmode="decimal" value="' + F.limite + '"><small>Referencia: 125 salarios mínimos mensuales no agrícolas. Cámbialo cuando la SAT publique el nuevo valor.</small></label><label class="fld"><span>Porcentaje del impuesto (%)</span><input id="pc-tasa" inputmode="decimal" value="' + F.tasa + '"></label><button class="btn sm" data-a="guardarpc">Guardar cifras</button></div>';
+    return h;
+  }
+  function guardarPC(btn) {
+    var fin = ocupado(btn);
+    api('config.guardar', { valores: { limite_pc: $('#pc-lim').value, tasa_pc: $('#pc-tasa').value } }).then(function (res) { fin(); if (!res.ok) return toast(res.error); aplicar(res); render(); toast('Cifras guardadas', true) });
+  }
+  function facturarSheet(id) {
+    var p = pedidoById(id); if (!p) return; var cli = cliente(p.cliente_id) || {}, nit = cli.nit || 'CF';
+    var aviso = nit === 'CF' && num(p.total) > 2500 ? '<div class="note">Este cliente no tiene NIT y la compra pasa de Q2,500. Pídele NIT o CUI antes de facturar (confirma el monto límite con tu contador).</div>' : '';
+    openSheet(shHead('Registrar factura FEL', esc(p.cliente) + ' · ' + esc(p.id)) + '<div class="sh-b" data-id="' + esc(p.id) + '">' + aviso + '<div class="pill-kpi"><span class="d">' + Q(p.total) + '</span><small>NIT del cliente: ' + esc(nit) + '</small></div><p style="color:var(--suave);font-size:14px;margin:0 0 12px">Emite la factura en tu agencia virtual de la SAT o con tu certificador FEL y anota aquí sus datos.</p><div class="two-f">' + fld('Serie', 'fs', '', { ph: 'Ej. A1B2C3D4' }) + fld('Número', 'fn', '', { mode: 'numeric', ph: 'Ej. 1234567' }) + '</div>' + fld('Fecha de la factura', 'ff', S.snap.hoy, { type: 'date' }) + '</div><div class="sh-f"><button class="btn" data-a="guardarfactura">Guardar factura</button></div>');
+  }
+  function guardarFactura(btn) {
+    var sh = $('.sheet'), id = $('.sh-b', sh).getAttribute('data-id'), fin = ocupado(btn);
+    api('pedido.facturar', { id: id, serie: val(sh, 'fs'), numero: val(sh, 'fn'), fecha: val(sh, 'ff') }).then(function (res) { fin(); if (!res.ok) return setErr(sh, res.error); aplicar(res); closeSheet(); render(); toast('Factura registrada', true) });
+  }
+  function csvLibro(k) {
+    var F = S.snap.fiscal; if (!F) return;
+    function cel(x) { x = String(x == null ? '' : x); return /[",\n]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x }
+    var filas = k === 'ventas' ? [['Fecha', 'Serie', 'Número', 'NIT', 'Cliente', 'Total (Q)', 'Pedido']].concat(F.ventas.slice().sort(function (a, b) { return a.fecha < b.fecha ? -1 : 1 }).map(function (v) { return [v.fecha, v.serie, v.numero, v.nit, v.cliente, v.total.toFixed(2), v.id] }))
+      : [['Fecha', 'Documento', 'NIT proveedor', 'Proveedor', 'Concepto', 'Monto (Q)', 'Gasto']].concat(F.compras.slice().sort(function (a, b) { return a.fecha < b.fecha ? -1 : 1 }).map(function (v) { return [v.fecha, v.doc, v.nit, v.proveedor, v.concepto, v.monto.toFixed(2), v.id] }));
+    var txt = '﻿' + filas.map(function (r) { return r.map(cel).join(',') }).join('\r\n');
+    var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt], { type: 'text/csv;charset=utf-8' })); a.download = 'libro-de-' + k + '-' + F.año + '.csv'; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove() }, 500); toast('Archivo descargado', true);
   }
 
   /* ---------- acceso ---------- */
@@ -723,6 +774,11 @@
       case 'guardarusuario': guardarUsuario(el); break;
       case 'genpin': var pe = $('#un-p'); if (pe) pe.value = String(100000 + Math.floor(Math.random() * 900000)); break;
       case 'guardarcfg': guardarCfg(el); break;
+      case 'facturar': facturarSheet(id); break;
+      case 'guardarfactura': guardarFactura(el); break;
+      case 'anularfactura': var f3 = ocupado(el, 'Quitando…'); api('pedido.facturar', { id: id, anular: true }).then(function (res) { f3(); if (!res.ok) return setErr($('.sheet'), res.error); aplicar(res); closeSheet(); render(); toast('Factura quitada del registro', true) }); break;
+      case 'csv': csvLibro(el.getAttribute('data-k')); break;
+      case 'guardarpc': guardarPC(el); break;
       case 'pregrapida': var kk = el.getAttribute('data-k'); chatAdd('u', PREG.filter(function (x) { return x[0] === kk })[0][1]); chatAdd('a', respuestaLocal(kk)); chatPintar(); break;
       case 'gasto': gastoSheet(); break;
       case 'guardargasto': guardarGasto(el); break;
