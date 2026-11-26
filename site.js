@@ -430,6 +430,15 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   function total(){return Object.keys(cart).reduce(function(a,k){return a+cart[k]*PROD[k].p},0)}
   var cD={},DEPS=['Alta Verapaz','Baja Verapaz','Chimaltenango','Chiquimula','El Progreso','Escuintla','Guatemala','Huehuetenango','Izabal','Jalapa','Jutiapa','Petén','Quetzaltenango','Quiché','Retalhuleu','Sacatepéquez','San Marcos','Santa Rosa','Sololá','Suchitepéquez','Totonicapán','Zacapa'];
   function cfield(k,lab,type,ac,max,ph){return '<div class="cf"><label for="c-'+k+'">'+lab+'</label><input id="c-'+k+'" data-c="'+k+'" type="'+type+'"'+(type==='tel'?' inputmode="tel"':'')+' maxlength="'+max+'" autocomplete="'+ac+'"'+(ph?' placeholder="'+ph+'"':'')+'><span class="ce"></span></div>'}
+  /* Registro del pedido en el panel de GEA (hoja de cálculo privada). Es un aviso extra: si falla, el pedido igual sale por WhatsApp. */
+  function enviarPanel(){
+    try{
+      var u=(window.GEA_CONFIG||{}).panelUrl;if(!u||!/^https:\/\/script\.google\.com\//.test(u))return;
+      var ks=Object.keys(cart).filter(function(k){return PROD[k]&&cart[k]>0});if(!ks.length)return;
+      var w={nom:cD.nom,tel:cD.tel,dep:cD.dep,mun:cD.mun,zon:cD.zon,dir:cD.dir,ref:cD.ref,nit:cD.nit,nota:cD.nota,items:ks.map(function(k){return {k:k,c:cart[k],p:PROD[k].p}})};
+      fetch(u,{method:'POST',mode:'no-cors',keepalive:true,headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'web.pedido',web:w})}).catch(function(){});
+    }catch(e){}
+  }
   function paint(){
     var n=count();
     document.querySelectorAll('.cart-n').forEach(function(b){b.textContent=n;b.hidden=!n});
@@ -462,7 +471,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       '<div class="cf"><label for="c-dep">'+gL('Departamento *','Department *')+'</label><select id="c-dep" data-c="dep"><option value="">'+gL('Selecciona','Select')+'</option>'+DEPS.map(function(x){return '<option>'+x+'</option>'}).join('')+'</select><span class="ce"></span></div>'+
       cfield('mun',gL('Municipio *','Town *'),'text','address-level2',60)+cfield('zon',gL('Colonia, lotificación, sección o zona *','Neighborhood, subdivision, section or zone *'),'text','off',80)+
       cfield('dir',gL('Calle o avenida y número de casa o lote *','Street or avenue and house or lot number *'),'text','street-address',100)+cfield('ref',gL('Referencia para llegar *','Landmark to find you *'),'text','off',120,gL('Ej. frente a la iglesia, portón negro','E.g. in front of the church, black gate'))+cfield('nit',gL('NIT para factura (opcional; si no tienes, CF)','Tax ID (NIT) for invoice (optional; use CF if none)'),'text','off',20)+cfield('nota',gL('Notas o especificaciones (opcional)','Notes or specifications (optional)'),'text','off',150)+
-      '<p class="cdat-p">'+gL('Estos datos solo se usan para coordinar tu entrega y viajan en el mensaje de WhatsApp. No los guardamos en el sitio.','These details are only used to arrange your delivery and travel in the WhatsApp message. We do not store them on the site.')+'</p></div><a class="btn wa" id="c-wa" href="'+msgWA()+'" target="_blank" rel="noopener">'+gL('Enviar pedido por WhatsApp','Send order on WhatsApp')+'</a><button type="button" class="btn pdf" id="c-pdf">'+gL('Descargar orden en PDF','Download order PDF')+'</button><button type="button" class="vaciar" data-vaciar>'+gL('Vaciar carrito','Empty cart')+'</button>';
+      '<p class="cdat-p">'+gL('Estos datos solo se usan para coordinar tu entrega. Viajan en el mensaje de WhatsApp y GEA los registra en su sistema privado para dar seguimiento a tu pedido.','These details are only used to arrange your delivery. They travel in the WhatsApp message and GEA records them in its private system to follow up on your order.')+'</p></div><a class="btn wa" id="c-wa" href="'+msgWA()+'" target="_blank" rel="noopener">'+gL('Enviar pedido por WhatsApp','Send order on WhatsApp')+'</a><button type="button" class="btn pdf" id="c-pdf">'+gL('Descargar orden en PDF','Download order PDF')+'</button><button type="button" class="vaciar" data-vaciar>'+gL('Vaciar carrito','Empty cart')+'</button>';
     (function(){var w=q('#c-wa',cf);if(w&&!q('.c-pay',cf)){var pb=document.createElement('button');pb.type='button';pb.className='btn c-pay';pb.setAttribute('data-pago-off','');pb.textContent=gL('Pagar en línea (próximamente)','Pay online (coming soon)');w.parentNode.insertBefore(pb,w.nextSibling)}})();
     var aW=q('#c-wa',cf),REQ=['nom','tel','dep','mun','zon','dir','ref'];
     cf.querySelectorAll('[data-c]').forEach(function(el){el.value=cD[el.getAttribute('data-c')]||'';
@@ -488,10 +497,11 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
       var blob=window.geaOrdenPDF({en:GEA_EN,no:ordNo,fecha:window.geaOrdenFecha(GEA_EN),cli:cD,items:items,bulto:cart.k25>0,fx:window.geaFX?window.geaFX():{r:fxR(),d:''}});
       var url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ECOCOCO-'+ordNo+'.pdf';document.body.appendChild(a);a.click();
       setTimeout(function(){URL.revokeObjectURL(url);a.remove()},1500);
+      enviarPanel();
       if(window.geaTrack)geaTrack('download_order_pdf',{destino:'carrito'});
       ordenListo(blob,'ECOCOCO-'+ordNo+'.pdf',ordNo,aW.href);
     });
-    aW.addEventListener('click',function(e){var bad=valida();if(bad){e.preventDefault();e.stopPropagation();bad.focus();return}aW.href=msgWA();if(window.geaTrack)geaTrack('click_whatsapp',{destino:'carrito'})});
+    aW.addEventListener('click',function(e){var bad=valida();if(bad){e.preventDefault();e.stopPropagation();bad.focus();return}aW.href=msgWA();enviarPanel();if(window.geaTrack)geaTrack('click_whatsapp',{destino:'carrito'})});
   }
   function ordenListo(blob,name,no,href){
     var old=document.getElementById('ord-ok');if(old)old.remove();

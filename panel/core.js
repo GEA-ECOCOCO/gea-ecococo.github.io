@@ -164,6 +164,52 @@
     return { pedido: ped, aviso: kg < n(cfg.pedido_minimo_kg) ? 'El pedido mínimo es de ' + cfg.pedido_minimo_kg + ' kg.' : '' };
   });
 
+  /* Pedido que llega desde la página pública (sin sesión). Solo lo acepta el servidor con usuario interno 'web'. */
+  accion('web.pedido', true, function (db, req, ctx, ops) {
+    if (!ctx.user || ctx.user.rol !== 'web') throw PE('Acción no válida.', 'accion');
+    var w = req.web || {}, nom = s(w.nom).slice(0, 80), tel = s(w.tel).replace(/\D/g, '');
+    if (tel.length > 8 && tel.slice(0, 3) === '502') tel = tel.slice(3);
+    if (nom.length < 2) throw PE('Falta el nombre.');
+    if (!/^[2-7]\d{7}$/.test(tel)) throw PE('El teléfono no es válido.');
+    var items = [], avisos = [], maxP = 0;
+    db.Productos.forEach(function (p) { maxP = Math.max(maxP, n(p.precio_tienda), n(p.precio_mayorista), n(p.precio_publico)) });
+    (Array.isArray(w.items) ? w.items : []).slice(0, 6).forEach(function (it) {
+      var kgp = it && it.k === 'k25' ? 25 : (it && it.k === 'k1' ? 1 : 0), q = Math.min(500, Math.floor(n(it && it.c)));
+      var p = db.Productos.filter(function (x) { return n(x.kg) === kgp && x.activo !== 'No' })[0];
+      if (!kgp || !p || q <= 0) return;
+      var lista = n(p.precio_publico), visto = n(it.p), precio = lista;
+      if (visto > 0 && visto <= maxP * 2) { precio = visto; if (Math.abs(visto - lista) > 0.004) avisos.push(p.nombre + ': la página mostró Q' + visto + ' (lista del panel Q' + lista + ')') }
+      items.push({ producto_id: p.id, nombre: p.nombre, cantidad: q, kg: n(p.kg), precio: precio, subtotal: r2(precio * q) });
+    });
+    if (!items.length) throw PE('El pedido no tiene productos.');
+    var kg = 0, total = 0;
+    items.forEach(function (i) { kg += i.kg * i.cantidad; total += i.subtotal });
+    kg = r2(kg); total = r2(total);
+    if (kg > 5000) throw PE('El pedido es demasiado grande para la página. Escríbenos por WhatsApp.');
+    var cli = db.Clientes.filter(function (x) { return String(x.telefono || '').replace(/\D/g, '').slice(-8) === tel })[0];
+    if (!cli) {
+      var nombre = nom;
+      if (db.Clientes.some(function (x) { return x.nombre.toLowerCase() === nombre.toLowerCase() })) nombre = nom + ' (' + s(w.mun).slice(0, 40) + ' ' + tel.slice(-4) + ')';
+      var dir = [s(w.dir), s(w.zon), s(w.mun), s(w.dep)].filter(Boolean).join(', ').slice(0, 220);
+      cli = add(db, ops, 'Clientes', {
+        id: nextId(db.Clientes, 'CLI-', 3), nombre: nombre, tipo: 'Consumidor', contacto: '', telefono: tel, zona: s(w.mun).slice(0, 60),
+        direccion: dir + (s(w.ref) ? ' · Ref: ' + s(w.ref).slice(0, 120) : ''), notas: (s(w.nit) ? 'NIT: ' + s(w.nit).slice(0, 20) + '. ' : '') + 'Creado desde la página web.',
+        estado: 'Activo', creado: ctx.today, creado_por: 'Web'
+      });
+    }
+    var dup = db.Pedidos.filter(function (p) { return p.creado_por === 'Web' && p.cliente_id === cli.id && p.fecha === ctx.today && p.estado === 'Pendiente' && Math.abs(n(p.total) - total) < 0.005 && n(p.kg) === kg })[0];
+    if (dup) return { pedido: { id: dup.id }, repetido: true };
+    var year = ctx.today.slice(0, 4);
+    var ped = add(db, ops, 'Pedidos', {
+      id: nextId(db.Pedidos, 'PED-' + year + '-', 4), fecha: ctx.today, cliente_id: cli.id, cliente: cli.nombre, vendedor: 'Web',
+      items_json: JSON.stringify(items), resumen: items.map(function (i) { return i.cantidad + ' × ' + i.nombre }).join(', '),
+      kg: kg, total: total, comision: 0, estado: 'Pendiente', fecha_entrega: ctx.today, pagado: 0, saldo: total,
+      nota: ('Pedido desde la página web. Entrega y pago por coordinar. ' + (s(w.nota) ? 'Nota del cliente: ' + s(w.nota).slice(0, 200) + '. ' : '') + avisos.join('; ')).trim(),
+      creado_por: 'Web', actualizado: ctx.now
+    });
+    return { pedido: { id: ped.id } };
+  });
+
   function registrarCobro(db, ops, ctx, ped, monto, metodo, ref) {
     monto = r2(n(monto));
     if (monto <= 0) throw PE('Escribe el monto cobrado.');
