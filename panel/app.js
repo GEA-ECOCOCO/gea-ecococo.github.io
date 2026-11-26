@@ -379,11 +379,11 @@
       '<div class="btn-row" style="margin-top:12px"><button class="btn sm" data-a="usuarionuevo">' + ic('plus') + ' Agregar vendedor</button><button class="btn sm sec" data-a="contadornuevo">' + ic('plus') + ' Agregar contador</button></div></div>';
   }
   function cardAccesos() {
-    var ac = S.snap.accesos || []; if (!ac.length && !(S.snap.usuarios || []).some(function (u) { return u.rol === 'contador' })) return '';
+    var ac = S.snap.accesos || [];
     var alerta = ac.filter(function (a) { return /fallido|Bloqueo/.test(a.evento) }).length;
     return '<div class="card"><h3>Bitácora de actividad</h3><p style="color:var(--suave);font-size:15px;margin-bottom:8px">Quién entró y qué hizo, con fecha y hora, incluida tu propia cuenta. Solo se agrega: no hay forma de borrarla desde el panel. Se guarda en la pestaña Accesos de tu hoja de Google, donde el historial de versiones de Google protege contra cambios.</p>' +
       (alerta ? '<div class="note" style="background:#FDE8E4;color:#7A2316">Hay ' + alerta + (alerta === 1 ? ' intento' : ' intentos') + ' de entrada fallidos en los últimos movimientos. Si no fuiste tú, cambia tu clave en Equipo y claves.</div>' : '') +
-      (ac.length ? ac.slice(0, 15).map(function (a) { var mal = /fallido|Bloqueo/.test(a.evento); return '<div class="kv"><span' + (mal ? ' style="color:var(--alerta);font-weight:700"' : '') + '>' + esc(a.usuario) + ' · ' + esc(a.evento) + (a.detalle ? '<small style="display:block;color:var(--suave)">' + esc(a.detalle) + '</small>' : '') + '</span><b style="text-align:right">' + esc(fecha(a.fecha)) + '<br>' + esc(a.hora) + '</b></div>' }).join('') : '<div class="vacio"><b>Sin movimientos todavía</b>Aparecerán aquí.</div>') + '</div>';
+      (ac.length ? ac.slice(0, 15).map(function (a) { var mal = /fallido|Bloqueo/.test(a.evento); return '<div class="kv"><span' + (mal ? ' style="color:var(--alerta);font-weight:700"' : '') + '>' + esc(a.usuario) + ' · ' + esc(a.evento) + (a.detalle ? '<small style="display:block;color:var(--suave)">' + esc(a.detalle) + '</small>' : '') + '</span><b style="text-align:right">' + esc(fecha(a.fecha)) + '<br>' + esc(a.hora) + '</b></div>' }).join('') : '<div class="vacio"><b>Sin movimientos todavía</b>Se registra en cada entrada nueva y en cada acción. Si ya tenías la sesión abierta, cierra sesión y vuelve a entrar. Si sigue vacía, revisa que en tu hoja exista la pestaña Accesos.</div>') + '</div>';
   }
   function usuarioSheet(nombre, rolNuevo) {
     var u = nombre ? (S.snap.usuarios || []).filter(function (x) { return x.nombre === nombre })[0] : null, nuevo = !u;
