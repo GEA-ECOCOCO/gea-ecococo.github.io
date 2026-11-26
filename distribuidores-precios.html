@@ -60,14 +60,15 @@
   <div class="tabla-w" style="margin-bottom:22px"><table class="tabla grid-t dist">
     <thead><tr><th>Cómo compras</th><th>Desde</th><th>Precio</th></tr></thead>
     <tbody>
-      <tr><td>Mayorista por kilo</td><td>20 kg por pedido</td><td><strong>Q15 por kg</strong></td></tr>
+      <tr><td>Bolsas de 1 kg, mayorista</td><td>10 bolsas</td><td><strong>Q15 cada bolsa</strong> (pedido de prueba de tiendas y distribuidores también a Q15)</td></tr>
+      <tr><td>Bolsas de 1 kg, volumen</td><td>100 bolsas</td><td><strong>Q14 cada bolsa</strong></td></tr>
       <tr><td>Bulto de 25 kg</td><td>25 kg (1 bulto)</td><td><strong>Q350</strong> (Q14 por kg)</td></tr>
-      <tr><td>Volumen alto</td><td>250 kg por pedido (10 bultos) o compra mensual recurrente</td><td><strong>Precio especial</strong>, lo cotizamos según la cantidad</td></tr>
+      <tr><td>Bultos de 25 kg, volumen</td><td>10 bultos (250 kg)</td><td><strong>Q325 cada bulto</strong> (Q13 por kg)</td></tr>
     </tbody></table></div>
   <div class="card calc" style="margin:0 0 12px;max-width:560px">
     <h3>Simulador de margen</h3>
     <label for="mg-t" style="color:var(--muted);display:block;margin-bottom:8px">Cómo compras</label>
-    <div class="kgrow"><select id="mg-t" style="flex:1;font-size:1rem;padding:12px;border-radius:12px"><option value="15">Mayorista por kilo: Q15 por kg</option><option value="14" selected>Bulto de 25 kg: Q14 por kg</option></select></div>
+    <div class="kgrow"><select id="mg-t" style="flex:1;font-size:1rem;padding:12px;border-radius:12px"><option value="15">Bolsas de 1 kg desde 10: Q15 cada una</option><option value="14">Bolsas de 1 kg desde 100: Q14 cada una</option><option value="14b" selected>Bulto de 25 kg: Q14 por kg</option><option value="13">Bultos de 25 kg desde 10: Q13 por kg</option></select></div>
     <label for="mg-pv" style="color:var(--muted);display:block;margin-bottom:8px">Precio de venta por kg (Q)</label>
     <div class="kgrow"><input id="mg-pv" type="number" min="1" max="500" step="0.5" value="20" inputmode="decimal"></div>
     <label for="mg-b" style="color:var(--muted);display:block;margin-bottom:8px">Kilos que venderías al mes</label>
@@ -83,14 +84,14 @@
 
   <div class="eyebrow" id="mayoristas">Solo mayoristas</div>
   <h2>Pedido por bulto de 25 kg</h2>
-  <p class="lead">El bulto de 25 kg es una presentación <strong>exclusiva para mayoristas</strong>. <strong>Bulto de 25 kg: Q350</strong> (Q14 por kg). Para volúmenes mayores hay <strong>precio especial</strong> que cotizamos según la cantidad.</p>
+  <p class="lead">El bulto de 25 kg es una presentación <strong>exclusiva para mayoristas</strong>. <strong>Bulto de 25 kg: Q350</strong> (Q14 por kg). Desde 10 bultos el precio baja a <strong>Q325 cada bulto</strong> (Q13 por kg).</p>
   <div class="card calc" style="margin:0 0 34px;max-width:560px">
     <h3>Arma tu pedido mayorista</h3>
     <label for="bultos" style="color:var(--muted);display:block;margin-bottom:8px">¿Cuántos bultos de 25 kg?</label>
     <div class="kgrow"><button type="button" id="b-menos" aria-label="Menos">−</button><input id="bultos" type="number" min="1" max="200" value="2" inputmode="numeric"><button type="button" id="b-mas" aria-label="Más">+</button></div>
     <div class="chips"><button type="button" data-b="1">1 bulto</button><button type="button" data-b="2">2 bultos</button><button type="button" data-b="4">4 bultos</button><button type="button" data-b="10">10 bultos</button></div>
     <div class="total"><span>Cantidad total</span><strong id="b-kg">50 kg</strong></div>
-    <div class="total"><span>Precio de lista (Q350 por bulto)</span><strong id="b-q">Q700</strong></div>
+    <div class="total"><span id="b-l">Precio (Q350 por bulto)</span><strong id="b-q">Q700</strong></div>
     <p id="b-nota" style="color:var(--muted);font-size:.92rem;margin-bottom:14px"></p>
     <a id="b-wa" class="btn wa" style="margin:0" href="https://wa.me/50242794894?text=Hola%2C%20quiero%20ser%20distribuidor%20de%20ECOCOCO.%0ANegocio%3A%20%0ACantidad%20(kg)%3A%20%0AUbicaci%C3%B3n%3A%20">Solicitar cotización mayorista</a>
   </div>
@@ -130,10 +131,10 @@
 <div id="compartir" class="sheet" role="dialog" aria-modal="true" aria-label="Compartir" hidden></div>
 <script src="config.js?v=202611252240"></script>
 <script src="prices.js?v=202611252240"></script>
-<script src="site.js?v=202611252240"></script>
+<script src="site.js?v=202611252050"></script>
 <script src="welcome.js?v=202611252240" defer></script>
 <script src="ajustes.js?v=202611252240" defer></script>
-<script src="pdf.js?v=202611252240" defer></script>
+<script src="pdf.js?v=202611252050" defer></script>
 <script src="analytics.js?v=202611252240" defer></script>
 <script src="chat-data.js?v=202611252240" defer></script>
 <script src="chat.js?v=202611252240" defer></script>

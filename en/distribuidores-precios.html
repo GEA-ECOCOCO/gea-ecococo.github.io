@@ -59,14 +59,15 @@
 <div class="tabla-w" style="margin-bottom:22px"><table class="tabla grid-t dist">
 <thead><tr><th>How you buy</th><th>From</th><th>Price</th></tr></thead>
 <tbody>
-<tr><td>Wholesale by the kilo</td><td>20 kg per order</td><td><strong>Q15 per kg</strong></td></tr>
+<tr><td>1 kg bags, wholesale</td><td>10 bags</td><td><strong>Q15 per bag</strong> (trial orders from shops and distributors are also Q15)</td></tr>
+<tr><td>1 kg bags, volume</td><td>100 bags</td><td><strong>Q14 per bag</strong></td></tr>
 <tr><td>25 kg sack</td><td>25 kg (1 sack)</td><td><strong>Q350</strong> (Q14 per kg)</td></tr>
-<tr><td>High volume</td><td>250 kg per order (10 sacks) or recurring monthly purchase</td><td><strong>Special price</strong>, quoted according to quantity</td></tr>
+<tr><td>25 kg sacks, volume</td><td>10 sacks (250 kg)</td><td><strong>Q325 per sack</strong> (Q13 per kg)</td></tr>
 </tbody></table></div>
 <div class="card calc" style="margin:0 0 12px;max-width:560px">
 <h3>Margin simulator</h3>
 <label for="mg-t" style="color:var(--muted);display:block;margin-bottom:8px">How you buy</label>
-<div class="kgrow"><select id="mg-t" style="flex:1;font-size:1rem;padding:12px;border-radius:12px"><option value="15">Wholesale by the kilo: Q15 per kg</option><option selected="" value="14">25 kg sack: Q14 per kg</option></select></div>
+<div class="kgrow"><select id="mg-t" style="flex:1;font-size:1rem;padding:12px;border-radius:12px"><option value="15">1 kg bags from 10: Q15 each</option><option value="14">1 kg bags from 100: Q14 each</option><option selected="" value="14b">25 kg sack: Q14 per kg</option><option value="13">25 kg sacks from 10: Q13 per kg</option></select></div>
 <label for="mg-pv" style="color:var(--muted);display:block;margin-bottom:8px">Selling price per kg (Q)</label>
 <div class="kgrow"><input id="mg-pv" inputmode="decimal" max="500" min="1" step="0.5" type="number" value="20"/></div>
 <label for="mg-b" style="color:var(--muted);display:block;margin-bottom:8px">Kilos you would sell per month</label>
@@ -81,14 +82,14 @@
 <p class="fte" style="margin:0 0 34px;max-width:560px">This is an estimate: it does not include freight, bags, shrinkage or your business expenses, and it assumes you sell everything you buy.</p>
 <div class="eyebrow" id="mayoristas">Wholesalers only</div>
 <h2>Order by the 25 kg sack</h2>
-<p class="lead">The 25 kg sack is a size <strong>exclusive to wholesalers</strong>. <strong>25 kg sack: Q350</strong> (Q14 per kg). For larger volumes there is a <strong>special price</strong> that we quote according to the quantity.</p>
+<p class="lead">The 25 kg sack is a size <strong>exclusive to wholesalers</strong>. <strong>25 kg sack: Q350</strong> (Q14 per kg). From 10 sacks the price drops to <strong>Q325 per sack</strong> (Q13 per kg).</p>
 <div class="card calc" style="margin:0 0 34px;max-width:560px">
 <h3>Build your wholesale order</h3>
 <label for="bultos" style="color:var(--muted);display:block;margin-bottom:8px">How many 25 kg sacks?</label>
 <div class="kgrow"><button aria-label="Less" id="b-menos" type="button">−</button><input id="bultos" inputmode="numeric" max="200" min="1" type="number" value="2"/><button aria-label="More" id="b-mas" type="button">+</button></div>
 <div class="chips"><button data-b="1" type="button">1 sack</button><button data-b="2" type="button">2 sacks</button><button data-b="4" type="button">4 sacks</button><button data-b="10" type="button">10 sacks</button></div>
 <div class="total"><span>Total quantity</span><strong id="b-kg">50 kg</strong></div>
-<div class="total"><span>List price (Q350 per sack)</span><strong id="b-q">Q700</strong></div>
+<div class="total"><span id="b-l">Price (Q350 per sack)</span><strong id="b-q">Q700</strong></div>
 <p id="b-nota" style="color:var(--muted);font-size:.92rem;margin-bottom:14px"></p>
 <a class="btn wa" href="https://wa.me/50242794894?text=Hi%2C%20I%27d%20like%20to%20become%20an%20ECOCOCO%20distributor.%0ABusiness%3A%20%0AQuantity%20%28kg%29%3A%20%0ALocation%3A" id="b-wa" style="margin:0">Request a wholesale quote</a>
 </div>
@@ -125,10 +126,10 @@
 <div aria-label="Share" aria-modal="true" class="sheet" hidden="" id="compartir" role="dialog"></div>
 <script src="../config.js?v=202611252240"></script>
 <script src="../prices.js?v=202611252240"></script>
-<script src="../site.js?v=202611252240"></script>
+<script src="../site.js?v=202611252050"></script>
 <script defer="" src="../welcome.js?v=202611252240"></script>
 <script defer="" src="../ajustes.js?v=202611252240"></script>
-<script defer="" src="../pdf.js?v=202611252240"></script>
+<script defer="" src="../pdf.js?v=202611252050"></script>
 <script defer="" src="../analytics.js?v=202611252240"></script>
 <script defer="" src="../chat-data.js?v=202611252240"></script>
 <script defer="" src="../chat.js?v=202611252240"></script>

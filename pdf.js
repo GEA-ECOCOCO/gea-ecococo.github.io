@@ -156,7 +156,7 @@
     doc.text(L('CONDICIONES','TERMS'),M,y,10,{bold:true,color:C.bosque});
     doc.line(M,y+6,W-M,y+6,C.bosque,1);y+=24;
     var T=[L('Precio a consumidor final.','End-consumer price.')];
-    if(d.bulto)T.push(L('En bultos de 25 kg hay precio especial según el volumen, que se confirma por WhatsApp.','For 25 kg sacks there is a special volume price, confirmed on WhatsApp.'));
+    if(d.bulto)T.push(L('Desde 10 bultos de 25 kg el precio baja a Q325 por bulto.','From 10 sacks of 25 kg the price drops to Q325 per sack.'));
     T.push(L('Tipo de cambio de referencia: Q'+fx.toFixed(2)+' por US$1'+(d.fx&&d.fx.d?' ('+d.fx.d+')':'')+'. El monto en dólares es aproximado; el cobro es en quetzales.','Reference exchange rate: Q'+fx.toFixed(2)+' per US$1'+(d.fx&&d.fx.d?' ('+d.fx.d+')':'')+'. USD amounts are approximate; payment is in quetzales.'));
     T.push(L('El flete, la entrega y la forma de pago se coordinan con GEA Carbón antes de concretar el pedido.','Shipping, delivery and payment are arranged with GEA Carbón before the order is confirmed.'));
     T.push(L('Este documento es una orden de pedido o cotización informativa y no constituye una factura. Los precios y la disponibilidad se confirman al momento del pedido.','This document is an informational order or quote and is not an invoice. Prices and availability are confirmed when the order is placed.'));

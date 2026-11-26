@@ -251,11 +251,11 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     var n = Math.max(1, Math.min(200, parseInt(inp.value, 10) || 1));
     var kg = n * KG;
     kgEl.textContent = kg.toLocaleString(GEA_LOC) + ' kg';
-    var q = document.getElementById('b-q'); if (q) q.textContent = 'Q' + (n * ((window.GEA_PRODUCTS||{k25:{p:350}}).k25.p)).toLocaleString(GEA_LOC);
+    var pb = (window.GEA_PRODUCTS||{k25:{p:350}}).k25.p; if (n >= 10) pb = Math.min(pb, 325); var q = document.getElementById('b-q'); if (q) q.textContent = 'Q' + (n * pb).toLocaleString(GEA_LOC); var ql = document.getElementById('b-l'); if (ql) ql.textContent = gL('Precio (Q' + pb + ' por bulto)', 'Price (Q' + pb + ' per sack)');
     nota.textContent = n === 1
       ? gL('Un bulto sirve para entrega en Retalhuleu y la Costa Sur. Para otros departamentos el mínimo son 2 bultos (50 kg).','One sack works for delivery in Retalhuleu and the South Coast. For other departments the minimum is 2 sacks (50 kg).')
-      : gL('El precio de lista es referencial: con este volumen te cotizamos precio especial y confirmamos la fecha de entrega.','The list price is a reference: for this volume we quote a special price and confirm the delivery date.');
-    var msg = GEA_EN ? 'Hi, I am a wholesaler and I would like ' + n + (n === 1 ? ' sack' : ' sacks') + ' of 25 kg of ECOCOCO (' + kg + ' kg). I would like to know the special volume price.\nBusiness: \nLocation: ' : 'Hola, soy mayorista y quiero ' + n + (n === 1 ? ' bulto' : ' bultos') + ' de 25 kg de ECOCOCO (' + kg + ' kg). Quiero conocer el precio especial por volumen.\nNegocio: \nUbicación: ';
+      : n >= 10 ? gL('Desde 10 bultos el bulto baja a Q325. Confirmamos la fecha de entrega por WhatsApp.','From 10 sacks the price drops to Q325 per sack. We confirm the delivery date on WhatsApp.') : gL('Desde 10 bultos el bulto baja a Q325 (Q13 por kg).','From 10 sacks the price drops to Q325 per sack (Q13 per kg).');
+    var msg = GEA_EN ? 'Hi, I am a wholesaler and I would like ' + n + (n === 1 ? ' sack' : ' sacks') + ' of 25 kg of ECOCOCO (' + kg + ' kg). I would like to confirm the price and delivery.\nBusiness: \nLocation: ' : 'Hola, soy mayorista y quiero ' + n + (n === 1 ? ' bulto' : ' bultos') + ' de 25 kg de ECOCOCO (' + kg + ' kg). Quiero confirmar el precio y la entrega.\nNegocio: \nUbicación: ';
     wa.href = 'https://wa.me/50242794894?text=' + encodeURIComponent(msg);
     document.querySelectorAll('.chips button[data-b]').forEach(function (b) {
       b.classList.toggle('on', parseInt(b.getAttribute('data-b'), 10) === n);
@@ -896,7 +896,7 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
   if (!pv || !nb || !tp) return;
   function f(n) { return n.toLocaleString(GEA_LOC, { maximumFractionDigits: 2 }); }
   function act() {
-    var p = parseFloat(pv.value), kg = parseInt(nb.value, 10), costo = parseFloat(tp.value) || 14;
+    var p = parseFloat(pv.value), kg = parseInt(nb.value, 10), costo = parseFloat(tp.value) || 14, tv = tp.value;
     if (!(p > 0)) p = 0;
     if (!(kg > 0)) kg = 0;
     kg = Math.min(kg, 20000);
@@ -905,16 +905,17 @@ window.addEventListener('pageshow', function () { document.body.classList.remove
     document.getElementById('mg-g').textContent = sg + f(Math.abs(g));
     document.getElementById('mg-p').textContent = p > 0 ? f(Math.round(g / p * 1000) / 10) + '%' : '—';
     document.getElementById('mg-m').textContent = sg + f(Math.abs(Math.round(g * kg)));
-    var bulto = costo === 14, nt;
+    var bulto = tv === '14b' || tv === '13', nt;
     if (g < 0) nt = gL('A ese precio de venta pierdes dinero: súbelo por encima del costo.', 'At that selling price you lose money: raise it above cost.');
-    else if (kg >= 250) nt = gL('Con ' + f(kg) + ' kg al mes ya puedes pedir precio especial por volumen.', 'With ' + f(kg) + ' kg per month you can already ask for a special volume price.');
-    else if (!bulto && kg < 20) nt = gL('El pedido mínimo por kilo es de 20 kg.', 'The minimum order by the kilo is 20 kg.');
     else if (bulto && kg < 25) nt = gL('El bulto es de 25 kg: ese es el mínimo para este precio.', 'The sack is 25 kg: that is the minimum for this price.');
-    else nt = gL('Con ' + f(kg) + ' kg al mes. Si compras más de 250 kg por pedido, cotizamos precio especial.', 'With ' + f(kg) + ' kg per month. If you buy over 250 kg per order, we quote a special price.');
+    else if (tv === '13' && kg < 250) nt = gL('El bulto a Q325 aplica desde 10 bultos (250 kg) por pedido.', 'The Q325 sack price applies from 10 sacks (250 kg) per order.');
+    else if (tv === '15' && kg < 10) nt = gL('El precio de Q15 aplica desde 10 bolsas de 1 kg por pedido.', 'The Q15 price applies from 10 bags of 1 kg per order.');
+    else if (tv === '14' && kg < 100) nt = gL('El precio de Q14 aplica desde 100 bolsas de 1 kg por pedido.', 'The Q14 price applies from 100 bags of 1 kg per order.');
+    else nt = gL('Con ' + f(kg) + ' kg al mes. Cada pedido se confirma por WhatsApp.', 'With ' + f(kg) + ' kg per month. Each order is confirmed on WhatsApp.');
     document.getElementById('mg-n').textContent = nt;
     var msg = GEA_EN
-      ? 'Hi, I am a distributor. I would buy ' + (bulto ? 'by the 25 kg sack (Q14/kg)' : 'by the kilo (Q15/kg)') + ', sell at Q' + f(p) + '/kg and move about ' + f(kg) + ' kg per month. I would like to know the special volume price.\nBusiness: \nLocation: '
-      : 'Hola, soy distribuidor. Compraria ' + (bulto ? 'por bulto de 25 kg (Q14/kg)' : 'por kilo (Q15/kg)') + ', venderia a Q' + f(p) + '/kg y moveria unos ' + f(kg) + ' kg al mes. Quiero conocer el precio especial por volumen.\nNegocio: \nUbicacion: ';
+      ? 'Hi, I am a distributor. I would buy ' + (bulto ? 'by the 25 kg sack (Q' + f(costo) + '/kg)' : 'in 1 kg bags (Q' + f(costo) + ' each)') + ', sell at Q' + f(p) + '/kg and move about ' + f(kg) + ' kg per month. I would like to confirm prices and conditions.\nBusiness: \nLocation: '
+      : 'Hola, soy distribuidor. Compraria ' + (bulto ? 'por bulto de 25 kg (Q' + f(costo) + '/kg)' : 'en bolsas de 1 kg (Q' + f(costo) + ' c/u)') + ', venderia a Q' + f(p) + '/kg y moveria unos ' + f(kg) + ' kg al mes. Quiero confirmar precios y condiciones.\nNegocio: \nUbicacion: ';
     document.getElementById('mg-wa').href = 'https://wa.me/50242794894?text=' + encodeURIComponent(msg);
   }
   pv.addEventListener('input', act); nb.addEventListener('input', act); tp.addEventListener('change', act); act();
