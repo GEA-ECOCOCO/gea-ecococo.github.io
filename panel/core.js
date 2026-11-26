@@ -75,11 +75,12 @@
     db.Config.forEach(function (r) { var v = r.valor; o[r.clave] = (typeof v === 'string' && v !== '' && isFinite(v) && r.clave !== 'whatsapp_admin') ? parseFloat(v) : v });
     return o;
   }
-  /* Precio por volumen: desde 10 bultos de 25 kg el bulto baja a Q325; desde 100 bolsas de 1 kg la bolsa baja a Q14. Nunca sube el precio del tipo de cliente. */
-  var VOL = { bultos: 10, precio_bulto: 325, bolsas: 100, precio_bolsa: 14 };
+  /* Precio por volumen: mayorista desde 10 bolsas de 1 kg (Q15; tenderos y distribuidores en prueba lo tienen desde la primera por su tipo de cliente), Q14 desde 100 bolsas, y bulto de 25 kg a Q325 desde 10 bultos. Nunca sube el precio del tipo de cliente. */
+  var VOL = { bultos: 10, precio_bulto: 325, mayoreo: 10, precio_mayoreo: 15, bolsas: 100, precio_bolsa: 14 };
   function precioUnit(p, tipo, cant, cfg) {
     var base = n(p[PRECIO[tipo] || 'precio_tienda']), pr = base, kg = n(p.kg), q = n(cant); cfg = cfg || {};
     if (kg === 25 && q >= (n(cfg.bultos_volumen) || VOL.bultos)) pr = Math.min(pr, n(cfg.precio_bulto_volumen) || VOL.precio_bulto);
+    if (kg === 1 && q >= (n(cfg.bolsas_mayoreo) || VOL.mayoreo)) pr = Math.min(pr, n(cfg.precio_bolsa_mayoreo) || VOL.precio_mayoreo);
     if (kg === 1 && q >= (n(cfg.bolsas_volumen) || VOL.bolsas)) pr = Math.min(pr, n(cfg.precio_bolsa_volumen) || VOL.precio_bolsa);
     return pr;
   }
