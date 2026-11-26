@@ -67,6 +67,7 @@
       if (pin === '222222') return { ok: true, data: { token: 'demo', user: { nombre: 'Contador', rol: 'contador' } } };
       return { ok: false, error: 'Clave incorrecta. En la demostración usa 123456 (administrador), 111111 (vendedor) o 222222 (contador).', code: 'clave' };
     }
+    if (req.action === 'respaldo.estado' || req.action === 'respaldo.ahora') return { ok: true, data: { demo: true, automatico: true, max: 12, ultimo: req.action === 'respaldo.ahora' ? { fecha: hoy() + ' ' + new Date().toTimeString().slice(0, 5), ok: true, motivo: 'Manual' } : null } };
     if (req.action === 'ia.preguntar') return { ok: true, data: { respuesta: 'Esto es una demostración: aquí tu asistente de IA analizaría tus números reales y te respondería con recomendaciones. En tu panel conectado a Google, esta pregunta (“' + req.pregunta + '”) se contestaría con tus datos de ventas, costos e inventario.' } };
     var res = C.handle(demoDb(), req, { user: S.user, today: hoy(), now: hoy() + ' ' + new Date().toTimeString().slice(0, 5), sheetUrl: 'https://docs.google.com/spreadsheets' });
     delete res.ops; demoGuardar();
@@ -89,7 +90,7 @@
       } catch (e) { if (!fin) { fin = true; clearTimeout(tm); ok(null) } }
     });
   }
-  var SIN_GEO = { login: 1, bootstrap: 1, ping: 1, 'ia.preguntar': 1 };
+  var SIN_GEO = { login: 1, bootstrap: 1, ping: 1, 'ia.preguntar': 1, 'respaldo.estado': 1, 'respaldo.ahora': 1 };
   function api(action, payload) {
     if (!SIN_GEO[action] && S.token) return geoPedir().then(function (g) { return api2(action, payload, g) });
     return api2(action, payload, null);
@@ -105,7 +106,7 @@
   }
   function guardarSesion() { LS.set('gea-panel-s-' + S.mode, JSON.stringify({ token: S.token, user: S.user })) }
   function salir(vencida) {
-    LS.del('gea-panel-s-' + S.mode); S.token = null; S.user = null; S.snap = null; S.ruta = 'inicio'; closeSheet(true);
+    LS.del('gea-panel-s-' + S.mode); S.token = null; S.user = null; S.snap = null; S.resp = undefined; S.ruta = 'inicio'; closeSheet(true);
     render(vencida ? 'Tu sesión venció. Entra de nuevo con tu clave.' : '');
   }
   function cargar(conAviso) {
@@ -350,7 +351,7 @@
         return '<div style="margin-bottom:12px"><b>' + esc(p.nombre) + '</b><div class="price-grid"><label class="fld"><span>Tienda</span><input inputmode="decimal" data-p="' + p.id + '" data-k="precio_tienda" value="' + p.precio_tienda + '"></label><label class="fld"><span>Mayorista</span><input inputmode="decimal" data-p="' + p.id + '" data-k="precio_mayorista" value="' + p.precio_mayorista + '"></label><label class="fld"><span>Consumidor</span><input inputmode="decimal" data-p="' + p.id + '" data-k="precio_publico" value="' + p.precio_publico + '"></label></div></div>';
       }).join('') + '<button class="btn sm" data-a="guardarprecios">Guardar precios</button></div>' +
         '<div class="card"><h3>Reglas del negocio</h3><label class="fld"><span>Comisión del vendedor por kg (Q)</span><input id="cfg-com" inputmode="decimal" value="' + num(cfg.comision_por_kg) + '"></label><label class="fld"><span>WhatsApp que recibe los pedidos</span><input id="cfg-wa" inputmode="tel" value="' + esc(cfg.whatsapp_admin) + '"><small>Con código de país, por ejemplo 50242794894.</small></label><label class="fld"><span>Pedido mínimo (kg)</span><input id="cfg-min" inputmode="decimal" value="' + num(cfg.pedido_minimo_kg) + '"></label><button class="btn sm" data-a="guardarcfg">Guardar reglas</button></div>' +
-        cardVolumen() + cardEquipo() + cardAccesos() +
+        cardVolumen() + cardEquipo() + cardAccesos() + cardRespaldo() +
         '<div class="card"><h3>Tus datos</h3><p style="color:var(--suave);font-size:15px;margin-bottom:12px">Todo se guarda en tu hoja de Google. Ahí puedes ver, filtrar o exportar lo que quieras. Las claves del equipo están en la pestaña Usuarios.</p>' + (sn.sheetUrl ? '<a class="btn sec" href="' + esc(sn.sheetUrl) + '" target="_blank" rel="noopener">' + ic('sheet') + ' Abrir la hoja de Google</a>' : '') + '</div>';
     }
     h += '<div class="btn-row"><button class="btn sec" data-a="salir">' + ic('out') + ' Cerrar sesión</button></div><p style="text-align:center;color:var(--suave);font-size:13px;margin-top:16px">Panel GEA · versión 1</p>';
@@ -384,6 +385,35 @@
     return '<div class="card"><h3>Bitácora de actividad</h3><p style="color:var(--suave);font-size:15px;margin-bottom:8px">Quién entró y qué hizo, con fecha y hora, incluida tu propia cuenta. Solo se agrega: no hay forma de borrarla desde el panel. Se guarda en la pestaña Accesos de tu hoja de Google, donde el historial de versiones de Google protege contra cambios.</p>' +
       (alerta ? '<div class="note" style="background:#FDE8E4;color:#7A2316">Hay ' + alerta + (alerta === 1 ? ' intento' : ' intentos') + ' de entrada fallidos en los últimos movimientos. Si no fuiste tú, cambia tu clave en Equipo y claves.</div>' : '') +
       (ac.length ? ac.slice(0, 15).map(function (a) { var mal = /fallido|Bloqueo/.test(a.evento); return '<div class="kv"><span' + (mal ? ' style="color:var(--alerta);font-weight:700"' : '') + '>' + esc(a.usuario) + ' · ' + esc(a.evento) + (a.detalle ? '<small style="display:block;color:var(--suave)">' + esc(a.detalle) + '</small>' : '') + '</span><b style="text-align:right">' + esc(fecha(a.fecha)) + '<br>' + esc(a.hora) + '</b></div>' }).join('') : '<div class="vacio"><b>Sin movimientos todavía</b>Se registra en cada entrada nueva y en cada acción. Si ya tenías la sesión abierta, cierra sesión y vuelve a entrar. Si sigue vacía, revisa que en tu hoja exista la pestaña Accesos.</div>') + '</div>';
+  }
+  /* --- respaldo de la hoja (solo administrador) --- */
+  function cardRespaldo() {
+    if (S.resp === undefined) {
+      S.resp = { cargando: true };
+      api('respaldo.estado').then(function (res) {
+        S.resp = res.ok ? res.data : { error: res.code === 'red' ? res.error : 'Falta actualizar el código de Google (Apps Script) para activar el respaldo.' };
+        if (S.ruta === 'ajustes') render();
+      });
+    }
+    var R = S.resp || {}, u = R.ultimo, estado = '';
+    if (R.cargando) estado = '<div class="kv"><span>Revisando…</span></div>';
+    else if (R.error) estado = '<div class="note" style="background:#FDE8E4;color:#7A2316">' + esc(R.error) + '</div>';
+    else {
+      estado = '<div class="kv"><span>Respaldo automático</span><b>' + (R.automatico === true ? 'Activo · cada domingo' : R.automatico === false ? 'Sin activar' : 'No se pudo comprobar') + '</b></div>' +
+        '<div class="kv"><span>Último respaldo</span><b style="text-align:right">' + (u ? (u.ok ? esc(fecha(String(u.fecha).slice(0, 10))) + '<br>' + esc(String(u.fecha).slice(11)) : 'Falló') : 'Todavía no hay') + '</b></div>' +
+        (u && !u.ok ? '<div class="note" style="background:#FDE8E4;color:#7A2316">' + esc(u.error || 'No se pudo completar.') + '</div>' : '') +
+        (R.automatico === false ? '<div class="note">Para activarlo: en Apps Script elige la función <b>instalarRespaldo</b>, pulsa Ejecutar y acepta los permisos. Se hace una sola vez.</div>' : '');
+    }
+    return '<div class="card"><h3>Respaldo de tus datos</h3><p style="color:var(--suave);font-size:15px;margin-bottom:8px">Guarda una copia completa de tu hoja de Google en la carpeta “Respaldos Panel GEA” de tu Drive y conserva las últimas ' + (R.max || 12) + '. Sirve si alguien borra o daña datos por error. La copia incluye las claves del equipo: no la compartas.</p>' + estado +
+      '<div class="btn-row" style="margin-top:12px"><button class="btn sm" data-a="respaldar"' + (R.cargando ? ' disabled' : '') + '>Respaldar ahora</button></div></div>';
+  }
+  function respaldarAhora(btn) {
+    var fin = ocupado(btn, 'Respaldando…');
+    api('respaldo.ahora').then(function (res) {
+      fin();
+      if (!res.ok) { S.resp = undefined; toast(res.error); return }
+      S.resp = res.data; render(); toast('Respaldo guardado en tu Drive', true);
+    });
   }
   function usuarioSheet(nombre, rolNuevo) {
     var u = nombre ? (S.snap.usuarios || []).filter(function (x) { return x.nombre === nombre })[0] : null, nuevo = !u;
@@ -965,6 +995,7 @@
       case 'ir': S.ruta = el.getAttribute('data-r'); S.limite = 40; render(); window.scrollTo(0, 0); if (S.ruta === 'capacidad') { S.capSim = null; cargar(false) } break;
       case 'capact': var fa = ocupado(el, 'Actualizando…'); S.capSim = null; cargar(false).then(function () { toast('Cifras actualizadas', true) }); break;
       case 'capguardar': guardarCap(el); break;
+      case 'respaldar': respaldarAhora(el); break;
       case 'conspro': consejoIA(el); break;
       case 'capkg': guardarCapKg(el); break;
       case 'capcred': guardarCred(el); break;
