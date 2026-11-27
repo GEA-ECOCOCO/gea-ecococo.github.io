@@ -106,7 +106,7 @@
   }
   function guardarSesion() { LS.set('gea-panel-s-' + S.mode, JSON.stringify({ token: S.token, user: S.user })) }
   function salir(vencida) {
-    LS.del('gea-panel-s-' + S.mode); S.token = null; S.user = null; S.snap = null; S.resp = undefined; S.ruta = 'inicio'; closeSheet(true);
+    LS.del('gea-panel-s-' + S.mode); S.token = null; S.user = null; S.snap = null; S.resp = undefined; S.ajSub = ''; S.ruta = 'inicio'; closeSheet(true);
     render(vencida ? 'Tu sesión venció. Entra de nuevo con tu clave.' : '');
   }
   function cargar(conAviso) {
@@ -344,6 +344,7 @@
 
   /* --- ajustes --- */
   function vAjustes() {
+    if (S.ajSub === 'bitacora' && isAdmin()) return vBitacora();
     var sn = S.snap, adm = isAdmin(), cfg = sn.config, h = '';
     h += '<div class="card"><h3>' + esc(S.user.nombre) + '</h3><div class="kv"><span>Rol</span><b>' + (adm ? 'Administrador' : 'Vendedor') + '</b></div><div class="kv"><span>Comisión</span><b>' + Q(cfg.comision_por_kg) + ' por kg entregado</b></div></div>';
     if (adm) {
@@ -351,7 +352,7 @@
         return '<div style="margin-bottom:12px"><b>' + esc(p.nombre) + '</b><div class="price-grid"><label class="fld"><span>Tienda</span><input inputmode="decimal" data-p="' + p.id + '" data-k="precio_tienda" value="' + p.precio_tienda + '"></label><label class="fld"><span>Mayorista</span><input inputmode="decimal" data-p="' + p.id + '" data-k="precio_mayorista" value="' + p.precio_mayorista + '"></label><label class="fld"><span>Consumidor</span><input inputmode="decimal" data-p="' + p.id + '" data-k="precio_publico" value="' + p.precio_publico + '"></label></div></div>';
       }).join('') + '<button class="btn sm" data-a="guardarprecios">Guardar precios</button></div>' +
         '<div class="card"><h3>Reglas del negocio</h3><label class="fld"><span>Comisión del vendedor por kg (Q)</span><input id="cfg-com" inputmode="decimal" value="' + num(cfg.comision_por_kg) + '"></label><label class="fld"><span>WhatsApp que recibe los pedidos</span><input id="cfg-wa" inputmode="tel" value="' + esc(cfg.whatsapp_admin) + '"><small>Con código de país, por ejemplo 50242794894.</small></label><label class="fld"><span>Pedido mínimo (kg)</span><input id="cfg-min" inputmode="decimal" value="' + num(cfg.pedido_minimo_kg) + '"></label><button class="btn sm" data-a="guardarcfg">Guardar reglas</button></div>' +
-        cardVolumen() + cardEquipo() + cardAccesos() + cardRespaldo() +
+        cardVolumen() + cardEquipo() + filaBitacora() + cardRespaldo() +
         '<div class="card"><h3>Tus datos</h3><p style="color:var(--suave);font-size:15px;margin-bottom:12px">Todo se guarda en tu hoja de Google. Ahí puedes ver, filtrar o exportar lo que quieras. Las claves del equipo están en la pestaña Usuarios.</p>' + (sn.sheetUrl ? '<a class="btn sec" href="' + esc(sn.sheetUrl) + '" target="_blank" rel="noopener">' + ic('sheet') + ' Abrir la hoja de Google</a>' : '') + '</div>';
     }
     h += '<div class="btn-row"><button class="btn sec" data-a="salir">' + ic('out') + ' Cerrar sesión</button></div><p style="text-align:center;color:var(--suave);font-size:13px;margin-top:16px">Panel GEA · versión 1</p>';
@@ -379,12 +380,17 @@
       us.map(function (u) { return '<button class="row" data-a="usuario" data-n="' + esc(u.nombre) + '"><span class="ini">' + esc(inicial(u.nombre)) + '</span><span><div class="t">' + esc(u.nombre) + '</div><div class="s">' + (u.rol === 'admin' ? 'Administrador' : u.rol === 'contador' ? 'Contador · solo lectura' : 'Vendedor') + '</div></span><span class="r"><span class="chip ' + (u.activo === 'No' ? 'c-can' : 'c-ok') + '">' + (u.activo === 'No' ? 'Desactivado' : 'Activo') + '</span></span></button>' }).join('') +
       '<div class="btn-row" style="margin-top:12px"><button class="btn sm" data-a="usuarionuevo">' + ic('plus') + ' Agregar vendedor</button><button class="btn sm sec" data-a="contadornuevo">' + ic('plus') + ' Agregar contador</button></div></div>';
   }
-  function cardAccesos() {
-    var ac = S.snap.accesos || [];
-    var alerta = ac.filter(function (a) { return /fallido|Bloqueo/.test(a.evento) }).length;
-    return '<div class="card"><h3>Bitácora de actividad</h3><p style="color:var(--suave);font-size:15px;margin-bottom:8px">Quién entró y qué hizo, con fecha y hora, incluida tu propia cuenta. Solo se agrega: no hay forma de borrarla desde el panel. Se guarda en la pestaña Accesos de tu hoja de Google, donde el historial de versiones de Google protege contra cambios.</p>' +
+  function malos() { return (S.snap.accesos || []).filter(function (a) { return /fallido|Bloqueo/.test(a.evento) }) }
+  function filaBitacora() {
+    var ac = S.snap.accesos || [], alerta = malos().length;
+    return '<button class="row" data-a="ajsub" data-s="bitacora" style="margin-bottom:12px"><span class="bar ' + (alerta ? 'cobrar' : 'ok') + '"></span><span><div class="t">Bitácora de actividad</div><div class="s">' + (ac.length ? 'Quién entró y qué hizo · ' + ac.length + ' movimientos recientes' : 'Sin movimientos todavía') + (alerta ? ' · ' + alerta + (alerta === 1 ? ' intento fallido' : ' intentos fallidos') : '') + '</div></span><span class="r">' + (alerta ? '<span class="chip c-cobrar">!</span>' : '') + '<span aria-hidden="true" style="font-size:22px;color:var(--suave);margin-left:6px">›</span></span></button>';
+  }
+  function vBitacora() {
+    var ac = S.snap.accesos || [], alerta = malos().length;
+    return '<div class="btn-row" style="margin-bottom:10px"><button class="btn sec sm" data-a="ajsub" data-s="">‹ Ajustes</button></div>' +
+      '<div class="card"><h3>Bitácora de actividad</h3><p style="color:var(--suave);font-size:15px;margin-bottom:8px">Quién entró y qué hizo, con fecha y hora, incluida tu propia cuenta. Solo se agrega: no hay forma de borrarla desde el panel. Se guarda en la pestaña Accesos de tu hoja de Google, donde el historial de versiones de Google protege contra cambios. Aquí ves los últimos ' + Math.min(ac.length, 80) + ' movimientos.</p>' +
       (alerta ? '<div class="note" style="background:#FDE8E4;color:#7A2316">Hay ' + alerta + (alerta === 1 ? ' intento' : ' intentos') + ' de entrada fallidos en los últimos movimientos. Si no fuiste tú, cambia tu clave en Equipo y claves.</div>' : '') +
-      (ac.length ? ac.slice(0, 15).map(function (a) { var mal = /fallido|Bloqueo/.test(a.evento); return '<div class="kv"><span' + (mal ? ' style="color:var(--alerta);font-weight:700"' : '') + '>' + esc(a.usuario) + ' · ' + esc(a.evento) + (a.detalle ? '<small style="display:block;color:var(--suave)">' + esc(a.detalle) + '</small>' : '') + '</span><b style="text-align:right">' + esc(fecha(a.fecha)) + '<br>' + esc(a.hora) + '</b></div>' }).join('') : '<div class="vacio"><b>Sin movimientos todavía</b>Se registra en cada entrada nueva y en cada acción. Si ya tenías la sesión abierta, cierra sesión y vuelve a entrar. Si sigue vacía, revisa que en tu hoja exista la pestaña Accesos.</div>') + '</div>';
+      (ac.length ? ac.map(function (a) { var mal = /fallido|Bloqueo/.test(a.evento); return '<div class="kv"><span' + (mal ? ' style="color:var(--alerta);font-weight:700"' : '') + '>' + esc(a.usuario) + ' · ' + esc(a.evento) + (a.detalle ? '<small style="display:block;color:var(--suave)">' + esc(a.detalle) + '</small>' : '') + '</span><b style="text-align:right">' + esc(fecha(a.fecha)) + '<br>' + esc(a.hora) + '</b></div>' }).join('') : '<div class="vacio"><b>Sin movimientos todavía</b>Se registra en cada entrada nueva y en cada acción. Si ya tenías la sesión abierta, cierra sesión y vuelve a entrar. Si sigue vacía, revisa que en tu hoja exista la pestaña Accesos.</div>') + '</div>';
   }
   /* --- respaldo de la hoja (solo administrador) --- */
   function cardRespaldo() {
@@ -992,7 +998,8 @@
     var el = e.target.closest('[data-a]'); if (!el) return;
     var a = el.getAttribute('data-a'), id = el.getAttribute('data-id'), d = S.draft;
     switch (a) {
-      case 'ir': S.ruta = el.getAttribute('data-r'); S.limite = 40; render(); window.scrollTo(0, 0); if (S.ruta === 'capacidad') { S.capSim = null; cargar(false) } break;
+      case 'ajsub': S.ajSub = el.getAttribute('data-s') || ''; render(); window.scrollTo(0, 0); break;
+      case 'ir': S.ajSub = ''; S.ruta = el.getAttribute('data-r'); S.limite = 40; render(); window.scrollTo(0, 0); if (S.ruta === 'capacidad') { S.capSim = null; cargar(false) } break;
       case 'capact': var fa = ocupado(el, 'Actualizando…'); S.capSim = null; cargar(false).then(function () { toast('Cifras actualizadas', true) }); break;
       case 'capguardar': guardarCap(el); break;
       case 'respaldar': respaldarAhora(el); break;
